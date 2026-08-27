@@ -63,7 +63,7 @@ PAGE STRUCTURE:
 
 INTERACTIONS: hero stat tooltips explaining formula; chart hover shows day detail;
 sidebar navigation; "Lihat semua" navigates to Transactions.
-STATES: empty ("Belum ada transaksi — mulai catet lewat WhatsApp"), loading
+STATES: empty ("Belum ada transaksi. Mulai catet lewat WhatsApp."), loading
 (skeleton hero + shimmer bars on chart), error (inline banner with retry).
 ```
 
@@ -80,14 +80,17 @@ PAGE STRUCTURE:
    primary pill button "+ Tambah".
 3. Grouped feed table: day-group headers; each row = status dot (clean / needs
    review), merchant, category chip, source name, signed amount right-aligned in
-   tabular figures; hover reveals inline actions (edit, delete, reverse).
+   tabular figures; inline actions (edit, delete, reverse) reveal on hover and on
+   keyboard focus, with accessible names; permanently visible under 1024px.
 4. Pagination footer.
 5. Restore-bin link in toolbar overflow ("Sampah") showing soft-deleted rows with
    restore action and remaining restore-window time.
 
-INTERACTIONS: row click opens edit modal (form fields: amount, Source select,
-direction, category, merchant, note, date, tags) showing edit history link;
-delete asks named confirmation; keyboard focus visible throughout.
+INTERACTIONS: row click opens a quick-edit sheet (amount, date, category, note
+only); overflow menu "Ubah lengkap" opens a full edit page carrying amount,
+Source select, direction, category, merchant, note, date, tags, reversal link,
+adjustment entry, and edit history; delete asks named confirmation; keyboard
+focus visible throughout.
 STATES: empty, loading skeleton rows, filled, error banner, restore bin empty state.
 ```
 
@@ -206,7 +209,7 @@ PAGE STRUCTURE:
 
 INTERACTIONS: cross-filtering from donut slices into Transactions; tooltips on
 all series; period switch refetches series.
-STATES: empty ("Data masih tipis — catet dulu beberapa hari"), loading skeletons
+STATES: empty ("Data masih tipis. Catet dulu beberapa hari."), loading skeletons
 per chart tile, filled, error tile with retry.
 ```
 
@@ -225,11 +228,11 @@ PAGE STRUCTURE:
    captured wording) and an inline category picker pre-seeded with the model's
    best guess plus three likely alternatives from user history.
 4. Actions per row: pick category (writes through, provenance becomes "user"),
-   skip, open full edit modal.
+   skip, open the full edit page.
 
 INTERACTIONS: bulk-fix repeated merchants ("Terapkan ke 6 transaksi serupa");
 resolving updates counter instantly.
-STATES: clean-empty ("Semua beres — tidak ada yang menunggu"), loading, filled,
+STATES: clean-empty ("Semua beres, tidak ada yang menunggu."), loading, filled,
 error.
 ```
 
@@ -291,7 +294,7 @@ STATES: per-section empty/loading/filled/error.
 | `week.glance` | Minggu ini | This week |
 | `tx.add` | Tambah | Add |
 | `tx.search.placeholder` | Cari merchant atau catatan… | Search merchant or note… |
-| `tx.empty` | Belum ada transaksi — mulai catet lewat WhatsApp | No transactions yet — start logging via WhatsApp |
+| `tx.empty` | Belum ada transaksi. Mulai catet lewat WhatsApp. | No transactions yet. Start logging via WhatsApp. |
 | `trash` | Sampah | Trash |
 | `restore` | Pulihkan | Restore |
 | `confirm.delete` | Hapus "{record}"? | Delete "{record}"? |
@@ -301,12 +304,12 @@ STATES: per-section empty/loading/filled/error.
 | `bill.paid` | Tandai lunas | Mark paid |
 | `budget.suggestion.use` | Pakai saran | Use suggestion |
 | `review.header` | {n} transaksi belum yakin kategori minggu ini | {n} transactions unsure of category this week |
-| `review.clean` | Semua beres — tidak ada yang menunggu | All clear — nothing waiting |
+| `review.clean` | Semua beres, tidak ada yang menunggu. | All clear — nothing waiting |
 | `hold.drafts` | Draft | Drafts |
 | `hold.confirm` | Menunggu konfirmasi | Awaiting confirmation |
 | `approve` | Setujui | Approve |
 | `reject` | Tolak | Reject |
-| `analytics.empty` | Data masih tipis — catet dulu beberapa hari | Data is thin — log a few days first |
+| `analytics.empty` | Data masih tipis. Catet dulu beberapa hari. | Data is thin — log a few days first |
 | `tx.view_all` | Lihat semua | View all |
 | `edit` | Ubah | Edit |
 | `cat.new` | Kategori baru | New category |
