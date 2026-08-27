@@ -22,7 +22,7 @@ the per-screen prompts, real copy, and sample data.
   deck below. Do not invent copy.
 - **Naming law (CONTEXT.md):** the entity is always a **Source** — never "account"
   or "wallet". Money figures use tabular numerals and Indonesian formatting
-  (`Rp2.140.000`).
+  (`Rp8.003.500`).
 - **States:** every list/table/feed section must render Empty, Loading (skeleton),
   Filled, and Error variants per DESIGN.md §2.
 
@@ -51,11 +51,11 @@ PAGE STRUCTURE:
 2. Hero block (spacious, single focal point): the label "Safe-to-Spend" as a small
    caption above a very large Safe-to-Spend figure (teal when healthy, amber when
    thin). Beneath it two secondary stats side by side: "Runway" ("34 hari") and
-   "Jatah harian" ("Rp71.300 / hari").
+   "Jatah harian" ("Rp266.800 / hari").
 3. Reference-line chart card: 4-week daily-spend bar timeline with a flat horizontal
    positive-accent line marking today's Safe-to-Spend; caption explains days above
    vs below the line.
-4. Two-column row: card "Terreserved besok" listing tomorrow's reserved bills
+4. Two-column row: card "Tereservasi besok" listing tomorrow's reserved bills
    (name, amount); card "Minggu ini" mini-glance (spend total, top category,
    uncategorized count).
 5. Recent transactions preview (last 5 rows): icon, merchant, source chip, signed
@@ -229,12 +229,9 @@ PAGE STRUCTURE:
 
 INTERACTIONS: bulk-fix repeated merchants ("Terapkan ke 6 transaksi serupa");
 resolving updates counter instantly.
-STATES: clean-empty ("Semua beres ✦ tidak ada yang menunggu" — plain text, no
-emoji glyph dependency), loading, filled, error.
+STATES: clean-empty ("Semua beres — tidak ada yang menunggu"), loading, filled,
+error.
 ```
-
-Note: replace the star glyph above with plain copy in implementation — UI never
-depends on emoji. Wording: "Semua beres — tidak ada yang menunggu."
 
 ## 9. Hold Queue
 
@@ -273,7 +270,7 @@ PAGE STRUCTURE:
    - Tagihan & reservasi: income horizon setter ("Perkiraan income berikutnya ~__
      hari") with explainer text.
    - Tag: namespaced tag table (trip:bali, social, impulsive) create/rename/delete.
-   - Data: backup status, export CSV, danger zone (archive account) behind named
+   - Data: backup status, export CSV, danger zone (deactivate catet) behind named
      confirmation.
 
 INTERACTIONS: every save gives inline success confirmation; masked secrets
@@ -310,6 +307,17 @@ STATES: per-section empty/loading/filled/error.
 | `approve` | Setujui | Approve |
 | `reject` | Tolak | Reject |
 | `analytics.empty` | Data masih tipis — catet dulu beberapa hari | Data is thin — log a few days first |
+| `tx.view_all` | Lihat semua | View all |
+| `edit` | Ubah | Edit |
+| `cat.new` | Kategori baru | New category |
+| `bill.new` | Tagihan baru | New bill |
+| `budget.new` | Budget baru | New budget |
+| `bills.empty` | Belum ada tagihan | No bills yet |
+| `budgets.empty` | Belum ada budget — pakai saran otomatis? | No budgets yet — use auto suggestions? |
+| `bill.match.auto` | Auto-match aktif | Auto-match active |
+| `source.debt_tag` | Debt Source | Debt Source |
+| `settings.horizon` | Perkiraan pemasukan berikutnya ~__ hari | Next income expected in ~__ days |
+| `onboarding.guide` | Buka panduan | Open guide |
 | `save` | Simpan | Save |
 | `cancel` | Batal | Cancel |
 | `retry` | Coba lagi | Retry |
@@ -331,8 +339,7 @@ Rp18.000 (Gojek, GoPay) · gajian +Rp8.500.000 (Gaji, BCA) · kos Rp750.000 (Kos
 BCA, matched Bill) · bensin Rp30.000 (Pertamina, Cash) · sepatu Rp800.000
 (SPayLater purchase — Debt Source goes more negative)
 
-**Hero figures:** Safe-to-Spend Rp2.140.000 · Runway 34 hari · Jatah harian
-Rp71.300/hari · Reserved besok: kos Rp750.000 + internet Rp320.000
+**Hero figures** (internally consistent: assets Rp8.420.000 + Rp340.000 + Rp215.500 + Rp98.000 = Rp9.073.500 available; reserved = kos Rp750.000 + internet Rp320.000 = Rp1.070.000): Safe-to-Spend **Rp8.003.500** · Runway 34 hari (trailing burn Rp235.400/hari) · Jatah harian **Rp266.800/hari** (STS ÷ 30-day horizon) · Reserved besok: kos Rp750.000 + internet Rp320.000
 
 **Needs-Review samples:** "kopi kenangan 25rb" guessed Makanan & Minuman (llm,
 low confidence) · "tokopedia 150rb" guessed Belanja (llm, low confidence)

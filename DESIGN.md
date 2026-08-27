@@ -1,7 +1,60 @@
+---
+version: alpha
+name: Paper Editorial
+description: Warm-paper personal finance dashboard for one user — cream canvas, warm ink text, semantic color rationing (teal safe / amber thin / crimson over), Inter UI voice + JetBrains Mono money voice, hairline alpha-ink borders, calm over alarm.
+colors:
+  canvas: "#f2f1ee"
+  surface: "#faf9f6"
+  surface-100: "#f7f5f1"
+  surface-200: "#efece7"
+  surface-300: "#e7e3dc"
+  sheet: "#fffefc"
+  ink: "#26231d"
+  ink-soft: "#454139"
+  muted: "#75706a"
+  ash: "#9b968e"
+  smoke: "#c3bdb4"
+  safe: "#178269"
+  warn: "#c47a12"
+  over: "#cf3f52"
+typography:
+  display:      {fontFamily: Inter, fontSize: 64px, fontWeight: 500, lineHeight: 1.05, letterSpacing: -0.03em}
+  display-lg:   {fontFamily: Inter, fontSize: 44px, fontWeight: 500, lineHeight: 1.08, letterSpacing: -0.022em}
+  heading-1:    {fontFamily: Inter, fontSize: 30px, fontWeight: 500, lineHeight: 1.15, letterSpacing: -0.018em}
+  heading-2:    {fontFamily: Inter, fontSize: 22px, fontWeight: 500, lineHeight: 1.2, letterSpacing: -0.012em}
+  subheading:   {fontFamily: Inter, fontSize: 18px, fontWeight: 500, lineHeight: 1.35, letterSpacing: -0.008em}
+  body-lg:      {fontFamily: Inter, fontSize: 17px, fontWeight: 400, lineHeight: 1.55}
+  body-md:      {fontFamily: Inter, fontSize: 15px, fontWeight: 400, lineHeight: 1.55}
+  body-sm:      {fontFamily: Inter, fontSize: 13.5px, fontWeight: 400, lineHeight: 1.5, letterSpacing: 0.005em}
+  caption:      {fontFamily: Inter, fontSize: 12px, fontWeight: 400, lineHeight: 1.4, letterSpacing: 0.01em}
+  micro:        {fontFamily: Inter, fontSize: 11px, fontWeight: 500, lineHeight: 1.3, letterSpacing: 0.06em}
+  money-xl:     {fontFamily: JetBrains Mono, fontSize: 40px, fontWeight: 450, lineHeight: 1.0, letterSpacing: -0.01em}
+  money-md:     {fontFamily: JetBrains Mono, fontSize: 15px, fontWeight: 450, lineHeight: 1.4}
+  money-sm:     {fontFamily: JetBrains Mono, fontSize: 13px, fontWeight: 450, lineHeight: 1.4}
+rounded:
+  sm: 12px
+  md: 16px
+  lg: 20px
+  xl: 24px
+  full: 9999px
+spacing:
+  xxs: 4px
+  xs: 8px
+  sm: 12px
+  md: 16px
+  lg: 20px
+  xl: 24px
+  xxl: 32px
+  xxxl: 40px
+  huge: 56px
+  band: 72px
+  section: 96px
+---
+
 # catet — Design System (DESIGN.md)
 
 > Soft-friendly personal finance. A notebook on a desk, not a trading floor.
-> Format follows the Stitch DESIGN.md specification extended to 9 sections.
+> Format follows the Stitch DESIGN.md specification extended to 9 sections. Dual themes defined together; frontmatter carries the light theme for machine parsing — dark-theme mapping lives in §2 and §10.
 
 ---
 
@@ -12,7 +65,7 @@ catet is a **personal** money tool for one human being in Indonesia. The entire 
 Two visual identities coexist by law:
 
 1. **Editorial rhythm (Overview):** one oversized Safe-to-Spend figure dominates the screen; everything else whispers. High whitespace, a single focal point, generous padding.
-2. **Ledger rhythm (Transactions, Bills):** dense, scannable rows at 44–48px with hairline separators, every amount in monospaced tabular figures aligned to the decimal.
+2. **Ledger rhythm (Transactions, Bills):** dense, scannable 46px rows with hairline separators, every amount in monospaced tabular figures aligned to the decimal.
 
 Color is rationed to *meaning only*. Teal-green means safe. Amber means thin. Crimson means over. Nothing is colored for decoration — ~97% of the interface is achromatic warm grays, which makes the moment the accent appears feel like information arriving, not branding shouting.
 
@@ -44,7 +97,7 @@ Key characteristics:
 | `--sheet` | `#fffefc` | Floating sheets only (modals, popovers, tooltips) |
 | `--safe` | `#178269` | SAFE state, positive deltas, healthy STS |
 | `--safe-wash` | `rgba(23,130,105,0.10)` | Tint backgrounds behind safe signals |
-| `--warn` | `#c47a12` | THIN state, 80–100% budgets |
+| `--warn` | `#c47a12` | THIN state, 80–99% budgets |
 | `--warn-wash` | `rgba(196,122,18,0.12)` | Tint backgrounds behind warn signals |
 | `--over` | `#cf3f52` | OVER/error state, >100% budgets |
 | `--over-wash` | `rgba(207,63,82,0.10)` | Tint backgrounds behind error |
@@ -86,10 +139,10 @@ Borders are never gray constants. They are the ink color at alpha, so they sit n
 ### Chart palette
 
 - Base series: `--ink-soft`, `--ash`
-- Income series: `--safe`; Expense series: `--over` at 80% opacity; Transfers excluded from spend math entirely
+- Income series: `--safe`. Expense series: `--over` at 80% opacity — a deliberate, documented exception to semantic rationing: routine spend renders as a quiet warning, so the anomaly markers must escalate instead to solid `--over` dots at full opacity, 6px. Transfers excluded from spend math entirely
 - Reference lines: `--safe`, dashed 4-4
 - Heatmap ramp: `canvas → surface-300 → warn-wash → warn` (zero outflow renders as pure canvas)
-- Donut slices: warm neutral ladder first (`ink-soft/muted/ash/smoke`), then safe, then warn — only if a slice needs alarming does red appear
+- Donut slices: warm neutral ladder first (`ink-soft/muted/ash/smoke`), then safe, then warn — a slice renders red only when its category is over budget (>100%).
 
 ### Quick color reference
 
@@ -131,7 +184,7 @@ Absolute rules:
 | Money MD | JetBrains Mono | 15px | 450 | 1.4 | tnum | Ledger rows, stats |
 | Money SM | JetBrains Mono | 13px | 450 | 1.4 | tnum | Compact amounts |
 
-Money formatting: Indonesian style always — `Rp2.140.000`, negative as `−Rp685.000` (true minus sign), zero decimals unless cents exist.
+Money formatting: Indonesian style always — `Rp8.003.500`, negative as `−Rp685.000` (true minus sign), zero decimals unless cents exist.
 
 ## 4. Component Stylings
 
@@ -139,7 +192,7 @@ Every component implements five states without exception: **Empty · Loading · 
 
 ### Buttons
 
-**Primary (Ink Fill)** — background `var(--ink)`, text `var(--canvas)`; radius `pill`; padding 10px 20px; Body SM weight 500. Hover: fill shifts to `color-mix(in var(--ink), var(--surface) 8%)`. Active: 98% scale. Disabled: `--surface-300` fill, `--smoke` text. Loading: inline 14px spinner replaces icon, label dims 60%, width locked.
+**Primary (Ink Fill)** — background `var(--ink)`, text `var(--canvas)`; radius `pill`; padding 10px 20px; Body SM weight 500. Hover: fill shifts to `color-mix(in srgb, var(--ink) 92%, var(--surface) 8%)`. Active: 98% scale. Disabled: `--surface-300` fill, `--smoke` text. Loading: inline 14px spinner replaces icon, label dims 60%, width locked.
 states: empty n/a · loading spinner-lock-width · success brief check-icon swap (900ms) · filled default · error shake-×2 + tooltip.
 
 **Secondary (Outline)** — transparent fill, 1px `--border-strong`, ink text. Hover: background `--surface-200`.
@@ -158,7 +211,7 @@ states: empty → centered ash-tone glyph + one-line copy + optional action link
 
 ### Inputs & Forms
 
-Wells: `--surface-200` fill, radius 12px, 1px transparent border, 12px 14px padding. Focus: 1px `--accent-focused ring` — implement as `box-shadow: 0 0 0 1px var(--border-strong)` plus outer `0 0 0 3px --safe-wash`. Placeholder `--smoke`. Validation error: border paints `--over`, message in 12px under field.
+Wells: `--surface-200` fill, radius 12px, 1px transparent border, 12px 14px padding. Focus ring: inner `box-shadow: 0 0 0 1px var(--border-strong)` plus outer `0 0 0 3px var(--safe-wash)`. Placeholder `--smoke`. Validation error: border paints `--over`, message in 12px under field with contextual copy from the product copy deck.
 - **Segmented direction control** (in/out/transfer): track `--surface-300`, thumb `--surface` sheet with hairline ring; selected segment label 500.
 - **Amount field**: always the mono voice, right-aligned, `Rp` prefix slot.
 - **Selects** render as wells with chevron; selected value never duplicates placeholder smoke color.
@@ -169,6 +222,7 @@ states: five mandatory, including per-field error with contextual copy from `doc
 
 Fixed left rail 240px, `--canvas` background, right edge 1px `--border`. Items: 36px height, 12px radius, Body SM; inactive `--muted`; hover `--surface-200`; **active = `--surface` sheet + 1px ring + ink text**. Badge counts: pill 18px, `--over-wash` fill with over-text when non-zero (Needs-Review, Hold Queue); hidden entirely when zero. Bottom of rail: user/settings cluster.
 Mobile (<768px): same IA collapses into bottom navigation — Overview, Transactions, Add (center, primary-ink circular FAB), Analytics, More.
+states: filled default · empty = zero-count badges hidden entirely · loading n/a (shell persists) · error session-expired inline strip at rail bottom.
 
 ### Ledger Row (transaction)
 
@@ -178,18 +232,22 @@ states: empty screen-level ("Belum ada transaksi…"); loading shimmer row ×8 p
 ### Progress Bars (budgets)
 
 Track 8px `--surface-300` radius-full; fill dynamic: `--safe` <80%, `--warn` 80–99%, `--over` ≥100%. Spent÷limit printed as Money SM pair beside it; threshold badge ("80%", "100%") is badge-chip, dashboard-only signal.
+states: filled default · loading skeleton track at final geometry · empty not rendered (no budget row exists) · error n/a.
 
 ### Modals, Drawers, Popovers
 
-`--sheet` background, radius 24px, ring `--border`, shadow Level 3. Scrim `rgba(28,25,19,0.32)` light / `rgba(0,0,0,0.5)` dark. Drawer slides 240ms ease-out.
+`--sheet` background, radius 24px, ring `--border`, shadow Level 3. Scrim `rgba(28,25,19,0.32)` light / `rgba(0,0,0,0.5)` dark. Drawer slides 240ms cubic-bezier(0.2, 0.8, 0.2, 1).
+states: filled default · loading content-area skeleton inside the sheet · success auto-close with brief safe-wash flash · error inline error block within sheet (never closes itself).
 
 ### Stat Block (hero cluster)
 
 Structure: Micro-label caption → Money XL figure → delta/sub-caption in caption size. Healthy STS: figure `--safe`; thin: `--warn`; negative runway: `--over`.
+states: five mandatory — empty = zero-Sources state links to onboarding; loading skeleton lines matching final heights; success n/a (live value); filled default; error last-known value + muted stale caption.
 
 ### Toasts
 
 Bottom-right floating sheet, radius 16px, Level 3 shadow, auto-dismiss 4s, one visible at a time.
+states: filled neutral variant · success variant check-glyph + safe accent edge · error variant over-tone + retry link (does not auto-dismiss).
 
 ### Empty-state pattern (product-wide)
 
@@ -209,7 +267,7 @@ Base unit **4px**; fine sub-scale 2·3·5 for icon/text micro-alignment; ladder 
 
 Desktop app shell: fixed 240px sidebar + fluid main, main content max-width 1160px with 40px gutters. Two rhythms:
 
-- **Overview rhythm:** hero block gets 72px top clearance, stat gap 24px, sections separated by 96px breathing bands using `--fog` equivalent = `--surface-100` full-bleed strips.
+- **Overview rhythm:** hero block gets 72px top clearance, stat gap 24px, sections separated by 96px breathing bands using `--surface-100` full-bleed strips.
 - **Ledger rhythm:** toolbar sticky under a 64px header; row groups separated by day-sticky headers (`--canvas` background blur); internal gaps 0 (rows touch via separators).
 
 Whitespace philosophy: emptiness is warm because the canvas is cream. Density is earned — compactness belongs to ledgers, generosity belongs to decisions. Never mix rhythms inside one viewport region.
@@ -230,9 +288,7 @@ Hierarchy = tonal layering + hairline rings. Shadows are scarce and atmospheric.
 
 Blurs are wide and opacities low — sheets feel placed, not dropped. If an element needs a Level 2+ shadow while docked, that's a layout smell: promote it to `--sheet` on `--surface` instead.
 
-Toots above must read "tooltips" conceptually — popover-class; treat equal to modals minus scrim.
-
-## 7. Interaction & Motion
+## 7. Interaction & Motion (extension)
 
 Grammar, not decoration:
 
@@ -259,9 +315,14 @@ Hover semantics: primary buttons darken fill (not brighten); rows expose actions
 
 Touch targets ≥44px under 1024px; ledger rows grow to 52px with action buttons permanently visible instead of hover-revealed. Hero figure scales 64→44→34px; stat pairs stack vertically. Tables transform: hidden columns fold into an expandable row-detail drawer rather than horizontal scroll — only chip filters may scroll horizontally. Modals become full-height sheets from the bottom. The heatmap swaps year-grid for a trailing-90-day strip.
 
-## 9. Agent Prompt Guide
+## 9. Do's and Don'ts
 
-Never place raw hex/fonts/radii inside a generation prompt when this design system is attached — refer semantically ("positive accent", "warning tone", "sheet surface"). On-screen copy is Indonesian-first from the copy deck; prompts to generators are English. Entity language law: **Source** (never account/wallet/vault). All money uses tabular mono.
+Do: cream canvas always · alpha-ink borders · semantic-only color · mono for every rupiah · pill controls vs quiet rectangles · skeletons matching final geometry · one focal point per overview screen.
+Don't: pure white/black surfaces · bold ≥600 · gray constant borders · decorative gradients/glows · colored decoration without meaning · illustration-heavy empties · push-style banners (alerts live as badges) · emoji anywhere in UI · mixing hero and ledger densities in one region · horizontal-scrolling data tables.
+
+## 10. Agent Prompt Guide
+
+Never place raw hex/fonts/radii inside a generation prompt when this design system is attached — refer semantically ("positive accent", "warning tone", "sheet surface"). On-screen copy is Indonesian-first; core strings appear inline below and in the product copy deck. Entity language law: **Source** (never account/wallet/vault). All money uses tabular mono with true minus `−`.
 
 ### Quick reference (semantic)
 
@@ -272,17 +333,12 @@ Never place raw hex/fonts/radii inside a generation prompt when this design syst
 
 ### Example component prompts
 
-1. "Hero stat block on the Overview: eyebrow micro-label 'SAFE-TO-SPEND' uppercase tracked, below it the amount Rp2.140.000 in the money monospace voice at hero size with `-Rp` negativity support, colored semantic-safe; beneath, two small paired stats 'Runway 34 hari' and 'Jatah harian Rp71.300 / hari' in body-sm."
-2. "Ledger row: 46px tall, leading 8px status dot, merchant 'Kopi Kenangan' with caption timestamp 'Hari ini · 08.14', category chip 'Makanan & Minuman', source chip 'Cash', right-aligned signed amount `-Rp25.000` in the money mono voice; 1px hairline separator below; three ghost icon actions revealed on hover after the source chip."
+1. "Hero stat block on the Overview: eyebrow micro-label 'SAFE-TO-SPEND' uppercase tracked, below it the amount `Rp8.003.500` in the money monospace voice at hero size, colored semantic-safe, negativity rendered as `−Rp…`; beneath, two small paired stats 'Runway 34 hari' and 'Jatah harian Rp266.800 / hari' in body-sm."
+2. "Ledger row: 46px tall, leading 8px status dot, merchant 'Kopi Kenangan' with caption timestamp 'Hari ini · 08.14', category chip 'Makanan & Minuman', source chip 'Cash', right-aligned signed amount `−Rp25.000` in the money mono voice; 1px hairline separator below; three ghost icon actions revealed on hover after the source chip."
 3. "Budget card: heading-sm category 'Makanan & Minuman', spent ÷ limit as `Rp1.284.000 / Rp1.500.000` money-pair, 8px rounded progress bar at 86% filled with warning tone and a small '80%' threshold badge, overflow menu top-right."
 4. "Source card for BCA: bank-type glyph, name, computed balance `Rp8.420.000` money mono right-aligned, thin balance bar beneath, overflow menu (rename · adjust balance · archive); ring-border card, no hover shadow."
 5. "Empty transactions panel: centered ash-tone inbox glyph, heading 'Belum ada transaksi', caption 'mulai catet lewat WhatsApp', ghost button 'Buka panduan'."
 6. "Confirmation dialog for delete: sheet-radius modal, heading 'Hapus \"Kopi Kenangan 25.000\"?', body caption explaining 30-day restore window, ghost 'Batal' + danger-ghost 'Hapus'; typed confirmation not shown here — outside flow."
-
-### Guardrails (Do / Don't)
-
-Do: cream canvas always · alpha-ink borders · semantic-only color · mono for every rupiah · pill controls vs quiet rectangles · skeletons matching final geometry · one focal point per overview screen.
-Don't: pure white/black surfaces · bold ≥600 · gray constant borders · decorative gradients/glows · colored decoration without meaning · illustration-heavy empties · push-style banners (alerts live as badges) · emoji anywhere in UI · mixing hero and ledger densities in one region · horizontal-scrolling data tables.
 
 ### Theme handoff for generators
 
