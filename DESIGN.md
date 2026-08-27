@@ -8,7 +8,21 @@
 
 **Two rhythms.** Hero/overview breathes (one focal point per screen); the transaction feed is dense and scannable. Editorial above, ledger below.
 
-## 2. Design Tokens
+## 2. Component States (mandatory)
+
+Every component must declare a deliberate layout variant for each of these 5 states. Stitch must never guess a component's state.
+
+| State | Requirement |
+|---|---|
+| **Empty** | clean placeholder when zero records / no data |
+| **Loading** | shimmer / skeleton / progress, preserving layout box |
+| **Success** | micro-interaction, confirmation flag, completed template |
+| **Filled** | normal populated view with complete contract data |
+| **Error** | inline or modal warning with contextual message |
+
+Each screen/component spec carries a `states:` block enumerating these five, so the generator renders the right variant per condition.
+
+## 3. Design Tokens
 
 ### Color — warm paper
 
@@ -64,11 +78,27 @@
 
 Hairline borders over drop shadows. Elevation = surface-tone progression, not glow. Only floating artifacts (modals, popovers) earn real shadow.
 
-## 3. The Hero (Overview)
+## 4. Data Contracts (mandatory)
+
+Every screen declares an explicit input/output shape so Stitch wires data without guessing. Prose is not a contract.
+
+```
+Screen: Overview
+input:  { sources: Source[], period: Period }
+output: { safeToSpend: Amount, runwayDays: number, dailyAllowance: Amount }
+
+Screen: TransactionFeed
+input:  { filter: Filter, cursor: Cursor }
+output: { transactions: Transaction[], nextCursor: Cursor }
+```
+
+Each entity carries provenance (`origin`, `category_source`) and a `review_status`, mirroring the fail-closed gate (ADR-0003).
+
+## 5. The Hero (Overview)
 
 One number dominates: **Safe-to-Spend**, display scale, teal when healthy / amber when thin. Beneath it: runway-in-days + daily allowance. A horizontal teal reference line over a 4-week spend timeline shows whether today is above or below the safe line.
 
-## 4. Screens
+## 6. Screens
 
 1. **Overview** — hero + reference-line timeline + today's reserved + this-week glance
 2. **Transactions** — compact feed, inline edit, filters, soft-delete/restore
@@ -81,6 +111,13 @@ One number dominates: **Safe-to-Spend**, display scale, teal when healthy / ambe
 9. **Hold Queue** — drafts + parked actions
 10. **Settings** — auth, provider config, tags
 
-## 5. Distinct from letpai
+## 7. Validation & Decoupling (mandatory)
+
+- **Validation skills** — validate generated output against the contract before committing (syntax, token consistency, data shape).
+- **Decoupling** — separate data from layout; mock data files feed components so the generator can swap data without touching layout.
+
+Mirror the stitch-skills repo convention: `examples/` for gold-standard syntactically-valid references, `resources/` for checklists & style guides.
+
+## 8. Distinct from letpai
 
 No coral-red, no Space Grotesk, no brutalist edges. catet is its own quiet, trustworthy brand — warm paper, teal signal, editorial calm.
