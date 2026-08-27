@@ -23,6 +23,10 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
 - Never append hex codes, font names, or radii to a prompt — the attached design
   system owns all tokens. If JetBrains Mono money figures come out wrong, fix by
   strengthening the DS attachment, not by injecting font names into prompts.
+- **Data discipline:** every paste block ends with a `SAMPLE DATA` tail. These are
+  the ONLY records the screen may show — no invented merchants, balances, or other
+  filler. Figures are internally consistent across screens (assets total
+  Rp9.073.500, reserved tomorrow Rp1.070.000, Safe-to-Spend Rp8.003.500).
 
 ---
 
@@ -54,6 +58,12 @@ INTERACTIONS: hero stat tooltips explaining formula; chart hover shows day detai
 sidebar navigation; "Lihat semua" navigates to Transactions.
 STATES: empty ("Belum ada transaksi. Mulai catet lewat WhatsApp."), loading
 (skeleton hero + shimmer bars on chart), error (inline banner with retry).
+SAMPLE DATA: hero figures Safe-to-Spend Rp8.003.500 (healthy teal) · Runway 34
+hari · Jatah harian Rp266.800 / hari. Tereservasi besok list: Kos Rp750.000 ·
+Internet Rp320.000. Minggu ini glance: spend Rp612.000 · top category Makanan &
+Minuman · 2 belum kategori. Recent 5 rows: Kopi Kenangan −Rp25.000 (Cash) · Gojek
+−Rp18.000 (GoPay) · Indomaret −Rp45.000 (Cash) · Gaji +Rp8.500.000 (BCA) ·
+Pertamina −Rp30.000 (Cash); first row timestamped "Hari ini · 08.14".
 ```
 
 Checkpoint: hero figure renders monospaced/tabular and huge · stat label is
@@ -85,6 +95,12 @@ Source select, direction, category, merchant, note, date, tags, reversal link,
 adjustment entry, and edit history; delete asks named confirmation; keyboard
 focus visible throughout.
 STATES: empty, loading skeleton rows, filled, error banner, restore bin empty state.
+SAMPLE DATA: rows in day groups — Hari ini: Kopi Kenangan −Rp25.000 (Makanan &
+Minuman, Cash) · Gojek −Rp18.000 (Transportasi, GoPay). Kemarin: Gaji
++Rp8.500.000 (Gaji, BCA) · Indomaret −Rp45.000 (Belanja, Cash) · Pertamina
+−Rp30.000 (Transportasi, Cash). Sebelumnya: Tokopedia −Rp150.000 (Belanja,
+SPayLater — needs-review warning dot) · Laundry Kilat −Rp20.000 (Kos, Cash) ·
+Kos −Rp750.000 (Kos, BCA, matched bill chip).
 ```
 
 Checkpoint: rows are hairline-separated (never boxed cards) · consistent row
@@ -114,6 +130,11 @@ explainer; archived sources collapse into a muted section; every destructive
 action names the record being changed.
 STATES: no-sources onboarding empty state pointing at first-run setup, loading,
 filled, error.
+SAMPLE DATA: cards — BCA Rp8.420.000 (bank) · Cash Rp340.000 (cash) · GoPay
+Rp215.500 (ewallet) · ShopeePay Rp98.000 (ewallet) · SPayLater −Rp1.240.000
+(Debt Source tag, danger tone) · Kredivo −Rp685.000 (Debt Source tag). Summary
+strip: total available Rp9.073.500 · debt exposure Rp1.925.000 in danger tone.
+Transfer wizard example line: "BCA −Rp500.000 → GoPay +Rp500.000".
 ```
 
 Checkpoint: negative balances carry danger-tone TEXT variant plus "Debt Source"
@@ -143,6 +164,10 @@ INTERACTIONS: drag handles for re-parenting; merge/split previews counts before
 committing; retroactive recategorization shows progress then success toast.
 STATES: empty tree with starter suggestions, loading, filled, error, merge
 confirmation state.
+SAMPLE DATA: tree — Makanan & Minuman (essential; children: Kopi 142 tx ·
+Warung 89 tx) · Transportasi (essential, 203) · Kos (essential, 58) · Tagihan
+(essential, 41) · Hiburan (77) · Belanja (66) · Gaji — income (12). Merge modal
+example: merging "Warung" into "Makanan & Minuman" affects 89 transaksi.
 ```
 
 Checkpoint: essential toggle uses the safe accent as a FILL/state, toggle labels
@@ -169,6 +194,10 @@ INTERACTIONS: calendar month paging; marking paid confirms with the named bill;
 inactive bills render muted and stop feeding reservations.
 STATES: empty ("Belum ada tagihan"), loading, filled, error, paid-state success
 micro-interaction.
+SAMPLE DATA: bill rows — Kos (bulanan, tgl 1, Rp700.000–750.000, BCA) ·
+Internet (bulanan, tgl 5, Rp300.000–320.000, BCA) · Spotify (bulanan, tgl 15,
+Rp54.999, GoPay). Calendar sample: dots on tgl 1 and 5 sized by amount; today
+highlights mid-month.
 ```
 
 Checkpoint: day detail is a side panel (not stacked modals) · inactive bills mute
@@ -194,6 +223,10 @@ INTERACTIONS: inline editing of budget amounts; rollover toggle per budget;
 threshold states are badges on this screen only — no notifications anywhere.
 STATES: empty ("Belum ada budget — pakai saran otomatis?"), loading, filled,
 error.
+SAMPLE DATA: budget cards — Makanan & Minuman Rp1.284.000 / Rp1.500.000 (86%,
+warning bar + "80%" badge) · Transportasi Rp310.000 / Rp600.000 (52%, safe
+bar) · Kos Rp750.000 / Rp750.000 (100%, danger bar + "100%" badge). Suggestion
+strip example: "Hiburan — saran bulan depan Rp350.000" with "Pakai saran".
 ```
 
 Checkpoint: progress fill colors are the raw accents; threshold BADGE labels use
@@ -229,6 +262,11 @@ INTERACTIONS: cross-filtering from donut slices into Transactions; tooltips on
 all series; period switch refetches series.
 STATES: empty ("Data masih tipis. Catet dulu beberapa hari."), loading skeletons
 per chart tile, filled, error tile with retry.
+SAMPLE DATA: period Agustus 2026. Top merchants: Indomaret Rp612.000 · Kopi
+Kenangan Rp340.000 · Gojek Rp285.000 · Pertamina Rp180.000. Donut: Makanan &
+Minuman Rp780.000 · Transportasi Rp420.000 · Belanja Rp305.000 · Kos Rp750.000
+· Hiburan Rp480.000 (over-budget slice in danger tone only). Heatmap: anomaly
+badges on tgl 9 and tgl 17. Essential-vs-Lifestyle split 62% / 38%.
 ```
 
 Checkpoint: gridlines horizontal-only dashed hairlines · currency ticks mono ·
@@ -261,6 +299,11 @@ INTERACTIONS: bulk-fix repeated merchants ("Terapkan ke 6 transaksi serupa");
 resolving updates counter instantly.
 STATES: clean-empty ("Semua beres, tidak ada yang menunggu."), loading, filled,
 error.
+SAMPLE DATA: header "2 transaksi belum yakin kategori minggu ini". Rows —
+"kopi kenangan 25rb" (−Rp25.000, Cash; guess Makanan & Minuman) with
+alternatives Hiburan · Belanja · Tagihan · "tokopedia 150rb" (−Rp150.000,
+SPayLater; guess Belanja) with alternatives Hiburan · Tagihan · Kos. Bulk-fix
+affordance example: "Terapkan ke 6 transaksi serupa".
 ```
 
 Checkpoint: queue rows reuse the calibrated ledger-row DNA · picker shows guess +
@@ -287,6 +330,14 @@ PAGE STRUCTURE:
 INTERACTIONS: resolving a draft turns its card green then archives it; rejecting
 asks nothing further — instant.
 STATES: empty queue, loading, filled, error.
+SAMPLE DATA: Draft tab — card one: raw message "kopi 25k bayar 50k", extracted
+amounts Rp25.000 + Rp50.000 with role field unresolved (outlined warning), bot
+question "Mana yang dibayar, kopi atau bayar 50k?", inline resolution inputs;
+card two: raw message "pindah 500k", amount resolved, destination Source
+unresolved, question "Pindah ke Source mana?", destination picker input.
+Confirmation tab — intent card: "Hapus 'Kopi Kenangan −Rp25.000'?" with caption
+"Bisa dipulihkan 30 hari" and Setujui / Tolak; intent card: "Pindah Rp500.000
+dari BCA ke GoPay?" with Setujui / Tolak.
 ```
 
 Checkpoint: intent cards NAME the exact record ("Hapus 'Kopi Kenangan 25.000'?")
@@ -314,6 +365,13 @@ PAGE STRUCTURE:
 INTERACTIONS: every save gives inline success confirmation; masked secrets
 reveal-on-demand only; test-connection shows provider latency result inline.
 STATES: per-section empty/loading/filled/error.
+SAMPLE DATA: Autentikasi — passkey "Pixel 8" last used "Hari ini · 08.02",
+button "Tambah passkey". Model — Vision model "gemini-3.1-flash-lite", Text
+model "gpt-4o-mini", API key "••••••••••••3f9a" with reveal affordance, button
+"Tes koneksi". Tagihan & reservasi — horizon setter showing "~30 hari". Tag —
+rows trip:bali · social · impulsive. Data — backup status "Berhasil · 02.00",
+"Ekspor CSV" ghost button, danger zone "Matikan catet…" behind typed
+confirmation.
 ```
 
 Checkpoint: masked keys stay masked · every save confirms inline · danger zone
