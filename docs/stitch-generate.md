@@ -6,8 +6,10 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
 
 ## Setup (once)
 
-1. Project: **catet — Paper Editorial** (`projects/3273051753027894302`).
-   Delete any stray uploaded "DESIGN.md" screen stub inside it first.
+1. Project: **catet — Paper Editorial v2** (`projects/8388192028915929441`) —
+   created fresh so no screen inherits conventions from earlier generations.
+   Two older projects are now obsolete ("catet — Paper Editorial" and the
+   original contaminated one); delete both from the Stitch dashboard when convenient.
 2. Attach the design system built from `/home/glenn/projects/catet/DESIGN.md`.
 3. If the UI asks for a brand/primary color while parsing: enter `#178269`.
 4. Sanity-check the parsed theme shows canvas `#f2f1ee`, ink `#26231d`,
@@ -27,6 +29,10 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
   the ONLY records the screen may show — no invented merchants, balances, or other
   filler. Figures are internally consistent across screens (assets total
   Rp9.073.500, reserved tomorrow Rp1.070.000, Safe-to-Spend Rp8.003.500).
+- **Self-contained prompts:** every block opens with an identical `APP CONTEXT`
+  paragraph on purpose — each generation runs in isolation inside Stitch, so the
+  product's identity travels with its prompt. Paste blocks whole; do not trim
+  the context even though it repeats.
 
 ---
 
@@ -36,7 +42,19 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
 
 ```
 PLATFORM: Desktop web application
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
 PURPOSE: Hero glance — one number answers "how much can I safely spend today".
+The user should leave knowing whether today is a spend-carefully or
+spend-freely day, in one glance, without reading anything else.
 
 PAGE STRUCTURE:
 1. App shell: left sidebar navigation, active item "Overview"; Needs-Review and
@@ -74,7 +92,19 @@ amounts are mono right-aligned · no gradients/glow/purple anywhere.
 
 ```
 PLATFORM: Desktop web application
-PURPOSE: Compact, scannable ledger feed — the densest screen in the app.
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
+PURPOSE: Compact, scannable ledger feed — the densest screen in the app. This
+is the weekly-review workhorse: find a row, fix its category, move on. Density
+and speed beat decoration here.
 
 PAGE STRUCTURE:
 1. App shell, active "Transactions".
@@ -111,7 +141,19 @@ is ink-fill pill.
 
 ```
 PLATFORM: Desktop web application
-PURPOSE: Places money lives, balances, and movements between them.
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
+PURPOSE: Places money lives, balances, and movements between them. Debt
+visibility is the emotional core of this screen: two negative paylater balances
+exist in the sample on purpose, rendered as information not shame.
 
 PAGE STRUCTURE:
 1. App shell, active "Sources".
@@ -148,7 +190,19 @@ tag · cards are ring-only (no hover shadow lift) · balances mono right-aligned
 
 ```
 PLATFORM: Desktop web application
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
 PURPOSE: Hierarchy editor with essential flags and safe restructuring.
+Restructuring must always preview its blast radius (affected transactions)
+before committing.
 
 PAGE STRUCTURE:
 1. App shell, active "Categories".
@@ -177,7 +231,18 @@ stay readable · merge modal demands typed confirmation · counts in tabular dig
 
 ```
 PLATFORM: Desktop web application
-PURPOSE: Expected obligations feeding reservations and the due calendar.
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
+PURPOSE: Expected obligations feeding reservations and the due calendar. A
+glance answers: what is due, when, and from which Source it will be paid.
 
 PAGE STRUCTURE:
 1. App shell, active "Bills & Calendar".
@@ -207,7 +272,18 @@ without disappearing · "Tandai lunas" success reads as a single calm wash.
 
 ```
 PLATFORM: Desktop web application
-PURPOSE: Per-category monthly limits with threshold badges — pull-only, never pushy.
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
+PURPOSE: Per-category monthly limits with threshold badges — pull-only, never
+pushy. Badges inform at a glance; nothing nags, pings, or pushes here.
 
 PAGE STRUCTURE:
 1. App shell, active "Budgets".
@@ -241,8 +317,18 @@ chrome anywhere.
 
 ```
 PLATFORM: Desktop web application
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
 PURPOSE: Deep charts — breakdown, patterns, anomalies. Editorial spacing above,
-dense charts below.
+dense charts below. Pattern-finding without dashboard fatigue.
 
 PAGE STRUCTURE:
 1. App shell, active "Analytics".
@@ -282,8 +368,18 @@ small solid danger dots.
 
 ```
 PLATFORM: Desktop web application
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
 PURPOSE: The weekly ritual's queue — low-category-confidence transactions awaiting
-a one-click fix.
+a one-click fix. Clearing the queue is a small quiet win, not a celebration.
 
 PAGE STRUCTURE:
 1. App shell, active "Needs-Review" with count badge.
@@ -314,8 +410,19 @@ alternatives without dropdown clutter · completion confirmation stays quiet
 
 ```
 PLATFORM: Desktop web application
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
 PURPOSE: Drafts parked by the fail-closed gate + chat actions awaiting named
-confirmation. Same confirmations resolvable here as in WhatsApp.
+confirmation. Same confirmations resolvable here as in WhatsApp chat — this is
+the web twin of the bot's confirmation flow, not a separate system.
 
 PAGE STRUCTURE:
 1. App shell, active "Hold Queue" with count badge.
@@ -348,7 +455,18 @@ colored destructively except Reject-as-danger-ghost where shown.
 
 ```
 PLATFORM: Desktop web application
-PURPOSE: Auth, provider config, tags, and planning inputs. Quiet utility styling.
+APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
+Indonesia. They log daily spending through a WhatsApp bot and manage everything
+on this desktop dashboard. Amounts are Indonesian Rupiah formatted like
+Rp8.003.500; UI copy is Bahasa Indonesia. Shared vocabulary: "Source" = any
+place money lives (bank / cash / e-wallet — never say account or wallet);
+needs-review = a written transaction whose category is a low-confidence guess
+awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
+confirmed by name. Two page densities coexist: calm spacious overview pages
+with ONE focal figure vs dense scannable ledger pages — never blend them in
+one region.
+PURPOSE: Auth, provider config, tags, and planning inputs. Quiet utility styling
+— read more than changed, every save confirms inline, secrets stay masked.
 
 PAGE STRUCTURE:
 1. App shell, active "Settings".
