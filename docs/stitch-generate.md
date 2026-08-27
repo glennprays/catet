@@ -52,6 +52,16 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
+ANCHOR: this is the FIRST screen of the set; everything established here (app
+shell, spacing rhythm, component styling) becomes the visual reference the nine
+screens generated after you will follow.
 PURPOSE: Hero glance — one number answers "how much can I safely spend today".
 The user should leave knowing whether today is a spend-carefully or
 spend-freely day, in one glance, without reading anything else.
@@ -102,6 +112,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Compact, scannable ledger feed — the densest screen in the app. This
 is the weekly-review workhorse: find a row, fix its category, move on. Density
 and speed beat decoration here.
@@ -151,6 +168,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Places money lives, balances, and movements between them. Debt
 visibility is the emotional core of this screen: two negative paylater balances
 exist in the sample on purpose, rendered as information not shame.
@@ -200,6 +224,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Hierarchy editor with essential flags and safe restructuring.
 Restructuring must always preview its blast radius (affected transactions)
 before committing.
@@ -241,6 +272,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Expected obligations feeding reservations and the due calendar. A
 glance answers: what is due, when, and from which Source it will be paid.
 
@@ -282,6 +320,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Per-category monthly limits with threshold badges — pull-only, never
 pushy. Badges inform at a glance; nothing nags, pings, or pushes here.
 
@@ -327,6 +372,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Deep charts — breakdown, patterns, anomalies. Editorial spacing above,
 dense charts below. Pattern-finding without dashboard fatigue.
 
@@ -378,6 +430,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: The weekly ritual's queue — low-category-confidence transactions awaiting
 a one-click fix. Clearing the queue is a small quiet win, not a celebration.
 
@@ -420,6 +479,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Drafts parked by the fail-closed gate + chat actions awaiting named
 confirmation. Same confirmations resolvable here as in WhatsApp chat — this is
 the web twin of the bot's confirmation flow, not a separate system.
@@ -465,6 +531,13 @@ awaiting one-click fix; Hold Queue = drafted actions parked until explicitly
 confirmed by name. Two page densities coexist: calm spacious overview pages
 with ONE focal figure vs dense scannable ledger pages — never blend them in
 one region.
+SHELL: fixed left sidebar (240px), items in exactly this order — Overview ·
+Transactions · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Needs-Review · Hold Queue · Settings; active item highlighted; Needs-Review and
+Hold Queue carry small count badges (hidden when zero). Mobile: bottom nav
+Overview · Transactions · Add (center) · Analytics · More.
+ROADMAP: this app consists of exactly these 10 screens; no other sections or
+nav destinations should be invented.
 PURPOSE: Auth, provider config, tags, and planning inputs. Quiet utility styling
 — read more than changed, every save confirms inline, secrets stay masked.
 
