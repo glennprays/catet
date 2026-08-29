@@ -44,7 +44,7 @@ spacing:
   lg: 20px
   xl: 24px
   xxl: 32px
-  section: 48px
+  section: 24px
 ---
 
 # catet — Design System (DESIGN.md)
@@ -79,6 +79,9 @@ Key characteristics:
 - Weight ceiling 500 — hierarchy from size × spacing × color, never bold
 - Tight geometry: wells 8px, cards 12px cap, pills reserved for primary buttons
 - Depth via tonal layering + hairline rings; wide shadows only for floating sheets
+- App-like density, **quantified**: page padding ≤24px, section gaps ≤24px, card
+  padding 12–16px, ledger rows 36px, rail rows 32px. Modules fill the viewport;
+  whitespace groups, it never stretches
 
 ## 2. Color Palette & Roles (light only)
 
@@ -200,7 +203,7 @@ pop-scale on filter apply · error n/a.
 
 ### Cards
 
-Background `--surface`, radius **12px**, padding 16px, 1px `--border` ring.
+Background `--surface`, radius **12px**, padding 12–16px, 1px `--border` ring.
 Hover (interactive only): ring → `--border-strong`; **no shadow lift**. Prefer
 hairline-separated tables on the canvas over cards wherever a list will do.
 states: empty → ash glyph + one line + optional action; loading → skeleton
@@ -234,7 +237,7 @@ a **money view**, not a feature list:
    Source" tag — SPayLater −Rp1.240.000 · Kredivo −Rp685.000.
 4. Pinned footer: "Total tersedia" Rp9.073.500 · "Utang" Rp1.925.000 in
    `--over-text`, separated by a hairline.
-5. Divider, then "Kelola" group (Micro-label) → screen links at 36px height:
+5. Divider, then "Kelola" group (Micro-label) → screen links at 32px height:
    Overview · Transactions · Categories · Bills & Calendar · Budgets ·
    Analytics · Needs-Review · Hold Queue · Settings. Active = `--surface` sheet
    + 1px ring + ink text. Needs-Review / Hold Queue carry pill badges
@@ -256,9 +259,19 @@ states: empty = zero-Sources links onboarding; loading skeleton lines at final
 heights; success n/a (live); filled default; error last-known value + muted
 stale caption.
 
+### Quick-Actions Grid (overview)
+
+Six icon tiles in one row (6-up desktop, 3×2 mobile): Tambah · Transfer · Bayar
+tagihan · Perbaiki kategori · Rekap mingguan · Lihat semua. Tile = 48px glyph in
+a `--surface-200` square (radius 12px) + caption label beneath; hover ring
+`--border-strong`; the whole tile is one ≥44px hit target. These are catet-domain
+actions (logging/transfers/reviews), never payment rails.
+states: loading skeleton tiles · filled default · empty n/a (static affordances)
+· error n/a.
+
 ### Ledger Row (transaction)
 
-Height **40px**, grid: [status dot 8px] [merchant + timestamp stack] [category
+Height **36px**, grid: [status dot 8px] [merchant + timestamp stack] [category
 chip] [source chip] [signed Figure MD right-aligned]. Separators 1px `--border`
 between rows only — never boxed cards. Needs-review dot `--warn`; clean `--ash`
 40%; reversed = strike-through + linked-reversal chip. Trailing actions (edit,
@@ -312,16 +325,17 @@ rows, never color boxes larger than 8px.
 
 ## 5. Layout Principles
 
-Base unit **4px**; ladder 8·12·16·20·24·32·48. No oversized breathing bands —
-the largest standard gap is `section` at 48px.
+Base unit **4px**; ladder 8·12·16·20·24·32. The largest standard gap is
+`section` at **24px** — density is quantified, not vibes.
 
 Desktop app shell: fixed 240px accounts rail + fluid main, content max-width
-1160px, 32px gutters. One compact rhythm governs all screens:
+1160px, 24px gutters. One compact rhythm governs all screens:
 
-- Stat strip at top (Overview), then content flows directly — no 72px clearance.
+- Stat strip + quick-actions grid at top (Overview), then content flows
+  directly — sections separated by at most 24px.
 - Ledger screens: sticky toolbar under a 56px header; day-sticky headers
   (`--canvas` background blur); rows touch via separators (0 internal gaps).
-- Section separation: `section` (48px) max; related items group at `md`–`xl`.
+- Section separation: `section` (24px) max; related items group at `md`–`xl`.
 
 Density is the default; generosity is earned only where a decision needs it.
 
@@ -432,3 +446,28 @@ single sans voice.
 6. "Confirmation dialog for delete: sheet-radius modal, heading 'Hapus \"Kopi
    Kenangan 25.000\"?', caption explaining 30-day restore window, ghost 'Batal'
    + danger-ghost 'Hapus'; typed confirmation lives elsewhere in the flow."
+7. "Quick-actions grid under the stat strip: six tiles in one row — Tambah ·
+   Transfer · Bayar tagihan · Perbaiki kategori · Rekap mingguan · Lihat semua —
+   each a 48px glyph in a 12px-radius surface tile with a caption label beneath."
+
+## 11. Implementation Foundation (build-time mapping)
+
+The Next.js frontend adopts **shadcn/ui ("new-york") + Tremor data blocks** as
+its component foundation. Generator prompts never mention these names; this
+section binds our tokens to the codebase so design and build never fork:
+
+| Paper Ledger token | shadcn variable |
+|---|---|
+| `--canvas` | `--background` |
+| `--surface` | `--card` |
+| `--ink` | `--foreground` + `--primary` (ink-fill buttons) |
+| `--ink-soft` / `--muted` | `--accent-foreground` / `--muted-foreground` |
+| `--surface-200` | `--secondary` / `--muted` |
+| `--smoke` | placeholder color |
+| `--over` | `--destructive` |
+| radii 8 / 12 / 16 | `--radius` + derived `sm / md / lg` |
+| Hanken Grotesk | `--font-sans` |
+
+Adaptation laws: shadcn default zinc borders → **alpha-ink borders**; neutral
+gray text → warm ink ladder; the semantic `-text` variant law overlays all
+Tailwind color classes; charts remain **ECharts** per AGENTS.md (not Recharts).

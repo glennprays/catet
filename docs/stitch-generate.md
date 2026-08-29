@@ -52,7 +52,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -82,13 +84,16 @@ PAGE STRUCTURE:
    the figure Rp8.003.500 at ~40px (safe-text teal when healthy, amber when thin),
    with inline caption stats to its right: Runway 34 hari · Jatah harian
    Rp266.800 / hari · Tereservasi besok Rp1.070.000. Hairline rule underneath.
-3. Reference-line chart card: 4-week daily-spend bar timeline with a flat horizontal
+3. Quick-actions grid: six icon tiles in one row — Tambah · Transfer · Bayar
+   tagihan · Perbaiki kategori · Rekap mingguan · Lihat semua — each a 48px
+   glyph in a 12px-radius surface tile with a caption label beneath.
+4. Reference-line chart card: 4-week daily-spend bar timeline with a flat horizontal
    positive-accent line marking today's Safe-to-Spend; caption explains days above
    vs below the line.
-4. Two-column row: card "Tereservasi besok" listing tomorrow's reserved bills
+5. Two-column row: card "Tereservasi besok" listing tomorrow's reserved bills
    (name, amount); card "Minggu ini" mini-glance (spend total, top category,
    uncategorized count).
-5. Recent transactions preview (last 5 rows): icon, merchant, source chip, signed
+6. Recent transactions preview (last 5 rows): icon, merchant, source chip, signed
    amount right-aligned; link "Lihat semua →" to Transactions.
 
 INTERACTIONS: hero stat tooltips explaining formula; chart hover shows day detail;
@@ -104,9 +109,10 @@ Pertamina −Rp30.000 (Cash); first row timestamped "Hari ini · 08.14".
 ```
 
 Checkpoint: stat strip is compact with ~40px figure in tabular sans (never
-monospace) · no hero card or oversized whitespace · accounts rail shows
-balances grouped Aset/Utang with totals footer · page background warm cream ·
-preview amounts tabular right-aligned · no gradients/glow/purple anywhere.
+monospace) · quick-actions grid of 6 tiles present · dense page — sections
+≤24px apart, no oversized whitespace · accounts rail shows balances grouped
+Aset/Utang with totals footer · page background warm cream · preview amounts
+tabular right-aligned · no gradients/glow/purple anywhere.
 
 ### Screen 2 · Transactions
 
@@ -121,7 +127,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -185,7 +193,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -249,7 +259,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -305,7 +317,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -361,7 +375,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -421,7 +437,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -487,7 +505,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -544,7 +564,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
@@ -604,7 +626,9 @@ whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
 drafted actions parked until confirmed by name. Design system: compact,
 data-first, Wise-like clarity on a warm paper palette — dense tables sit
 directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace).
+sans face as text with tabular figures (never monospace). Density is app-like
+and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
+ledger rows 36px — fill the viewport with modules; whitespace never stretches.
 DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
 SAMPLE DATA below — inventing or altering any value fails the generation.
 SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
