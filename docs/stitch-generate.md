@@ -34,6 +34,10 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
   ingredients — the attached design system owns component specs, radii, and
   rhythm. Never re-dictate pixels, fonts, or exact orderings in a prompt;
   requirements are the *what*, the generator owns the *how*.
+- **Role + validation framing:** every block opens by casting the generator as
+  an expert front-end design agent bound to the design system (anti-drift), and
+  closes with a self-validation requirement — the model checks its own render
+  against the DS and the data before finishing.
 - **Self-contained prompts:** every block opens with an identical context
   header on purpose — each generation runs in isolation inside Stitch, so the
   product's identity travels with its prompt. Paste blocks whole.
@@ -46,6 +50,9 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -89,6 +96,9 @@ INTERACTIONS: hero stat tooltips explaining formula; chart hover shows day detai
 sidebar navigation; "Lihat semua" navigates to Transactions.
 STATES: empty ("Belum ada transaksi. Mulai catet lewat WhatsApp."), loading
 (skeleton hero + shimmer bars on chart), error (inline banner with retry).
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: hero figures Safe-to-Spend Rp8.003.500 (healthy teal) · Runway 34
 hari · Jatah harian Rp266.800 / hari. Tereservasi besok list: Kos Rp750.000 ·
 Internet Rp320.000. Minggu ini glance: spend Rp612.000 · top category Makanan &
@@ -107,6 +117,9 @@ tabular right-aligned · no gradients/glow/purple anywhere.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -150,6 +163,9 @@ Source select, direction, category, merchant, note, date, tags, reversal link,
 adjustment entry, and edit history; delete asks named confirmation; keyboard
 focus visible throughout.
 STATES: empty, loading skeleton rows, filled, error banner, restore bin empty state.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: rows in day groups — Hari ini: Kopi Kenangan −Rp25.000 (Makanan &
 Minuman, Cash) · Gojek −Rp18.000 (Transportasi, GoPay). Kemarin: Gaji
 +Rp8.500.000 (Gaji, BCA) · Indomaret −Rp45.000 (Belanja, Cash) · Pertamina
@@ -166,6 +182,9 @@ is ink-fill pill.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -207,6 +226,9 @@ explainer; archived sources collapse into a muted section; every destructive
 action names the record being changed.
 STATES: no-sources onboarding empty state pointing at first-run setup, loading,
 filled, error.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: cards — BCA Rp8.420.000 (bank) · Cash Rp340.000 (cash) · GoPay
 Rp215.500 (ewallet) · ShopeePay Rp98.000 (ewallet) · SPayLater −Rp1.240.000
 (Debt Source tag, danger tone) · Kredivo −Rp685.000 (Debt Source tag). Summary
@@ -225,6 +247,9 @@ tag · cards are ring-only (no hover shadow lift) · balances tabular right-alig
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -263,6 +288,9 @@ INTERACTIONS: drag handles for re-parenting; merge/split previews counts before
 committing; retroactive recategorization shows progress then success toast.
 STATES: empty tree with starter suggestions, loading, filled, error, merge
 confirmation state.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: tree — Makanan & Minuman (essential; children: Kopi 142 tx ·
 Warung 89 tx) · Transportasi (essential, 203) · Kos (essential, 58) · Tagihan
 (essential, 41) · Hiburan (77) · Belanja (66) · Gaji — income (12). Merge modal
@@ -276,6 +304,9 @@ stay readable · merge modal demands typed confirmation · counts in tabular dig
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -314,6 +345,9 @@ INTERACTIONS: calendar month paging; marking paid confirms with the named bill;
 inactive bills render muted and stop feeding reservations.
 STATES: empty ("Belum ada tagihan"), loading, filled, error, paid-state success
 micro-interaction.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: bill rows — Kos (bulanan, tgl 1, Rp700.000–750.000, BCA) ·
 Internet (bulanan, tgl 5, Rp300.000–320.000, BCA) · Spotify (bulanan, tgl 15,
 Rp54.999, GoPay). Calendar sample: dots on tgl 1 and 5 sized by amount; today
@@ -327,6 +361,9 @@ without disappearing · "Tandai lunas" success reads as a single calm wash.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -364,6 +401,9 @@ INTERACTIONS: inline editing of budget amounts; rollover toggle per budget;
 threshold states are badges on this screen only — no notifications anywhere.
 STATES: empty ("Belum ada budget — pakai saran otomatis?"), loading, filled,
 error.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: budget cards — Makanan & Minuman Rp1.284.000 / Rp1.500.000 (86%,
 warning bar + "80%" badge) · Transportasi Rp310.000 / Rp600.000 (52%, safe
 bar) · Kos Rp750.000 / Rp750.000 (100%, danger bar + "100%" badge). Suggestion
@@ -382,6 +422,9 @@ chrome anywhere.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -423,6 +466,9 @@ INTERACTIONS: cross-filtering from donut slices into Transactions; tooltips on
 all series; period switch refetches series.
 STATES: empty ("Data masih tipis. Catet dulu beberapa hari."), loading skeletons
 per chart tile, filled, error tile with retry.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: period Agustus 2026. Top merchants: Indomaret Rp612.000 · Kopi
 Kenangan Rp340.000 · Gojek Rp285.000 · Pertamina Rp180.000. Donut: Makanan &
 Minuman Rp780.000 · Transportasi Rp420.000 · Belanja Rp305.000 · Kos Rp750.000
@@ -443,6 +489,9 @@ small solid danger dots.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -480,6 +529,9 @@ INTERACTIONS: bulk-fix repeated merchants ("Terapkan ke 6 transaksi serupa");
 resolving updates counter instantly.
 STATES: clean-empty ("Semua beres, tidak ada yang menunggu."), loading, filled,
 error.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: header "2 transaksi belum yakin kategori minggu ini". Rows —
 "kopi kenangan 25rb" (−Rp25.000, Cash; guess Makanan & Minuman) with
 alternatives Hiburan · Belanja · Tagihan · "tokopedia 150rb" (−Rp150.000,
@@ -495,6 +547,9 @@ alternatives without dropdown clutter · completion confirmation stays quiet
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -532,6 +587,9 @@ MODULES (required — arrange per the design system's rhythm):
 INTERACTIONS: resolving a draft turns its card green then archives it; rejecting
 asks nothing further — instant.
 STATES: empty queue, loading, filled, error.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: Draft tab — card one: raw message "kopi 25k bayar 50k", extracted
 amounts Rp25.000 + Rp50.000 with role field unresolved (outlined warning), bot
 question "Mana yang dibayar, kopi atau bayar 50k?", inline resolution inputs;
@@ -550,6 +608,9 @@ colored destructively except Reject-as-danger-ghost where shown.
 
 ```
 PLATFORM: Desktop web application
+ROLE: You are an expert front-end design agent. The attached design system is
+the single source of visual truth — treat it as binding spec, never drift into
+random layouts, generic padding, default palettes, or off-system type.
 APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
 Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
 dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
@@ -588,6 +649,9 @@ MODULES (required — arrange per the design system's rhythm):
 INTERACTIONS: every save gives inline success confirmation; masked secrets
 reveal-on-demand only; test-connection shows provider latency result inline.
 STATES: per-section empty/loading/filled/error.
+VALIDATION: before finishing, re-check your render against the design system
+and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: Autentikasi — passkey "Pixel 8" last used "Hari ini · 08.02",
 button "Tambah passkey". Model — Vision model "gemini-3.1-flash-lite", Text
 model "gpt-4o-mini", API key "••••••••••••3f9a" with reveal affordance, button
