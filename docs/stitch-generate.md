@@ -65,13 +65,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 ANCHOR: this is the FIRST screen of the set; everything established here (app
 shell, spacing rhythm, component styling) becomes the visual reference the nine
@@ -132,13 +136,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Compact, scannable ledger feed — the densest screen in the app. This
 is the weekly-review workhorse: find a row, fix its category, move on. Density
@@ -149,10 +157,12 @@ MODULES (required — arrange per the design system's rhythm):
 2. Toolbar: search input (placeholder "Cari merchant atau catatan…"), filter chips
    (Source picker, category subtree, tag, date range, direction, review status),
    primary pill button "+ Tambah".
-3. Grouped feed table: day-group headers; each row = status dot (clean / needs
-   review), merchant, category chip, source name, signed amount right-aligned in
-   tabular figures; inline actions (edit, delete, reverse) reveal on hover and on
-   keyboard focus, with accessible names; permanently visible under 1024px.
+3. Grouped feed table: one continuous dense table — ~36px rows, zero filler
+   spacing between groups; day-group headers; each row = status dot (clean /
+   needs review), merchant, category chip, source name, signed amount
+   right-aligned in tabular figures; inline actions (edit, delete, reverse)
+   reveal on hover and on keyboard focus, with accessible names; permanently
+   visible under 1024px.
 4. Pagination footer.
 5. Restore-bin link in toolbar overflow ("Sampah") showing soft-deleted rows with
    restore action and remaining restore-window time.
@@ -171,7 +181,10 @@ Minuman, Cash) · Gojek −Rp18.000 (Transportasi, GoPay). Kemarin: Gaji
 +Rp8.500.000 (Gaji, BCA) · Indomaret −Rp45.000 (Belanja, Cash) · Pertamina
 −Rp30.000 (Transportasi, Cash). Sebelumnya: Tokopedia −Rp150.000 (Belanja,
 SPayLater — needs-review warning dot) · Laundry Kilat −Rp20.000 (Kos, Cash) ·
-Kos −Rp750.000 (Kos, BCA, matched bill chip).
+Kos −Rp750.000 (Kos, BCA, matched bill chip) · Spotify −Rp54.999 (Hiburan,
+GoPay) · Sepatu −Rp800.000 (Belanja, SPayLater) · Pulsa −Rp50.000 (Tagihan,
+GoPay) · Transfer BCA→GoPay +Rp200.000/−Rp200.000 (transfer chip, bukan
+pengeluaran).
 ```
 
 Checkpoint: rows are hairline-separated (never boxed cards) · consistent row
@@ -197,13 +210,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Places money lives, balances, and movements between them. Debt
 visibility is the emotional core of this screen: two negative paylater balances
@@ -262,13 +279,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Hierarchy editor with essential flags and safe restructuring.
 Restructuring must always preview its blast radius (affected transactions)
@@ -319,13 +340,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Expected obligations feeding reservations and the due calendar. A
 glance answers: what is due, when, and from which Source it will be paid.
@@ -376,13 +401,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Per-category monthly limits with threshold badges — pull-only, never
 pushy. Badges inform at a glance; nothing nags, pings, or pushes here.
@@ -437,13 +466,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Deep charts — breakdown, patterns, anomalies. Editorial spacing above,
 dense charts below. Pattern-finding without dashboard fatigue.
@@ -504,13 +537,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: The weekly ritual's queue — low-category-confidence transactions awaiting
 a one-click fix. Clearing the queue is a small quiet win, not a celebration.
@@ -562,13 +599,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Drafts parked by the fail-closed gate + chat actions awaiting named
 confirmation. Same confirmations resolvable here as in WhatsApp chat — this is
@@ -623,13 +664,17 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
-reproduce every figure and name in SAMPLE DATA verbatim — real household data,
-never invent.
+monospace) · color carries meaning only · every visible label — nav items,
+buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+the rail always shows name + balance rows, never icon-only stubs · reproduce
+every figure and name in SAMPLE DATA verbatim — real household data, never
+invent.
 RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
 Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
 group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
 tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+Rail rows always show name + balance exactly as listed — icon-only or omitted
+balances fail the generation.
 ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Auth, provider config, tags, and planning inputs. Quiet utility styling
 — read more than changed, every save confirms inline, secrets stay masked.
