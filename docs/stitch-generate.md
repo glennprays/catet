@@ -65,8 +65,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -101,7 +100,7 @@ sidebar navigation; "Lihat semua" navigates to Transactions.
 STATES: empty ("Belum ada transaksi. Mulai catet lewat WhatsApp."), loading
 (skeleton hero + shimmer bars on chart), error (inline banner with retry).
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: hero figures Safe-to-Spend Rp8.003.500 (healthy teal) · Runway 34
 hari · Jatah harian Rp266.800 / hari. Tereservasi besok list: Kos Rp750.000 ·
@@ -136,8 +135,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -174,7 +172,7 @@ adjustment entry, and edit history; delete asks named confirmation; keyboard
 focus visible throughout.
 STATES: empty, loading skeleton rows, filled, error banner, restore bin empty state.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: rows in day groups — Hari ini: Kopi Kenangan −Rp25.000 (Makanan &
 Minuman, Cash) · Gojek −Rp18.000 (Transportasi, GoPay). Kemarin: Gaji
@@ -210,8 +208,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -244,7 +241,7 @@ action names the record being changed.
 STATES: no-sources onboarding empty state pointing at first-run setup, loading,
 filled, error.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: cards — BCA Rp8.420.000 (bank) · Cash Rp340.000 (cash) · GoPay
 Rp215.500 (ewallet) · ShopeePay Rp98.000 (ewallet) · SPayLater −Rp1.240.000
@@ -279,8 +276,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -310,7 +306,7 @@ committing; retroactive recategorization shows progress then success toast.
 STATES: empty tree with starter suggestions, loading, filled, error, merge
 confirmation state.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: tree — Makanan & Minuman (essential; children: Kopi 142 tx ·
 Warung 89 tx) · Transportasi (essential, 203) · Kos (essential, 58) · Tagihan
@@ -340,8 +336,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -371,7 +366,7 @@ inactive bills render muted and stop feeding reservations.
 STATES: empty ("Belum ada tagihan"), loading, filled, error, paid-state success
 micro-interaction.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: bill rows — Kos (bulanan, tgl 1, Rp700.000–750.000, BCA) ·
 Internet (bulanan, tgl 5, Rp300.000–320.000, BCA) · Spotify (bulanan, tgl 15,
@@ -401,8 +396,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -431,7 +425,7 @@ threshold states are badges on this screen only — no notifications anywhere.
 STATES: empty ("Belum ada budget — pakai saran otomatis?"), loading, filled,
 error.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: budget cards — Makanan & Minuman Rp1.284.000 / Rp1.500.000 (86%,
 warning bar + "80%" badge) · Transportasi Rp310.000 / Rp600.000 (52%, safe
@@ -466,8 +460,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -500,7 +493,7 @@ all series; period switch refetches series.
 STATES: empty ("Data masih tipis. Catet dulu beberapa hari."), loading skeletons
 per chart tile, filled, error tile with retry.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: period Agustus 2026. Top merchants: Indomaret Rp612.000 · Kopi
 Kenangan Rp340.000 · Gojek Rp285.000 · Pertamina Rp180.000. Donut: Makanan &
@@ -537,8 +530,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -567,7 +559,7 @@ resolving updates counter instantly.
 STATES: clean-empty ("Semua beres, tidak ada yang menunggu."), loading, filled,
 error.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: header "2 transaksi belum yakin kategori minggu ini". Rows —
 "kopi kenangan 25rb" (−Rp25.000, Cash; guess Makanan & Minuman) with
@@ -599,8 +591,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -629,7 +620,7 @@ INTERACTIONS: resolving a draft turns its card green then archives it; rejecting
 asks nothing further — instant.
 STATES: empty queue, loading, filled, error.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: Draft tab — card one: raw message "kopi 25k bayar 50k", extracted
 amounts Rp25.000 + Rp50.000 with role field unresolved (outlined warning), bot
@@ -664,8 +655,7 @@ Hold Queue until confirmed by name.
 PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
 viewport, whitespace only groups · tables sit on the canvas with hairlines,
 minimal cards · every number in tabular figures of the single sans (never
-monospace) · color carries meaning only · every visible label — nav items,
-buttons, headers, table heads — is Bahasa Indonesia (translate screen names) ·
+monospace) · color carries meaning only ·
 the rail always shows name + balance rows, never icon-only stubs · reproduce
 every figure and name in SAMPLE DATA verbatim — real household data, never
 invent.
@@ -695,7 +685,7 @@ INTERACTIONS: every save gives inline success confirmation; masked secrets
 reveal-on-demand only; test-connection shows provider latency result inline.
 STATES: per-section empty/loading/filled/error.
 VALIDATION: before finishing, re-check your render against the design system
-and this brief — palette, type scale, radii, rhythm, Bahasa copy, and the
+and this brief — palette, type scale, radii, rhythm, and the
 verbatim SAMPLE DATA below; correct any deviation.
 SAMPLE DATA: Autentikasi — passkey "Pixel 8" last used "Hari ini · 08.02",
 button "Tambah passkey". Model — Vision model "gemini-3.1-flash-lite", Text
