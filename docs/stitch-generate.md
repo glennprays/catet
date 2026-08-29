@@ -30,10 +30,13 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
   the ONLY records the screen may show — no invented merchants, balances, or other
   filler. Figures are internally consistent across screens (assets total
   Rp9.073.500, reserved tomorrow Rp1.070.000, Safe-to-Spend Rp8.003.500).
-- **Self-contained prompts:** every block opens with an identical `APP CONTEXT`
-  paragraph on purpose — each generation runs in isolation inside Stitch, so the
-  product's identity travels with its prompt. Paste blocks whole; do not trim
-  the context even though it repeats.
+- **Painter, not micromanager:** prompts give vision, principles, and
+  ingredients — the attached design system owns component specs, radii, and
+  rhythm. Never re-dictate pixels, fonts, or exact orderings in a prompt;
+  requirements are the *what*, the generator owns the *how*.
+- **Self-contained prompts:** every block opens with an identical context
+  header on purpose — each generation runs in isolation inside Stitch, so the
+  product's identity travels with its prompt. Paste blocks whole.
 
 ---
 
@@ -43,33 +46,26 @@ in dependency order. Prompts are verbatim copies from `docs/stitch-prompts.md`
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 ANCHOR: this is the FIRST screen of the set; everything established here (app
 shell, spacing rhythm, component styling) becomes the visual reference the nine
 screens generated after you will follow.
@@ -77,24 +73,17 @@ PURPOSE: Hero glance — one number answers "how much can I safely spend today".
 The user should leave knowing whether today is a spend-carefully or
 spend-freely day, in one glance, without reading anything else.
 
-PAGE STRUCTURE:
-1. App shell: left sidebar navigation, active item "Overview"; Needs-Review and
-   Hold Queue items carry small count badges.
-2. Stat strip (compact, no card): small sentence-case label "Safe-to-Spend" above
-   the figure Rp8.003.500 at ~40px (safe-text teal when healthy, amber when thin),
-   with inline caption stats to its right: Runway 34 hari · Jatah harian
-   Rp266.800 / hari · Tereservasi besok Rp1.070.000. Hairline rule underneath.
-3. Quick-actions grid: six icon tiles in one row — Tambah · Transfer · Bayar
-   tagihan · Perbaiki kategori · Rekap mingguan · Lihat semua — each a 48px
-   glyph in a 12px-radius surface tile with a caption label beneath.
-4. Reference-line chart card: 4-week daily-spend bar timeline with a flat horizontal
-   positive-accent line marking today's Safe-to-Spend; caption explains days above
-   vs below the line.
-5. Two-column row: card "Tereservasi besok" listing tomorrow's reserved bills
-   (name, amount); card "Minggu ini" mini-glance (spend total, top category,
-   uncategorized count).
-6. Recent transactions preview (last 5 rows): icon, merchant, source chip, signed
-   amount right-aligned; link "Lihat semua →" to Transactions.
+MODULES (required — arrange per the design system's rhythm):
+1. App shell with the accounts rail, active "Overview"; Needs-Review and Hold
+   Queue carry small count badges.
+2. Stat strip: Safe-to-Spend as the focal figure with Runway, Jatah harian and
+   Tereservasi besok beside it — the number answers "how much can I safely
+   spend today".
+3. Quick-actions grid: Tambah · Transfer · Bayar tagihan · Perbaiki kategori ·
+   Rekap mingguan · Lihat semua.
+4. 4-week daily-spend chart with today's Safe-to-Spend as a reference line.
+5. Tereservasi besok (tomorrow's reserved bills) beside a Minggu ini glance.
+6. Recent transactions preview (last 5) with a link to Transactions.
 
 INTERACTIONS: hero stat tooltips explaining formula; chart hover shows day detail;
 sidebar navigation; "Lihat semua" navigates to Transactions.
@@ -118,38 +107,31 @@ tabular right-aligned · no gradients/glow/purple anywhere.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Compact, scannable ledger feed — the densest screen in the app. This
 is the weekly-review workhorse: find a row, fix its category, move on. Density
 and speed beat decoration here.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Transactions".
 2. Toolbar: search input (placeholder "Cari merchant atau catatan…"), filter chips
    (Source picker, category subtree, tag, date range, direction, review status),
@@ -184,38 +166,31 @@ is ink-fill pill.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Places money lives, balances, and movements between them. Debt
 visibility is the emotional core of this screen: two negative paylater balances
 exist in the sample on purpose, rendered as information not shame.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Sources".
 2. Summary strip: total available, combined debt exposure (danger tone when > 0),
    last-reconciled freshness captions per Source.
@@ -250,38 +225,31 @@ tag · cards are ring-only (no hover shadow lift) · balances tabular right-alig
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Hierarchy editor with essential flags and safe restructuring.
 Restructuring must always preview its blast radius (affected transactions)
 before committing.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Categories".
 2. Toolbar: search, "+ Kategori baru", bulk actions menu (merge, re-parent,
    apply-rules-to-history — disabled until selection exists).
@@ -308,37 +276,30 @@ stay readable · merge modal demands typed confirmation · counts in tabular dig
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Expected obligations feeding reservations and the due calendar. A
 glance answers: what is due, when, and from which Source it will be paid.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Bills & Calendar".
 2. Month calendar view: due-date dots sized by amount, today highlighted; clicking
    a day opens its bill list panel on the right.
@@ -366,37 +327,30 @@ without disappearing · "Tandai lunas" success reads as a single calm wash.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Per-category monthly limits with threshold badges — pull-only, never
 pushy. Badges inform at a glance; nothing nags, pings, or pushes here.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Budgets".
 2. Period selector (month).
 3. Budget cards list: category name, spent ÷ budget figures in tabular numerals,
@@ -428,37 +382,30 @@ chrome anywhere.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Deep charts — breakdown, patterns, anomalies. Editorial spacing above,
 dense charts below. Pattern-finding without dashboard fatigue.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Analytics".
 2. Period selector row (week / month / quarter / year).
 3. Chart grid (two columns):
@@ -496,37 +443,30 @@ small solid danger dots.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: The weekly ritual's queue — low-category-confidence transactions awaiting
 a one-click fix. Clearing the queue is a small quiet win, not a celebration.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Needs-Review" with count badge.
 2. Ritual header: "X transaksi belum yakin kategori minggu ini" plus progress
    caption; completing all items shows a quiet success confirmation.
@@ -555,38 +495,31 @@ alternatives without dropdown clutter · completion confirmation stays quiet
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Drafts parked by the fail-closed gate + chat actions awaiting named
 confirmation. Same confirmations resolvable here as in WhatsApp chat — this is
 the web twin of the bot's confirmation flow, not a separate system.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Hold Queue" with count badge.
 2. Tab strip: "Draft" | "Menunggu konfirmasi".
 3. Draft tab: parse-result cards showing the raw message, extracted fields with
@@ -617,37 +550,30 @@ colored destructively except Reject-as-danger-ghost where shown.
 
 ```
 PLATFORM: Desktop web application
-APP CONTEXT: catet is a self-hosted personal finance tracker for ONE person in
-Indonesia. They log daily spending through a WhatsApp bot and manage it on this
-desktop dashboard. Amounts are Indonesian Rupiah (Rp8.003.500); UI copy is
-Bahasa Indonesia. Vocabulary: "Source" = a place money lives (bank / cash /
-e-wallet — never "account" or "wallet"); needs-review = a written transaction
-whose category is a low-confidence guess awaiting one-click fix; Hold Queue =
-drafted actions parked until confirmed by name. Design system: compact,
-data-first, Wise-like clarity on a warm paper palette — dense tables sit
-directly on the cream canvas with minimal card chrome; numbers use the same
-sans face as text with tabular figures (never monospace). Density is app-like
-and quantified: page padding 24px max, section gaps 24px, card padding 12-16px,
-ledger rows 36px — fill the viewport with modules; whitespace never stretches.
-DATA LOCK: reproduce every figure, name, and Source EXACTLY as written in the
-SAMPLE DATA below — inventing or altering any value fails the generation.
-SHELL: fixed left rail (240px) = an accounts rail, not a feature list. Top:
-wordmark "catet". Group "Aset" lists Sources with a small type glyph, name, and
-right-aligned balance in tabular figures (BCA Rp8.420.000 · Cash Rp340.000 ·
-GoPay Rp215.500 · ShopeePay Rp98.000). Group "Utang" lists Debt Sources with
-danger-tone balances (SPayLater −Rp1.240.000 · Kredivo −Rp685.000). Pinned
-footer: "Total tersedia" Rp9.073.500 and "Utang" Rp1.925.000 (danger tone).
-Below a divider, a "Kelola" section lists the screens — Overview · Transactions ·
-Categories · Bills & Calendar · Budgets · Analytics · Needs-Review · Hold
-Queue · Settings; active item highlighted; Needs-Review and Hold Queue carry
-small count badges (hidden when zero). Mobile: bottom nav Overview ·
-Transactions · Add (center) · Analytics · More.
-ROADMAP: this app consists of exactly these 10 screens; no other sections or
-nav destinations should be invented.
+APP CONTEXT: catet — a self-hosted personal finance tracker for ONE person in
+Indonesia. Daily spending is logged through a WhatsApp bot; this desktop
+dashboard is where they see, plan, and clean up their money. UI copy is Bahasa
+Indonesia; amounts are Rupiah (Rp8.003.500). Feel: compact, calm, trustworthy —
+Wise's data-first clarity rendered on warm paper. A living money view, not a
+marketing dashboard.
+VOCABULARY: a place money lives is a "Source" (never account/wallet);
+low-confidence category guesses wait in Needs-Review; drafted actions park in
+Hold Queue until confirmed by name.
+PRINCIPLES (non-negotiable): dense app-like rhythm — modules fill the
+viewport, whitespace only groups · tables sit on the canvas with hairlines,
+minimal cards · every number in tabular figures of the single sans (never
+monospace) · color carries meaning only · copy stays Bahasa Indonesia ·
+reproduce every figure and name in SAMPLE DATA verbatim — real household data,
+never invent.
+RAIL: left accounts rail (240px) is the money itself — Aset group (BCA
+Rp8.420.000 · Cash Rp340.000 · GoPay Rp215.500 · ShopeePay Rp98.000), Utang
+group (SPayLater −Rp1.240.000 · Kredivo −Rp685.000), pinned footer Total
+tersedia Rp9.073.500 · Utang Rp1.925.000, then Kelola links to the screens.
+ROADMAP: exactly these 10 screens exist; invent no others.
 PURPOSE: Auth, provider config, tags, and planning inputs. Quiet utility styling
 — read more than changed, every save confirms inline, secrets stay masked.
 
-PAGE STRUCTURE:
+MODULES (required — arrange per the design system's rhythm):
 1. App shell, active "Settings".
 2. Sectioned form pages (left in-page anchor nav):
    - Autentikasi: passkey management list (register/revoke, last-used captions).
