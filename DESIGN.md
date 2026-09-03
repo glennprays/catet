@@ -452,6 +452,14 @@ single sans voice.
 
 ## 11. Implementation Foundation (build-time mapping)
 
+> **Status of the Stitch renders:** the screens generated in the Stitch project
+> (`catet — Paper Editorial v2`) are exploratory mockups — evidence for layout,
+> density, and data-flow decisions. They are **not** a visual specification and
+> must not be traced literally. The implementation foundation is
+> **shadcn/ui ("new-york") + Tremor**; where their conventions or better UX
+> judgment diverge from a mockup, prefer them. Only this document's tokens and
+> laws are binding.
+
 The Next.js frontend adopts **shadcn/ui ("new-york") + Tremor data blocks** as
 its component foundation. Generator prompts never mention these names; this
 section binds our tokens to the codebase so design and build never fork:

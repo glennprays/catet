@@ -707,3 +707,15 @@ sentence-case-label input pattern from Phase 1.
 Send me the screen name — I pull it back via MCP (`get_screen`) and score it against
 the checkpoint line above plus the standing red-lines (cream canvas present, tabular-sans figures everywhere — never monospace, hairline-only cards, no ring+shadow doubles, `-text` badge colors,
 no uppercase eyebrows, no purple/glass/glow). Only then paste the next prompt.
+
+---
+
+## Post-run verdict (recorded 2026-09-03)
+
+All 10 screens (+ Transfer Wizard state) were generated and QA'd — data locks
+held, density/rail/structure landed. **But the renders remain mockup-grade**:
+AI-generated HTML is not production UI. Per product decision, the Stitch set is
+**reference-only** for the build phase: implement from `DESIGN.md` tokens on
+**shadcn/ui + Tremor**, with freedom to deviate from the mockups wherever
+shadcn conventions or better UX produce a better product. See `AGENTS.md`
+§ Design Authority and `DESIGN.md` §11.
