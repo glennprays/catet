@@ -19,6 +19,8 @@ catet/           Next.js dashboard (this repo — consumes the backend)
 
 ## Two-Repo Relationship
 
+- **Current repo path:** `/home/glenn/projects/catet` is the UI/dashboard frontend repo.
+- **Backend repo path:** `/home/glenn/projects/catet-backend` is the Go backend/API repo and domain source of truth.
 - **Backend (`catet-backend`) is the SOURCE OF TRUTH** for the domain model, the ledger engine, the AI harness, and all documentation:
   - `~/projects/catet-backend/CONTEXT.md` — canonical vocabulary (Source, Leg, Transfer, Draft, Safe-to-Spend, …). Read this before naming anything.
   - `~/projects/catet-backend/docs/spec.md` — product & technical spec v2 (plan of record).
@@ -38,7 +40,7 @@ catet/           Next.js dashboard (this repo — consumes the backend)
 - **Charts**: ECharts (not Recharts — heatmap/donut-drill power)
 - **Server state**: TanStack Query
 - **Auth**: httpOnly-cookie session (passkey via WebAuthn)
-- **Package manager**: pnpm
+- **Package manager**: bun
 
 ---
 
