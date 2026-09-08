@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
+/*
+ * catet — "Paper Ledger" design foundation (light only).
+ * Source of truth: DESIGN.md §2 (palette), §2 border system, §11 (shadcn mapping).
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* DESIGN.md §2 — Paper Ledger palette (light only) */
+  --canvas: #f2f1ee;
+  --surface: #faf9f6;
+  --surface-100: #f7f5f1;
+  --surface-200: #efece7;
+  --surface-300: #e7e3dc;
+  --sheet: #fffefc;
+  --ink: #26231d;
+  --ink-soft: #454139;
+  --ash: #9b968e;
+  --smoke: #c3bdb4;
+  --safe: #178269;
+  --safe-wash: rgba(23,130,105,0.10);
+  --safe-text: #136b57;
+  --warn: #c47a12;
+  --warn-wash: rgba(196,122,18,0.12);
+  --warn-text: #9c5c08;
+  --over: #cf3f52;
+  --over-wash: rgba(207,63,82,0.10);
+  --over-text: #b12e42;
+
+  /* DESIGN.md §2 — border system (alpha ink) */
+  --border: rgba(38,35,29,0.10);
+  --border-strong: rgba(38,35,29,0.22);
+  --border-solid: rgba(38,35,29,0.55);
+
+  /* shadcn/ui slot mapping — DESIGN.md §11 */
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--sheet);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--canvas);
+  --secondary: var(--surface-200);
+  --secondary-foreground: var(--ink-soft);
+  /* Naming-collision rule: --muted is the shadcn fill; DESIGN's tertiary
+     "muted" text lives at --muted-foreground (#6f6a62). */
+  --muted: var(--surface-200);
+  --muted-foreground: #6f6a62;
+  --accent: var(--surface-100);
+  --accent-foreground: var(--ink-soft);
+  --destructive: var(--over);
+  --destructive-foreground: var(--sheet);
+  --input: var(--surface-200);
+  --ring: var(--safe);
+  --chart-1: #454139;
+  --chart-2: #6f6a62;
+  --chart-3: #9b968e;
+  --chart-4: #178269;
+  --chart-5: #c47a12;
 }
 
 @theme inline {
+  /* shadcn/ui slots */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* DESIGN.md palette */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-surface-300: var(--surface-300);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ash: var(--ash);
+  --color-smoke: var(--smoke);
+  --color-safe: var(--safe);
+  --color-safe-wash: var(--safe-wash);
+  --color-safe-text: var(--safe-text);
+  --color-warn: var(--warn);
+  --color-warn-wash: var(--warn-wash);
+  --color-warn-text: var(--warn-text);
+  --color-over: var(--over);
+  --color-over-wash: var(--over-wash);
+  --color-over-text: var(--over-text);
+  --color-border-strong: var(--border-strong);
+  --color-border-solid: var(--border-solid);
+
+  /* typography */
+  --font-sans: var(--font-hanken);
+
+  /* radii — DESIGN.md 8/12/16 + 24 (xxl, popovers) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--canvas);
+  color: var(--ink);
 }
