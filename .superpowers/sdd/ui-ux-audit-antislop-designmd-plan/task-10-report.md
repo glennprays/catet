@@ -24,7 +24,7 @@ The five existing destinations, center Add FAB (`size-11` / 44px), active-state 
   - Command: `git diff --check HEAD^ HEAD -- src/components/bottom-nav.tsx`
   - Output: no output; exit code `0`.
 - Commit scope verification:
-  - `git show` lists only `src/components/bottom-nav.tsx`.
+  - Initial target commit lists only `src/components/bottom-nav.tsx`; review correction lists only the target and requested report.
   - Unrelated worktree changes remain unstaged and untouched.
 
 ## Commits
