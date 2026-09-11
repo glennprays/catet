@@ -119,3 +119,39 @@ body {
   background: var(--canvas);
   color: var(--ink);
 }
+
+@keyframes catet-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.catet-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-200);
+}
+
+.catet-shimmer::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(90deg, transparent, var(--surface-100), transparent);
+  transform: translateX(-100%);
+  animation: catet-shimmer 1.4s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

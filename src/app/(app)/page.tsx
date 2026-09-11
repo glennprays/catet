@@ -77,9 +77,9 @@ export default function OverviewPage() {
         <section aria-label="Safe-to-Spend" className="px-1">
           {overview.isPending ? (
             <div className="grid gap-2">
-              <div className="h-4 w-24 animate-pulse rounded-sm bg-surface-200" />
-              <div className="h-10 w-64 animate-pulse rounded-sm bg-surface-200" />
-              <div className="h-4 w-72 animate-pulse rounded-sm bg-surface-200" />
+              <div className="h-4 w-24 catet-shimmer rounded-sm bg-surface-200" />
+              <div className="h-10 w-64 catet-shimmer rounded-sm bg-surface-200" />
+              <div className="h-4 w-72 catet-shimmer rounded-sm bg-surface-200" />
             </div>
           ) : overview.isError ? (
             <p className="text-[13px] text-over-text">Gagal memuat. Coba muat ulang.</p>
