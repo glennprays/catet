@@ -420,7 +420,7 @@ hero figure · illustration-heavy empties · push-style banners · emoji in UI �
 horizontal-scrolling data tables · hover-only affordances · oversized hero
 marketing layouts.
 
-Anti-slop bans: no gradient text or gradient fills of any kind · no backdrop-blur/glass · no radial halos or soft spotlights · no icon-tiles-above-caption outside the quick-actions domain case · no label-above-heading eyebrows · no control text below 12px, no readable text below 13px · no duplicate presentation of one datum · no bounce/wiggle attention animations · no hairline+wide-shadow pairs (already §6).
+Anti-slop bans: no gradient text or decorative gradient fills of any kind (the functional skeleton shimmer in §4 is the sole permitted gradient) · no backdrop-blur/glass · no radial halos or soft spotlights · no icon-tiles-above-caption outside the quick-actions domain case · no label-above-heading eyebrows · no control text below 12px, no readable text below 13px · no duplicate presentation of one datum · no bounce/wiggle attention animations · no full-strength hairline+wide-shadow pairs (the §6 half-strength floater treatment remains permitted).
 cream base is a defended product choice (§1) — detector flags are answered with an ignore + reason, not by palette drift.
 
 ## 10. Agent Prompt Guide
