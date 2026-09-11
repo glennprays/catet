@@ -1,7 +1,7 @@
 ---
-version: alpha
+version: 2
 name: Paper Ledger
-description: Compact personal finance dashboard for one user — Wise-like data-first clarity on a warm paper palette, semantic color rationing (teal safe / amber thin / crimson over), single Hanken Grotesk voice with tabular figures, hairline alpha-ink borders, light-only.
+description: "Compact personal finance dashboard for one user — Wise-like data-first clarity on a warm paper palette, semantic color rationing (teal safe / amber thin / crimson over), single Hanken Grotesk voice with tabular figures, hairline alpha-ink borders, light-only; anti-slop: no gradients, glass, glow, or decorative color; cream is product identity (paper ledger), not a beige default — see §1"
 colors:
   canvas: "#f2f1ee"
   surface: "#faf9f6"
@@ -70,6 +70,8 @@ Color is rationed to *meaning only*: teal = safe, amber = thin, crimson = over.
 ~97% of the interface is achromatic warm grays; when an accent appears it is
 information arriving, not branding shouting.
 
+**Why cream is not slop.** The paper-ledger metaphor is the product voice; the palette is defended, not defaulted; every accent is meaning-only. No decorative color effects exist anywhere; the only permitted 'lift' is tonal layering + hairline rings (see §6).
+
 Key characteristics:
 
 - Warm cream canvas `#f2f1ee`; ink `#26231d`; all borders are alpha tints of ink
@@ -94,9 +96,9 @@ Key characteristics:
 | `--surface-300` | `#e7e3dc` | Pressed emphasis, segmented tracks |
 | `--ink` | `#26231d` | Primary text, primary button fill |
 | `--ink-soft` | `#454139` | Secondary text |
-| `--muted` | `#6f6a62` | Tertiary text, captions (≥4.5:1 on card surfaces) |
+| `--muted` | `#6f6a62` | Tertiary text, captions (≥4.5:1 on card surfaces), input/select placeholder text (≥4.5:1) |
 | `--ash` | `#9b968e` | **Decorative only** — inactive icons, dots; never label/body text |
-| `--smoke` | `#c3bdb4` | Placeholders, disabled text |
+| `--smoke` | `#c3bdb4` | Disabled text, decorative only — never placeholder or readable text |
 | `--sheet` | `#fffefc` | Floating sheets only (modals, popovers, tooltips) |
 | `--safe` | `#178269` | SAFE state — bars, fills, dots, rings only |
 | `--safe-wash` | `rgba(23,130,105,0.10)` | Tint backgrounds behind safe signals |
@@ -139,6 +141,8 @@ surface:
 - Heatmap ramp: `canvas → surface-300 → warn-wash → warn` (zero = pure canvas)
 - Donut slices: warm neutral ladder first (`ink-soft/muted/ash/smoke`), then
   safe, then warn — red only for over-budget (>100%) categories.
+- Runway/STS dual-axis: runway y-axis capped at 90 hari; clipped values render ≥90 on the axis and full value in the tooltip.
+- Donut: inline labels only ≥1024px; below that label.show: false and a plain-text legend list beneath (caption rows, ≤8px color squares).
 
 ## 3. Typography Rules
 
@@ -189,6 +193,7 @@ states: empty n/a · loading spinner-lock-width · success check-icon swap (900m
 hover `--surface-200`.
 **Ghost** — no fill/border; ink-soft text; hover `--surface-200`.
 **Danger Ghost** — ghost geometry, `--over-text` text, `--over-wash` hover.
+Minimum hit area 44×44px on every variant (icon buttons `size-11` = 44px); visual size may be smaller only when an ancestor guarantees ≥44px.
 Destructive flows additionally require typed confirmation elsewhere — the button
 alone is never the gate.
 
@@ -210,19 +215,28 @@ states: empty → ash glyph + one line + optional action; loading → skeleton
 matching final layout; success → 900ms `--safe-wash`; filled default; error →
 inline banner strip + retry.
 
+### Source Cards
+
+Action buttons (Ubah / Setor koreksi / Arsipkan) are always visible ghost buttons — never hover-hidden, never opacity-0 reserving dead space. No empty padding zone under the card content.
+
 ### Inputs & Forms
 
 Wells: `--surface-200` fill, radius **8px**, 1px transparent border, 10px 12px
 padding. Focus: inner `box-shadow: 0 0 0 1px var(--border-strong)` + outer
-`0 0 0 3px var(--safe-wash)`. Placeholder `--smoke`. Validation error: border
+`0 0 0 3px var(--safe-wash)`. Placeholder `--muted`. Validation error: border
 paints `--over`, 12px message below.
 - **Amount field**: tabular figures, right-aligned, `Rp` prefix slot.
 - **Segmented direction control**: track `--surface-300`, thumb `--surface`
   sheet + hairline ring; selected label 500.
 - **Selects**: wells with chevron; selected value never duplicates placeholder.
+Empty state shows the placeholder in --muted (never --smoke); the trigger chevron stays --ink-soft at all times so the control never reads as disabled.
 - Label convention: sentence-case Body SM 500 above field; caption below in
   `--muted`. Tracked-uppercase Micro-labels only for table column heads.
 states: five mandatory, per-field error with contextual copy from the copy deck.
+
+### Redundant-information law (product-wide)
+
+A row never shows the same datum twice as two controls/labels — e.g. needs-review rows show the category correction select OR the category chip, not both.
 
 ### Accounts Rail (app shell, desktop)
 
@@ -274,9 +288,7 @@ states: loading skeleton tiles · filled default · empty n/a (static affordance
 Height **36px**, grid: [status dot 8px] [merchant + timestamp stack] [category
 chip] [source chip] [signed Figure MD right-aligned]. Separators 1px `--border`
 between rows only — never boxed cards. Needs-review dot `--warn`; clean `--ash`
-40%; reversed = strike-through + linked-reversal chip. Trailing actions (edit,
-reverse, delete) reveal on hover **and** `tr:focus-within`, each with an
-accessible name (`aria-label="Ubah {merchant}"`). Hit areas ≥44px everywhere.
+40%; reversed = strike-through + linked-reversal chip. Trailing actions (edit, reverse, delete): ≥1024px — reveal on row hover/focus-within, size-11 (44px) ghost icon buttons, each aria-label="Ubah {merchant}". <1024px — always visible, same 44px buttons, row grows to 48px, and the row itself is a tap target that opens the edit sheet (buttons stopPropagation); this is the fold-in-detail mechanism for hidden chips.
 states: empty screen-level ("Belum ada transaksi…"); loading shimmer ×8
 preserving columns; success 900ms safe-wash; filled; error per-action toast.
 
@@ -311,7 +323,7 @@ optional ghost action. Copy deck supplies exact strings.
 ### Skeleton rule
 
 Skeletons reproduce final geometry exactly (heights, radii, gaps) in
-`--surface-200`, left-to-right `--surface-100` shimmer, 1.4s loop. Spinners only
+`--surface-200`, left-to-right `--surface-100` shimmer, 1.4s loop. implementation: catet-shimmer keyframes (translateX −100%→100% over a --surface-100 gradient on --surface-200), never animate-pulse. Spinners only
 inside buttons.
 
 ### Charts (ECharts conventions)
@@ -321,7 +333,7 @@ Gridlines: 1px dashed `--border`, horizontal only. Axis labels: caption size,
 floating sheet card, ring + half shadow, title Body SM 500 + label:value rows
 with values tabular-aligned. Reference line `--safe` dashed. Anomaly markers:
 `--over` 6px dots. Heatmap cell radius 4px, gap 3px. Legends are plain text
-rows, never color boxes larger than 8px.
+rows, never color boxes larger than 8px; never default ECharts color chips.
 
 ## 5. Layout Principles
 
@@ -336,6 +348,7 @@ Desktop app shell: fixed 240px accounts rail + fluid main, content max-width
 - Ledger screens: sticky toolbar under a 56px header; day-sticky headers
   (`--canvas` background blur); rows touch via separators (0 internal gaps).
 - Section separation: `section` (24px) max; related items group at `md`–`xl`.
+- Settings: grid gap-6 lg:grid-cols-2, final odd card lg:col-span-2 — no left-hung single column on wide viewports.
 
 Density is the default; generosity is earned only where a decision needs it.
 
@@ -374,6 +387,8 @@ Focus is always visible (3px safe-wash ring). Honor `prefers-reduced-motion`:
 kill shimmer, scale pops, slide-ins; keep opacity fades ≤120ms. Nothing bounces
 twice; success is a single wash.
 
+global @media (prefers-reduced-motion: reduce) kill-switch (animations/transitions ≈0.01ms, scroll-behavior: auto) lives in globals.css.
+
 ## 8. Responsive Behavior
 
 | Breakpoint | Shell change |
@@ -382,6 +397,8 @@ twice; success is a single wash.
 | 1024–1279px | Identical; grid columns compress with 24px gutters |
 | 768–1023px | Rail collapses to 72px icon strip with tooltips; grids stack |
 | <768px | Bottom nav (Overview · Transactions · Add-FAB · Analytics · More); 16px gutters; day headers sticky pills |
+
+Bottom nav pads env(safe-area-inset-bottom). Mobile toolbar: filters wrap 2-up (grid-cols-2), the last odd item spans both columns — never an orphan cell.
 
 Touch targets ≥44px everywhere; row actions persistent under 1024px and
 keyboard-reachable always. Ledger rows grow to 48px below 1024px. Figure XL
@@ -403,11 +420,14 @@ hero figure · illustration-heavy empties · push-style banners · emoji in UI �
 horizontal-scrolling data tables · hover-only affordances · oversized hero
 marketing layouts.
 
+Anti-slop bans: no gradient text or gradient fills of any kind · no backdrop-blur/glass · no radial halos or soft spotlights · no icon-tiles-above-caption outside the quick-actions domain case · no label-above-heading eyebrows · no control text below 12px, no readable text below 13px · no duplicate presentation of one datum · no bounce/wiggle attention animations · no hairline+wide-shadow pairs (already §6).
+cream base is a defended product choice (§1) — detector flags are answered with an ignore + reason, not by palette drift.
+
 ## 10. Agent Prompt Guide
 
 Never place raw hex/fonts/radii inside a generation prompt when this design
 system is attached — refer semantically ("positive accent", "warning tone",
-"sheet surface"). On-screen copy is Indonesian-first. Entity language law:
+"sheet surface"). Stitch generation prompts never mention token names, hex, fonts, or radii — semantics only; DESIGN.md is uploaded as the project design system instead. On-screen copy is Indonesian-first. Entity language law:
 **Source** (never account/wallet/vault). All money uses tabular figures in the
 single sans voice.
 
@@ -452,13 +472,7 @@ single sans voice.
 
 ## 11. Implementation Foundation (build-time mapping)
 
-> **Status of the Stitch renders:** the screens generated in the Stitch project
-> (`catet — Paper Editorial v2`) are exploratory mockups — evidence for layout,
-> density, and data-flow decisions. They are **not** a visual specification and
-> must not be traced literally. The implementation foundation is
-> **shadcn/ui ("new-york") + Tremor**; where their conventions or better UX
-> judgment diverge from a mockup, prefer them. Only this document's tokens and
-> laws are binding.
+> Stitch project catet — Paper Editorial v2 (id projects/8388192028915929441) now carries the Paper Ledger v2 design system (the previous blue/Inter “Modern Professional” theme was drift and is superseded); the single Overview reference screen generated from it is exploratory evidence only.
 
 The Next.js frontend adopts **shadcn/ui ("new-york") + Tremor data blocks** as
 its component foundation. Generator prompts never mention these names; this
@@ -471,7 +485,7 @@ section binds our tokens to the codebase so design and build never fork:
 | `--ink` | `--foreground` + `--primary` (ink-fill buttons) |
 | `--ink-soft` / `--muted` | `--accent-foreground` / `--muted-foreground` |
 | `--surface-200` | `--secondary` / `--muted` |
-| `--smoke` | placeholder color |
+| `--muted` | placeholder color |
 | `--over` | `--destructive` |
 | radii 8 / 12 / 16 | `--radius` + derived `sm / md / lg` |
 | Hanken Grotesk | `--font-sans` |
