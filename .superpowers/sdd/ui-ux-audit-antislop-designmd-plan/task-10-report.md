@@ -27,9 +27,10 @@ The five existing destinations, center Add FAB (`size-11` / 44px), active-state 
   - `git show` lists only `src/components/bottom-nav.tsx`.
   - Unrelated worktree changes remain unstaged and untouched.
 
-## Commit
+## Commits
 
-`1a91a06efb10c5f187bf59e17907b68343f769b8`
+- Initial target commit: `1a91a06efb10c5f187bf59e17907b68343f769b8`
+- Review correction (target + report): `95c69bf38f8d86f4eb8d8170d869346e11493d7e`
 
 ## Concerns
 
