@@ -38,7 +38,7 @@ export function LedgerRow({
 
   return (
     <div
-      className={`group relative grid h-12 grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto] ${
+      className={`group relative grid h-12 lg:h-9 grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto] ${
         onEdit !== undefined && !item.voided ? "cursor-pointer lg:cursor-default" : ""
       }`}
       onClick={onEdit !== undefined && !item.voided ? handleRowClick : undefined}
