@@ -17,11 +17,13 @@ export function LedgerRow({
   onEdit,
   onReverse,
   onVoid,
+  showCategory = true,
 }: {
   item: LedgerItem;
   onEdit?: (item: LedgerItem) => void;
   onReverse?: (item: LedgerItem) => void;
   onVoid?: (item: LedgerItem) => void;
+  showCategory?: boolean;
 }) {
   const name = item.merchant ?? item.note ?? item.type;
   const dotClass = item.voided
@@ -62,9 +64,11 @@ export function LedgerRow({
         </span>
       </span>
 
-      <span className="hidden sm:block">
-        {item.category_name ? <Chip>{item.category_name}</Chip> : <Chip>—</Chip>}
-      </span>
+      {showCategory ? (
+        <span className="hidden sm:block">
+          {item.category_name ? <Chip>{item.category_name}</Chip> : <Chip>—</Chip>}
+        </span>
+      ) : null}
 
       <span className="hidden sm:block">
         <Chip>{item.source_name}</Chip>
