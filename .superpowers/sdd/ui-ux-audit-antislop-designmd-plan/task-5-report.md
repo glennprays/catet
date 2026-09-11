@@ -44,3 +44,12 @@ Post-fix evidence:
 
 - `bunx tsc --noEmit --pretty false -p /tmp/catet-task5-tsconfig.json` — passed (exit 0, no output).
 - `git diff --cached --check` — passed (exit 0, no output) before commit `8c99153`.
+
+## Final Review Fix
+
+The row-root responsive height was corrected in `142b38c` (`fix: restore desktop ledger row height`) by adding `lg:h-9` while retaining the mobile `h-12`. The action cluster remains `h-12 lg:h-9`.
+
+Final fix evidence:
+
+- `bunx tsc --noEmit --pretty false -p /tmp/catet-task5-tsconfig.json` — passed (exit 0, no output).
+- `git diff --cached --check` — passed (exit 0, no output) before commit `142b38c`.
