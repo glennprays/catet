@@ -32,3 +32,15 @@ No formatter, linter, project-wide suite, backend test, or browser suite was run
 ## Concerns
 
 No known code concerns. Browser-level mobile tap and button propagation behavior was not exercised in this scoped check; TypeScript compilation and callsite/clipping inspection passed.
+
+## Review Fix
+
+Review identified two geometry issues in `src/components/ledger-row.tsx`; both were corrected in `8c99153` (`fix: align ledger row desktop geometry`):
+
+- The row action cluster now uses `h-12 lg:h-9`, matching the row's mobile/desktop heights.
+- `LedgerRowSkeleton` now declares four grid tracks (`[8px_minmax(0,1fr)_auto_auto]`) for its four placeholder spans, keeping all placeholders on one row while retaining `h-12` below `lg` and `lg:h-9` at desktop.
+
+Post-fix evidence:
+
+- `bunx tsc --noEmit --pretty false -p /tmp/catet-task5-tsconfig.json` — passed (exit 0, no output).
+- `git diff --cached --check` — passed (exit 0, no output) before commit `8c99153`.
