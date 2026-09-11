@@ -79,7 +79,7 @@ export function LedgerRow({
       </span>
 
       {(onEdit !== undefined || onReverse !== undefined || onVoid !== undefined) && !item.voided ? (
-        <div className="absolute right-0 top-0 flex h-12 translate-x-1 items-center gap-0.5 bg-canvas/95 pl-2 opacity-0 transition-opacity duration-100 focus-within:opacity-100 group-hover:opacity-100 max-lg:opacity-100">
+        <div className="absolute right-0 top-0 flex h-12 translate-x-1 items-center gap-0.5 bg-canvas/95 pl-2 opacity-0 transition-opacity duration-100 focus-within:opacity-100 group-hover:opacity-100 max-lg:opacity-100 lg:h-9">
           {onEdit !== undefined ? (
             <button
               type="button"
@@ -128,7 +128,7 @@ export function LedgerRow({
 /** Loading skeleton matching the row geometry (DESIGN.md skeleton rule). */
 export function LedgerRowSkeleton() {
   return (
-    <div className="grid h-12 catet-shimmer lg:h-9 grid-cols-[8px_minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border">
+    <div className="grid h-12 catet-shimmer grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border lg:h-9">
       <span className="size-2 rounded-full bg-surface-300" />
       <span className="h-3.5 w-40 rounded-sm bg-surface-200" />
       <span className="h-3.5 w-16 rounded-sm bg-surface-200" />
