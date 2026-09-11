@@ -75,6 +75,18 @@ export default function CategoriesPage() {
     setFormOpen(true);
   }
 
+  function openAddChild(parent: Category) {
+    setEditing(null);
+    setParentTarget(parent);
+    setFormOpen(true);
+  }
+
+  function openEdit(category: Category) {
+    setParentTarget(null);
+    setEditing(category);
+    setFormOpen(true);
+  }
+
   return (
     <>
       <PageHeader
@@ -111,8 +123,8 @@ export default function CategoriesPage() {
                 key={node.category.id}
                 node={node}
                 depth={0}
-                onAddChild={setParentTarget}
-                onEdit={setEditing}
+                onAddChild={openAddChild}
+                onEdit={openEdit}
                 onArchive={setArchiveTarget}
               />
             ))}
