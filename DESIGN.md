@@ -346,7 +346,7 @@ Desktop app shell: fixed 240px accounts rail + fluid main, content max-width
 - Stat strip + quick-actions grid at top (Overview), then content flows
   directly — sections separated by at most 24px.
 - Ledger screens: sticky toolbar under a 56px header; day-sticky headers
-  (`--canvas` background blur); rows touch via separators (0 internal gaps).
+  (opaque tonal `--canvas` background); rows touch via separators (0 internal gaps).
 - Section separation: `section` (24px) max; related items group at `md`–`xl`.
 - Settings: grid gap-6 lg:grid-cols-2, final odd card lg:col-span-2 — no left-hung single column on wide viewports.
 
