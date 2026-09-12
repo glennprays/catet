@@ -472,7 +472,7 @@ single sans voice.
 
 ## 11. Implementation Foundation (build-time mapping)
 
-> Stitch project catet — Paper Editorial v2 (id projects/8388192028915929441) now carries the Paper Ledger v2 design system (the previous blue/Inter “Modern Professional” theme was drift and is superseded); the single Overview reference screen generated from it is exploratory evidence only.
+> Stitch project `catet — Paper Editorial v2` (id `projects/8388192028915929441`) retains the prior blue/Inter “Modern Professional” system. The raw Overview reference archived in `.stitch/designs/overview-raw.*` is exploratory evidence only; this repository's Paper Ledger v2 remains the implementation authority because the Stitch system refresh was intentionally skipped.
 
 The Next.js frontend adopts **shadcn/ui ("new-york") + Tremor data blocks** as
 its component foundation. Generator prompts never mention these names; this
