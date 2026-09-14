@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -13,7 +13,16 @@ type Step = "phone" | "code";
 
 const RESEND_SECONDS = 60;
 
+/** `useSearchParams` needs a suspense boundary to stay prerenderable. */
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const expired = useSearchParams().get("expired") === "1";
   const [step, setStep] = useState<Step>("phone");
