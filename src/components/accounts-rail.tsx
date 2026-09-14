@@ -11,15 +11,15 @@ import { sourceGlyph } from "@/lib/source-glyph";
 import { formatIDR } from "@/lib/money";
 import { useBadges, useSources, type SourcesData } from "@/lib/api/hooks";
 
-const MANAGE_LINKS = [
+const MANAGE_LINKS: { href: string; label: string; badge?: "inbox" }[] = [
   { href: "/", label: "Overview" },
   { href: "/transactions", label: "Transactions" },
+  { href: "/inbox", label: "Inbox", badge: "inbox" },
+  { href: "/sources", label: "Sources" },
   { href: "/categories", label: "Categories" },
   { href: "/bills", label: "Bills & Calendar" },
   { href: "/budgets", label: "Budgets" },
   { href: "/analytics", label: "Analytics" },
-  { href: "/needs-review", label: "Needs-Review", badge: "needs_review" as const },
-  { href: "/hold-queue", label: "Hold Queue", badge: "hold_queue" as const },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -68,12 +68,17 @@ export function AccountsRail({ initialSources }: { initialSources: SourcesData |
           <GroupLabel>Aset</GroupLabel>
           <ul className="grid gap-0.5">
             {assets.map((source) => (
-              <li key={source.id} className="flex h-8 items-center gap-2 rounded-sm px-2">
-                <SourceGlyphIcon type={source.type} />
-                <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
-                <span className="text-[13px] font-medium tabular-nums text-ink">
-                  {formatIDR(source.balance_minor)}
-                </span>
+              <li key={source.id}>
+                <Link
+                  href="/sources"
+                  className="flex h-8 items-center gap-2 rounded-sm px-2 hover:bg-surface-100"
+                >
+                  <SourceGlyphIcon type={source.type} />
+                  <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
+                  <span className="text-[13px] font-medium tabular-nums text-ink">
+                    {formatIDR(source.balance_minor)}
+                  </span>
+                </Link>
               </li>
             ))}
             {assets.length === 0 ? (
@@ -86,12 +91,19 @@ export function AccountsRail({ initialSources }: { initialSources: SourcesData |
               <GroupLabel>Utang</GroupLabel>
               <ul className="grid gap-0.5">
                 {debts.map((source) => (
-                  <li key={source.id} className="flex h-8 items-center gap-2 rounded-sm px-2">
-                    <SourceGlyphIcon type={source.type} />
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
-                    <span className="text-[13px] font-medium tabular-nums text-over-text">
-                      {formatIDR(source.balance_minor)}
-                    </span>
+                  <li key={source.id}>
+                    <Link
+                      href="/sources"
+                      className="flex h-8 items-center gap-2 rounded-sm px-2 hover:bg-surface-100"
+                    >
+                      <SourceGlyphIcon type={source.type} />
+                      <span className="min-w-0 flex-1 truncate text-[13px] text-ink">
+                        {source.name}
+                      </span>
+                      <span className="text-[13px] font-medium tabular-nums text-over-text">
+                        {formatIDR(source.balance_minor)}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -121,7 +133,10 @@ export function AccountsRail({ initialSources }: { initialSources: SourcesData |
       <nav aria-label="Navigasi utama" className="grid gap-0.5">
         {MANAGE_LINKS.map((link) => {
           const active = pathname === link.href;
-          const count = link.badge !== undefined && badges !== undefined ? badges[link.badge] : 0;
+          const count =
+            link.badge === undefined || badges === undefined
+              ? 0
+              : badges.needs_review + badges.hold_queue;
           return (
             <Link
               key={link.href}
