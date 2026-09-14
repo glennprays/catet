@@ -638,6 +638,9 @@ export interface components {
             source_name: string;
             /** @enum {string} */
             review_status: "clean" | "needs_review";
+            /** @enum {string|null} */
+            category_source?: "rules" | "llm" | "user" | "import" | null;
+            category_confidence?: number | null;
             voided: boolean;
             /** Format: uuid */
             reverses_transaction_id?: string | null;

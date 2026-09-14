@@ -145,12 +145,12 @@ export function LedgerRow({
 /** Loading skeleton matching the row geometry (DESIGN.md skeleton rule). */
 export function LedgerRowSkeleton() {
   return (
-    <div className="grid h-12 catet-shimmer grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border lg:h-9 sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto]">
-      <span className="size-2 rounded-full bg-surface-300" />
-      <span className="h-3.5 w-40 rounded-sm bg-surface-200" />
-      <span className="hidden h-3.5 w-16 rounded-sm bg-surface-200 sm:block" />
-      <span className="hidden h-3.5 w-20 rounded-sm bg-surface-200 sm:block" />
-      <span className="h-3.5 w-20 justify-self-end rounded-sm bg-surface-200" />
+    <div className="grid h-12 grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto] lg:h-9">
+      <span className="catet-shimmer size-2 rounded-full" />
+      <span className="catet-shimmer h-3.5 w-40 rounded-sm" />
+      <span className="catet-shimmer hidden h-3.5 w-16 rounded-sm sm:block" />
+      <span className="catet-shimmer hidden h-3.5 w-20 rounded-sm sm:block" />
+      <span className="catet-shimmer h-3.5 w-20 justify-self-end rounded-sm" />
     </div>
   );
 }
