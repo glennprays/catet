@@ -1,28 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { Banknote, Landmark, Plus, Send, Smartphone, Wallet } from "lucide-react";
+import { createElement, useState } from "react";
+import { Plus, Send, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { toastError } from "@/lib/toast";
-
-import { EmptyState, QueryErrorState } from "@/components/empty-state";
-
-import { PageHeader } from "@/components/page-header";
+import { AmountInput } from "@/components/amount-input";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
+import { FormField } from "@/components/form-field";
+import { MoneyText } from "@/components/money-text";
+import { PageHeader } from "@/components/page-header";
+import { Panel } from "@/components/panel";
+import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { RowActions } from "@/components/row-actions";
+import { SwitchRow } from "@/components/switch-row";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
-
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -31,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import {
   useAdjustSource,
   useArchiveSource,
@@ -40,19 +33,15 @@ import {
   useUpdateSource,
   type Source,
 } from "@/lib/api/hooks";
-import { formatIDR, parseSignedAmountToMinor } from "@/lib/money";
-
+import { sourceGlyph } from "@/lib/source-glyph";
+import { toastError } from "@/lib/toast";
 
 const SOURCE_TYPES = [
-  { value: "bank", label: "Bank", icon: Landmark },
-  { value: "cash", label: "Tunai", icon: Banknote },
-  { value: "ewallet", label: "E-Wallet", icon: Smartphone },
-  { value: "custom", label: "Lainnya", icon: Wallet },
+  { value: "bank", label: "Bank" },
+  { value: "cash", label: "Tunai" },
+  { value: "ewallet", label: "E-Wallet" },
+  { value: "custom", label: "Lainnya" },
 ];
-
-function typeIcon(type: string) {
-  return SOURCE_TYPES.find((item) => item.value === type)?.icon ?? Wallet;
-}
 
 export default function SourcesPage() {
   const sources = useSources();
@@ -64,8 +53,9 @@ export default function SourcesPage() {
   const [editing, setEditing] = useState<Source | null>(null);
   const [adjustTarget, setAdjustTarget] = useState<Source | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Source | null>(null);
-  function openForm() {
-    setEditing(null);
+
+  function openForm(target: Source | null) {
+    setEditing(target);
     setFormOpen(true);
   }
 
@@ -78,7 +68,7 @@ export default function SourcesPage() {
             <Button variant="secondary" onClick={() => openCreate("transfer")}>
               <Send className="size-4" /> Transfer
             </Button>
-            <Button onClick={openForm}>
+            <Button onClick={() => openForm(null)}>
               <Plus className="size-4" /> Tambah
             </Button>
           </>
@@ -87,9 +77,9 @@ export default function SourcesPage() {
 
       <div className="py-4">
         {sources.isPending ? (
-          <div className="grid gap-2">
-            {Array.from({ length: 3 }, (_, index) => (
-              <Skeleton key={index} className="h-12 w-full rounded-md" />
+          <div className="grid gap-2 sm:grid-cols-2">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-24 w-full rounded-md" />
             ))}
           </div>
         ) : sources.isError ? (
@@ -100,22 +90,21 @@ export default function SourcesPage() {
             heading="Belum ada sumber dana"
             caption="Rekening, tunai, atau e-wallet — ini titik awal catet."
             action={
-              <Button variant="secondary" onClick={openForm}>
+              <Button variant="secondary" onClick={() => openForm(null)}>
                 Tambah sumber
               </Button>
             }
           />
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
-            {list.map((source) => {
-              const Icon = typeIcon(source.type);
-              return (
-                <li
-                  key={source.id}
-                  className="group rounded-md border border-border bg-surface p-3 transition-colors hover:border-border-strong"
-                >
+            {list.map((source) => (
+              <li key={source.id} id={source.id}>
+                <Panel density="compact">
                   <div className="flex items-center gap-2.5">
-                    <Icon className="size-4 text-ash" strokeWidth={1.75} />
+                    {createElement(sourceGlyph(source.type), {
+                      className: "size-4 shrink-0 text-ash",
+                      strokeWidth: 1.75,
+                    })}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[15px] text-ink">{source.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -124,57 +113,44 @@ export default function SourcesPage() {
                         {source.is_debt ? " · utang" : ""}
                       </p>
                     </div>
-                    <p
-                      className={`text-[15px] font-medium tabular-nums ${
-                        source.balance_minor < 0 ? "text-over-text" : "text-ink"
-                      }`}
-                    >
-                      {formatIDR(source.balance_minor)}
-                    </p>
+                    <MoneyText
+                      minor={source.balance_minor}
+                      size="lg"
+                      tone={source.balance_minor < 0 ? "over" : "neutral"}
+                    />
                   </div>
-                  <div className="mt-2 flex gap-1.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditing(source);
-                        setFormOpen(true);
-                      }}
-                    >
-                      Ubah
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAdjustTarget(source)}
-                    >
-                      Koreksi saldo
-                    </Button>
-                    {source.archived_at === null ? (
-                      <Button
-                        variant="dangerGhost"
-                        size="sm"
-                        onClick={() => setArchiveTarget(source)}
-                      >
-                        Arsipkan
-                      </Button>
-                    ) : null}
+                  <div className="mt-2">
+                    <RowActions
+                      actions={[
+                        { label: "Ubah", onClick: () => openForm(source) },
+                        { label: "Koreksi saldo", onClick: () => setAdjustTarget(source) },
+                        ...(source.archived_at === null
+                          ? [
+                              {
+                                label: "Arsipkan",
+                                tone: "danger" as const,
+                                onClick: () => setArchiveTarget(source),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
                   </div>
-                </li>
-              );
-            })}
+                </Panel>
+              </li>
+            ))}
           </ul>
         )}
 
-        {(sources.data?.total_debt_minor ?? 0) > 0 && sources.data !== undefined ? (
+        {sources.data !== undefined && sources.data.total_debt_minor > 0 ? (
           <p className="mt-4 text-[13px] text-over-text">
-            Total utang {formatIDR(-sources.data.total_debt_minor)}
+            Total utang {<MoneyText minor={-sources.data.total_debt_minor} size="sm" tone="over" />}
           </p>
         ) : null}
       </div>
 
-      <SourceFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
-      <AdjustDialog source={adjustTarget} onClose={() => setAdjustTarget(null)} />
+      <SourceFormSheet open={formOpen} onOpenChange={setFormOpen} editing={editing} />
+      <AdjustSheet source={adjustTarget} onClose={() => setAdjustTarget(null)} />
 
       <ConfirmDialog
         open={archiveTarget !== null}
@@ -201,7 +177,12 @@ export default function SourcesPage() {
   );
 }
 
-function SourceFormDialog({
+/**
+ * Create writes the opening balance as an adjustment right after the
+ * source exists: a new source that starts at Rp0 corrupts Safe-to-Spend
+ * until someone notices.
+ */
+function SourceFormSheet({
   open,
   onOpenChange,
   editing,
@@ -212,11 +193,12 @@ function SourceFormDialog({
 }) {
   const create = useCreateSource();
   const update = useUpdateSource();
+  const adjust = useAdjustSource();
 
-  // Fields initialize from the target each time the dialog opens.
   const [name, setName] = useState("");
   const [type, setType] = useState("bank");
   const [isDebt, setIsDebt] = useState(false);
+  const [openingMinor, setOpeningMinor] = useState<number | null>(null);
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
   const sessionKey = `${open ? "open" : "closed"}-${editing?.id ?? "new"}`;
@@ -225,12 +207,12 @@ function SourceFormDialog({
     setName(editing?.name ?? "");
     setType(editing?.type ?? "bank");
     setIsDebt(editing?.is_debt ?? false);
+    setOpeningMinor(null);
   }
 
-  const pending = create.isPending || update.isPending;
-  const displayName = editing !== null && name === "" ? editing.name : name;
+  const pending = create.isPending || update.isPending || adjust.isPending;
 
-  function submit() {
+  async function submit() {
     if (editing !== null) {
       const body: { name?: string; is_debt?: boolean } = {};
       if (name.trim() !== "" && name !== editing.name) {
@@ -243,107 +225,131 @@ function SourceFormDialog({
         onOpenChange(false);
         return;
       }
-      update.mutate(
-        { id: editing.id, ...body },
-        {
-          onSuccess: () => {
-            toast.success("Sumber diubah");
-            onOpenChange(false);
-          },
-          onError: (error) => toastError(error.message),
-        },
-      );
+      try {
+        await update.mutateAsync({ id: editing.id, ...body });
+        toast.success("Sumber diubah");
+        onOpenChange(false);
+      } catch (error) {
+        toastError(error instanceof Error ? error.message : "Gagal menyimpan");
+      }
       return;
     }
-    create.mutate(
-      { name: name.trim(), type, is_debt: isDebt },
-      {
-        onSuccess: () => {
-          toast.success("Sumber ditambahkan");
-          setName("");
-          onOpenChange(false);
-        },
-        onError: (error) => toastError(error.message),
-      },
-    );
+
+    let created: Source;
+    try {
+      created = await create.mutateAsync({ name: name.trim(), type, is_debt: isDebt });
+    } catch (error) {
+      toastError(error instanceof Error ? error.message : "Gagal menyimpan");
+      return;
+    }
+
+    if (openingMinor !== null && openingMinor !== 0) {
+      try {
+        await adjust.mutateAsync({
+          id: created.id,
+          amount_minor: openingMinor,
+          note: "Saldo awal",
+        });
+      } catch {
+        toastError("Sumber dibuat, saldo awal gagal — pakai Koreksi saldo");
+        onOpenChange(false);
+        return;
+      }
+    }
+    toast.success("Sumber ditambahkan");
+    onOpenChange(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editing === null ? "Tambah sumber" : "Ubah sumber"}</DialogTitle>
-          <DialogDescription>Tempat uang tinggal: rekening, tunai, atau e-wallet.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
-          <div className="grid gap-1.5">
-            <Label htmlFor="source-name">Nama</Label>
-            <Input
-              id="source-name"
-              value={displayName}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="mis. BCA"
-            />
-          </div>
-          {editing === null ? (
-            <div className="grid gap-1.5">
-              <Label>Jenis</Label>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SOURCE_TYPES.map((sourceType) => (
-                    <SelectItem key={sourceType.value} value={sourceType.value}>
-                      {sourceType.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
-          <div className="flex items-center justify-between rounded-md bg-surface-100 px-3 py-2.5">
-            <div>
-              <Label htmlFor="source-debt">Sumber utang</Label>
-              <p className="text-xs text-muted-foreground">Boleh minus (paylater, kartu kredit)</p>
-            </div>
-            <label htmlFor="source-debt" className="flex size-11 shrink-0 items-center justify-center">
-              <Switch id="source-debt" checked={isDebt} onCheckedChange={setIsDebt} />
-            </label>
-          </div>
-        </div>
-        <DialogFooter>
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={editing === null ? "Tambah sumber" : "Ubah sumber"}
+      description="Tempat uang tinggal: rekening, tunai, atau e-wallet."
+      footer={
+        <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button onClick={submit} disabled={pending || (editing === null && name.trim() === "")}>
             Simpan
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <FormField label="Nama" htmlFor="source-name">
+        <Input
+          id="source-name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="mis. BCA"
+        />
+      </FormField>
+
+      {editing === null ? (
+        <FormField label="Jenis" htmlFor="source-type">
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger id="source-type" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SOURCE_TYPES.map((sourceType) => (
+                <SelectItem key={sourceType.value} value={sourceType.value}>
+                  {sourceType.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      ) : null}
+
+      <SwitchRow
+        id="source-debt"
+        label="Sumber utang"
+        caption="Boleh minus (paylater, kartu kredit)"
+        checked={isDebt}
+        onCheckedChange={setIsDebt}
+      />
+
+      {editing === null ? (
+        <FormField label="Saldo saat ini" htmlFor="opening-balance" hint="opsional">
+          <AmountInput
+            id="opening-balance"
+            valueMinor={openingMinor}
+            onChangeMinor={setOpeningMinor}
+            allowNegative={isDebt}
+          />
+        </FormField>
+      ) : null}
+    </ResponsiveSheet>
   );
 }
 
-function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () => void }) {
-  const [amount, setAmount] = useState("");
+/**
+ * Correction takes the counted balance, not a signed delta: the user
+ * should never do the arithmetic the ledger can do.
+ */
+function AdjustSheet({ source, onClose }: { source: Source | null; onClose: () => void }) {
   const adjust = useAdjustSource();
+  const [countedMinor, setCountedMinor] = useState<number | null>(null);
+  const [initializedFor, setInitializedFor] = useState<string | null>(null);
+
+  if (source !== null && initializedFor !== source.id) {
+    setInitializedFor(source.id);
+    setCountedMinor(null);
+  }
+
+  const delta = source === null || countedMinor === null ? null : countedMinor - source.balance_minor;
 
   function submit() {
-    if (source === null) {
-      return;
-    }
-    const minor = parseSignedAmountToMinor(amount);
-    if (minor === null || minor === 0) {
-      toastError("Isi nominal koreksi");
+    if (source === null || delta === null || delta === 0) {
       return;
     }
     adjust.mutate(
-      { id: source.id, amount_minor: minor, note: "Setor koreksi" },
+      { id: source.id, amount_minor: delta, note: "Koreksi saldo" },
       {
         onSuccess: () => {
-          toast.success("Koreksi dicatat");
-          setAmount("");
+          toast.success("Saldo dikoreksi");
           onClose();
         },
         onError: (error) => toastError(error.message),
@@ -352,34 +358,39 @@ function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () 
   }
 
   return (
-    <Dialog open={source !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Setor koreksi — {source?.name}</DialogTitle>
-          <DialogDescription>
-            Samakan saldo catet dengan kenyataan. Positif menambah, negatif mengurangi
-            (mis. −15000).
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-1.5">
-          <Label htmlFor="adjust-amount">Nominal koreksi</Label>
-          <Input
-            id="adjust-amount"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            placeholder="mis. 50000 atau -15000"
-            className="tabular-nums"
-          />
-        </div>
-        <DialogFooter>
+    <ResponsiveSheet
+      open={source !== null}
+      onOpenChange={(open) => !open && onClose()}
+      title={`Koreksi saldo — ${source?.name ?? ""}`}
+      description="Samakan saldo catet dengan kenyataan. Isi saldo sebenarnya, selisihnya dihitung otomatis."
+      footer={
+        <>
           <Button variant="ghost" onClick={onClose}>
             Batal
           </Button>
-          <Button onClick={submit} disabled={adjust.isPending}>
-            Catat koreksi
+          <Button onClick={submit} disabled={adjust.isPending || delta === null || delta === 0}>
+            Simpan koreksi
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <FormField label="Saldo sebenarnya sekarang" htmlFor="counted-balance">
+        <AmountInput
+          id="counted-balance"
+          valueMinor={countedMinor}
+          onChangeMinor={setCountedMinor}
+          allowNegative
+        />
+      </FormField>
+      <p className="text-[13px] text-muted-foreground">
+        Saldo tercatat{" "}
+        <MoneyText minor={source?.balance_minor ?? 0} size="sm" tone="neutral" />
+        {delta === null ? null : (
+          <>
+            {" · "}Selisih: <MoneyText minor={delta} size="sm" signed />
+          </>
+        )}
+      </p>
+    </ResponsiveSheet>
   );
 }
