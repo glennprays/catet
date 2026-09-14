@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,14 +28,14 @@ export default function SettingsPage() {
   function save() {
     const horizon = Number.parseInt(days, 10);
     if (Number.isNaN(horizon) || horizon < 1 || horizon > 90) {
-      toast.error("Income horizon harus 1–90 hari");
+      toastError("Income horizon harus 1–90 hari");
       return;
     }
     update.mutate(
       { income_horizon_days: horizon },
       {
         onSuccess: () => toast.success("Pengaturan disimpan"),
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }
@@ -43,7 +45,7 @@ export default function SettingsPage() {
       await apiFetch("/auth/logout", { method: "POST" });
       router.replace("/login");
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Gagal logout");
+      toastError(error instanceof ApiError ? error.message : "Gagal logout");
     }
   }
 

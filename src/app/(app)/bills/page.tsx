@@ -4,6 +4,8 @@ import { useState } from "react";
 import { CalendarPlus, CalendarX } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -179,7 +181,7 @@ export default function BillsPage() {
                             onClick={() =>
                               deactivate.mutate(bill.id, {
                                 onSuccess: () => toast.success("Tagihan dinonaktifkan"),
-                                onError: (error) => toast.error(error.message),
+                                onError: (error) => toastError(error.message),
                               })
                             }
                           >
@@ -264,7 +266,7 @@ function BillFormDialog({
             toast.success("Tagihan diubah");
             onOpenChange(false);
           },
-          onError: (error) => toast.error(error.message),
+          onError: (error) => toastError(error.message),
         },
       );
       return;
@@ -274,7 +276,7 @@ function BillFormDialog({
         toast.success("Tagihan dibuat");
         onOpenChange(false);
       },
-      onError: (error) => toast.error(error.message),
+      onError: (error) => toastError(error.message),
     });
   }
 

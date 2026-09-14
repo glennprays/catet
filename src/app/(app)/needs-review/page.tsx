@@ -4,6 +4,8 @@ import { useState } from "react";
 import { CircleCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
@@ -36,14 +38,14 @@ export default function NeedsReviewPage() {
   function commit(item: LedgerItem) {
     const categoryId = draftByTx[item.transaction_id];
     if (categoryId === undefined || categoryId === "") {
-      toast.error("Pilih kategori dulu");
+      toastError("Pilih kategori dulu");
       return;
     }
     update.mutate(
       { id: item.transaction_id, category_id: categoryId },
       {
         onSuccess: () => toast.success("Kategori diperbarui"),
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }

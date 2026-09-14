@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toastError } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ export default function LoginPage() {
       await apiFetch("/auth/otp/request", { method: "POST", body: { phone } });
       setStep("code");
     } catch (error) {
-      toast.error(error instanceof ApiError ? error.message : "Gagal mengirim kode");
+      toastError(error instanceof ApiError ? error.message : "Gagal mengirim kode");
     } finally {
       setPending(false);
     }
@@ -41,7 +41,7 @@ export default function LoginPage() {
       router.replace("/");
     } catch (error) {
       setPending(false);
-      toast.error(error instanceof ApiError ? error.message : "Kode salah atau kedaluwarsa");
+      toastError(error instanceof ApiError ? error.message : "Kode salah atau kedaluwarsa");
     }
   }
 

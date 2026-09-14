@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Banknote, Landmark, Plus, Send, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 
 import { PageHeader } from "@/components/page-header";
@@ -191,7 +193,7 @@ export default function SourcesPage() {
               toast.success("Sumber diarsipkan");
               setArchiveTarget(null);
             },
-            onError: (error) => toast.error(error.message, { duration: Infinity }),
+            onError: (error) => toastError(error.message),
           });
         }}
       />
@@ -248,7 +250,7 @@ function SourceFormDialog({
             toast.success("Sumber diubah");
             onOpenChange(false);
           },
-          onError: (error) => toast.error(error.message),
+          onError: (error) => toastError(error.message),
         },
       );
       return;
@@ -261,7 +263,7 @@ function SourceFormDialog({
           setName("");
           onOpenChange(false);
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }
@@ -333,7 +335,7 @@ function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () 
     }
     const minor = parseSignedAmountToMinor(amount);
     if (minor === null || minor === 0) {
-      toast.error("Isi nominal koreksi");
+      toastError("Isi nominal koreksi");
       return;
     }
     adjust.mutate(
@@ -344,7 +346,7 @@ function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () 
           setAmount("");
           onClose();
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }

@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { PiggyBank } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
@@ -191,7 +193,7 @@ function DeleteButton({ row }: { row: BudgetRow }) {
               toast.success("Anggaran dihapus");
               setOpen(false);
             },
-            onError: (error) => toast.error(error.message, { duration: Infinity }),
+            onError: (error) => toastError(error.message),
           })
         }
       />
@@ -242,7 +244,7 @@ function BudgetFormDialog({
   function submit() {
     const minor = Number.parseInt(amount.replace(/\D/g, ""), 10) || 0;
     if (minor <= 0) {
-      toast.error("Isi nominal anggaran");
+      toastError("Isi nominal anggaran");
       return;
     }
     if (editing !== null) {
@@ -253,13 +255,13 @@ function BudgetFormDialog({
             toast.success("Anggaran diubah");
             onOpenChange(false);
           },
-          onError: (error) => toast.error(error.message),
+          onError: (error) => toastError(error.message),
         },
       );
       return;
     }
     if (categoryId === "") {
-      toast.error("Pilih kategori");
+      toastError("Pilih kategori");
       return;
     }
     create.mutate(
@@ -269,7 +271,7 @@ function BudgetFormDialog({
           toast.success("Anggaran dibuat");
           onOpenChange(false);
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }

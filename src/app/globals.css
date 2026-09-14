@@ -145,6 +145,20 @@ body {
   pointer-events: none;
 }
 
+/* Success cue: the row that just changed flashes teal, then settles. */
+@keyframes catet-flash {
+  from {
+    background: var(--safe-wash);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.catet-flash {
+  animation: catet-flash 900ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

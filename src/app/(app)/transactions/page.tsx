@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Inbox, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
@@ -76,7 +78,7 @@ export default function TransactionsPage() {
         toast.success("Transaksi di-void");
         setVoidTarget(null);
       },
-      onError: (error) => toast.error(error.message),
+      onError: (error) => toastError(error.message),
     });
   }
 
@@ -91,7 +93,7 @@ export default function TransactionsPage() {
           toast.success("Pembalikan dibuat");
           setReverseTarget(null);
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }

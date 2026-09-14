@@ -3,6 +3,8 @@
 import { Inbox } from "lucide-react";
 import { toast } from "sonner";
 
+import { toastError } from "@/lib/toast";
+
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -23,7 +25,7 @@ export default function HoldQueuePage() {
       {
         onSuccess: () =>
           toast.success(action === "confirm" ? "Dikonfirmasi" : "Dibuang"),
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }

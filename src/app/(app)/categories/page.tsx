@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Tags } from "lucide-react";
 import { toast } from "sonner";
+
+import { toastError } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 
@@ -164,7 +166,7 @@ export default function CategoriesPage() {
               toast.success("Kategori diarsipkan");
               setArchiveTarget(null);
             },
-            onError: (error) => toast.error(error.message, { duration: Infinity }),
+            onError: (error) => toastError(error.message),
           });
         }}
       />
@@ -209,7 +211,7 @@ function CategoryBranch({
                 update.mutate(
                   { id: node.category.id, essential },
                   {
-                    onError: (error) => toast.error(error.message),
+                    onError: (error) => toastError(error.message),
                   },
                 )
               }
@@ -308,7 +310,7 @@ function CategoryFormDialog({
             toast.success("Kategori diubah");
             onOpenChange(false);
           },
-          onError: (error) => toast.error(error.message),
+          onError: (error) => toastError(error.message),
         },
       );
       return;
@@ -325,7 +327,7 @@ function CategoryFormDialog({
           setName("");
           onOpenChange(false);
         },
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toastError(error.message),
       },
     );
   }
