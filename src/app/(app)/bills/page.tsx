@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { CalendarPlus, CalendarX } from "lucide-react";
 import { toast } from "sonner";
 
@@ -45,6 +44,7 @@ import {
   useUpdateBill,
   type Bill,
 } from "@/lib/api/hooks";
+import { jakartaDateKey, shortDateLabel } from "@/lib/time";
 import { formatIDR } from "@/lib/money";
 
 const CADENCES = [
@@ -64,12 +64,11 @@ export default function BillsPage() {
   const [month, setMonth] = useState<Date>(new Date());
 
   const list = bills.data?.bills ?? [];
-  const dueInMonth = list.filter(
-    (bill) =>
-      bill.active &&
-      format(new Date(bill.next_due_date), "yyyy-MM") === format(month, "yyyy-MM"),
-  );
-  const dueDays = new Set(dueInMonth.map((bill) => new Date(bill.next_due_date).getDate()));
+  // Due dates are `yyyy-MM-dd` strings already in Jakarta terms; match
+  // calendar cells on the full key so other months never light up.
+  const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
+  const dueKeys = new Set(list.filter((bill) => bill.active).map((bill) => bill.next_due_date));
+  const dueInMonthCount = [...dueKeys].filter((key) => key.startsWith(monthKey)).length;
 
   return (
     <>
@@ -93,11 +92,11 @@ export default function BillsPage() {
             mode="single"
             month={month}
             onMonthChange={setMonth}
-            modifiers={{ due: (date) => dueDays.has(date.getDate()) }}
+            modifiers={{ due: (date) => dueKeys.has(jakartaDateKey(date)) }}
             modifiersClassNames={{ due: "bg-warn-wash text-warn-text font-medium" }}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            Hari berwarna punya tagihan jatuh tempo bulan ini ({dueInMonth.length}).
+            Hari berwarna punya tagihan jatuh tempo bulan ini ({dueInMonthCount}).
           </p>
         </section>
 
@@ -151,7 +150,7 @@ export default function BillsPage() {
                         bill.cadence}
                     </TableCell>
                     <TableCell className="tabular-nums text-[13px]">
-                      {format(new Date(bill.next_due_date), "d MMM yyyy")}
+                      {shortDateLabel(`${bill.next_due_date}T00:00:00+07:00`)}
                     </TableCell>
                     <TableCell className="text-right">
                       {bill.active ? (
@@ -240,7 +239,7 @@ function BillFormDialog({
     setMin(editing === null ? "" : String(editing.amount_min_minor));
     setMax(editing === null ? "" : String(editing.amount_max_minor));
     setCadence(editing?.cadence ?? "monthly");
-    setDue(editing === null ? "" : format(new Date(editing.next_due_date), "yyyy-MM-dd"));
+    setDue(editing?.next_due_date ?? "");
     setSourceId(editing?.linked_source_id ?? "");
     setCategoryId(editing?.category_id ?? "");
   }

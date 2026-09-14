@@ -7,6 +7,7 @@ import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { dateTimeLabel } from "@/lib/time";
 import { useHoldQueue, useResolveHold, type PendingAction } from "@/lib/api/hooks";
 
 /** Hold Queue: parked tool calls awaiting named confirmation (ADR-0003). */
@@ -53,11 +54,7 @@ export default function HoldQueuePage() {
                   <div className="min-w-0">
                     <p className="text-[15px] font-medium text-ink">{item.summary}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {item.kind} ·{" "}
-                      {new Intl.DateTimeFormat("id-ID", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      }).format(new Date(item.created_at))}
+                      {item.kind} · {dateTimeLabel(item.created_at)}
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-1.5">

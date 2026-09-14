@@ -12,6 +12,7 @@ import {
   getDefaultClassNames,
   type DayButton,
 } from "react-day-picker"
+import { id as idLocale } from "date-fns/locale"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 
@@ -21,6 +22,7 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
+  locale = idLocale,
   formatters,
   components,
   ...props
@@ -32,6 +34,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      locale={locale}
       className={cn(
         "group/calendar bg-surface p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,

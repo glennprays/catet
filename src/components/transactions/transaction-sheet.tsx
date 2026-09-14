@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ import { ApiError } from "@/lib/api/client";
 import { useCreateTransaction, useUpdateTransaction } from "@/lib/api/hooks";
 import type { Category, LedgerItem, Source } from "@/lib/api/hooks";
 import { parseAmountToMinor } from "@/lib/money";
+import { jakartaDateKey, shortDateLabel } from "@/lib/time";
 
 export type Direction = "expense" | "income" | "transfer";
 export function validateTransactionFields({
@@ -209,7 +209,7 @@ export function TransactionSheet({
       source_id: sourceId,
       merchant: merchant === "" ? undefined : merchant,
       note: note === "" ? undefined : note,
-      occurred_date: date === undefined ? undefined : format(date, "yyyy-MM-dd"),
+      occurred_date: date === undefined ? undefined : jakartaDateKey(date),
     };
     if (direction === "transfer") {
       body.destination_source_id = destinationId;
@@ -393,7 +393,7 @@ function DatePicker({
           className={cn("w-full justify-start font-normal", date === undefined && "text-muted-foreground")}
         >
           <CalendarIcon className="size-4 text-ash" />
-          {date !== undefined ? format(date, "d MMM yyyy") : "Pilih tanggal"}
+          {date !== undefined ? shortDateLabel(date) : "Pilih tanggal"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
