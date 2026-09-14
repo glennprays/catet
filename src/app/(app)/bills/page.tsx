@@ -4,24 +4,24 @@ import { useState } from "react";
 import { CalendarPlus, CalendarX } from "lucide-react";
 import { toast } from "sonner";
 
-import { toastError } from "@/lib/toast";
-
-import { EmptyState, QueryErrorState } from "@/components/empty-state";
+import { AmountInput } from "@/components/amount-input";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { DatePicker } from "@/components/date-picker";
+import { EmptyState } from "@/components/empty-state";
+import { FormField } from "@/components/form-field";
+import { GroupLabel } from "@/components/group-label";
+import { ListRow } from "@/components/list-row";
+import { MoneyText } from "@/components/money-text";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
+import { Panel } from "@/components/panel";
+import { QueryBoundary } from "@/components/query-boundary";
+import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { RowActions } from "@/components/row-actions";
+import { SectionHeader } from "@/components/section-header";
+import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -29,14 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useBills,
   useCategories,
@@ -46,8 +39,8 @@ import {
   useUpdateBill,
   type Bill,
 } from "@/lib/api/hooks";
-import { jakartaDateKey, shortDateLabel } from "@/lib/time";
-import { formatIDR } from "@/lib/money";
+import { daysUntilJakarta, jakartaDateKey } from "@/lib/time";
+import { toastError } from "@/lib/toast";
 
 const CADENCES = [
   { value: "weekly", label: "Mingguan" },
@@ -55,6 +48,24 @@ const CADENCES = [
   { value: "annual", label: "Tahunan" },
 ];
 
+function dueLabel(days: number): string {
+  if (days === 0) {
+    return "Jatuh tempo hari ini";
+  }
+  return days < 0 ? `terlambat ${-days} hari` : `dalam ${days} hari`;
+}
+
+function dueTone(days: number): "over" | "warn" | "neutral" {
+  if (days < 0) {
+    return "over";
+  }
+  return days <= 3 ? "warn" : "neutral";
+}
+
+/**
+ * Bills, list-first: a 6-column horizontal-scroll table put status and
+ * actions off-screen at 360px. The calendar is the secondary view.
+ */
 export default function BillsPage() {
   const bills = useBills();
   const sources = useSources();
@@ -63,153 +74,205 @@ export default function BillsPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Bill | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Bill | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [month, setMonth] = useState<Date>(new Date());
 
   const list = bills.data?.bills ?? [];
-  // Due dates are `yyyy-MM-dd` strings already in Jakarta terms; match
-  // calendar cells on the full key so other months never light up.
+  const active = list
+    .filter((bill) => bill.active)
+    .sort((a, b) => jakartaDateKey(a.next_due_date).localeCompare(jakartaDateKey(b.next_due_date)));
+  const inactive = list.filter((bill) => !bill.active);
+
+  // Due dates are `yyyy-MM-dd` in Jakarta terms; match calendar cells on
+  // the full key so other months never light up.
+  const dueKeys = new Set(active.map((bill) => jakartaDateKey(bill.next_due_date)));
   const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, "0")}`;
-  const dueKeys = new Set(list.filter((bill) => bill.active).map((bill) => bill.next_due_date));
   const dueInMonthCount = [...dueKeys].filter((key) => key.startsWith(monthKey)).length;
+
+  function openForm(target: Bill | null) {
+    setEditing(target);
+    setFormOpen(true);
+  }
+
+  const calendarPanel = (
+    <Panel density="compact" title="Kalender" caption={`${dueInMonthCount} jatuh tempo bulan ini`}>
+      <Calendar
+        mode="single"
+        month={month}
+        onMonthChange={setMonth}
+        modifiers={{ due: (date) => dueKeys.has(jakartaDateKey(date)) }}
+        modifiersClassNames={{ due: "bg-warn-wash text-warn-text font-medium" }}
+      />
+    </Panel>
+  );
 
   return (
     <>
       <PageHeader
         title="Bills & Calendar"
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setFormOpen(true);
-            }}
-          >
+          <Button onClick={() => openForm(null)}>
             <CalendarPlus className="size-4" /> Tambah tagihan
           </Button>
         }
       />
 
-      <div className="grid gap-4 py-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <section aria-label="Kalender jatuh tempo" className="rounded-md border border-border bg-surface p-3">
-          <Calendar
-            mode="single"
-            month={month}
-            onMonthChange={setMonth}
-            modifiers={{ due: (date) => dueKeys.has(jakartaDateKey(date)) }}
-            modifiersClassNames={{ due: "bg-warn-wash text-warn-text font-medium" }}
+      <div className="grid gap-6 py-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <section aria-label="Daftar tagihan">
+          <SectionHeader
+            title="Tagihan berikutnya"
+            action={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setCalendarOpen((open) => !open)}
+              >
+                {calendarOpen ? "Sembunyikan kalender" : "Lihat kalender"}
+              </Button>
+            }
           />
-          <p className="mt-2 text-xs text-muted-foreground">
-            Hari berwarna punya tagihan jatuh tempo bulan ini ({dueInMonthCount}).
-          </p>
+
+          {calendarOpen ? <div className="mb-3 lg:hidden">{calendarPanel}</div> : null}
+
+          <QueryBoundary
+            query={bills}
+            isEmpty={(data) => data.bills.length === 0}
+            errorMessage="Tagihan gagal dimuat."
+            skeleton={
+              <div className="grid gap-2">
+                {Array.from({ length: 4 }, (_, index) => (
+                  <Skeleton key={index} className="h-12 w-full rounded-md" />
+                ))}
+              </div>
+            }
+            empty={
+              <EmptyState
+                icon={CalendarX}
+                heading="Belum ada tagihan"
+                caption="Sewa, langganan, cicilan — cadangkan nominalnya di Safe-to-Spend."
+                action={
+                  <Button variant="secondary" onClick={() => openForm(null)}>
+                    Buat tagihan
+                  </Button>
+                }
+              />
+            }
+          >
+            {() => (
+              <>
+                {active.map((bill) => {
+                  const days = daysUntilJakarta(bill.next_due_date);
+                  return (
+                    <ListRow
+                      key={bill.id}
+                      title={bill.name}
+                      caption={`${
+                        CADENCES.find((cadence) => cadence.value === bill.cadence)?.label ??
+                        bill.cadence
+                      } · ${dueLabel(days)}`}
+                      trailing={
+                        <span className="flex items-center gap-2">
+                          <AmountRange bill={bill} />
+                          <StatusBadge tone={dueTone(days)}>
+                            {days < 0 ? "Terlambat" : days === 0 ? "Hari ini" : `${days} hari`}
+                          </StatusBadge>
+                        </span>
+                      }
+                      actions={
+                        <RowActions
+                          actions={[
+                            { label: "Ubah", onClick: () => openForm(bill) },
+                            {
+                              label: "Nonaktifkan",
+                              tone: "danger",
+                              onClick: () => setDeactivateTarget(bill),
+                            },
+                          ]}
+                        />
+                      }
+                    />
+                  );
+                })}
+
+                {inactive.length > 0 ? (
+                  <>
+                    <GroupLabel>Nonaktif</GroupLabel>
+                    {inactive.map((bill) => (
+                      <ListRow
+                        key={bill.id}
+                        title={bill.name}
+                        caption={
+                          CADENCES.find((cadence) => cadence.value === bill.cadence)?.label ??
+                          bill.cadence
+                        }
+                        trailing={
+                          <span className="flex items-center gap-2">
+                            <AmountRange bill={bill} />
+                            <StatusBadge tone="neutral">Nonaktif</StatusBadge>
+                          </span>
+                        }
+                      />
+                    ))}
+                  </>
+                ) : null}
+              </>
+            )}
+          </QueryBoundary>
         </section>
 
-        <section aria-label="Daftar tagihan">
-          {bills.isPending ? (
-            <div className="grid gap-2">
-              {Array.from({ length: 4 }, (_, index) => (
-                <Skeleton key={index} className="h-12 w-full rounded-md" />
-              ))}
-            </div>
-          ) : bills.isError ? (
-            <QueryErrorState message="Tagihan gagal dimuat." onRetry={() => bills.refetch()} />
-          ) : list.length === 0 ? (
-            <EmptyState
-              icon={CalendarX}
-              heading="Belum ada tagihan"
-              caption="Sewa, langganan, cicilan — cadangkan nominalnya di Safe-to-Spend."
-              action={
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setEditing(null);
-                    setFormOpen(true);
-                  }}
-                >
-                  Buat tagihan
-                </Button>
-              }
-            />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-[11px] uppercase tracking-[0.05em]">Nama</TableHead>
-                  <TableHead className="text-[11px] uppercase tracking-[0.05em]">Band</TableHead>
-                  <TableHead className="text-[11px] uppercase tracking-[0.05em]">Kadence</TableHead>
-                  <TableHead className="text-[11px] uppercase tracking-[0.05em]">Jatuh tempo</TableHead>
-                  <TableHead className="text-right text-[11px] uppercase tracking-[0.05em]">Status</TableHead>
-                  <TableHead className="w-20" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {list.map((bill) => (
-                  <TableRow key={bill.id} className={bill.active ? "" : "opacity-50"}>
-                    <TableCell className="text-[13px]">{bill.name}</TableCell>
-                    <TableCell className="tabular-nums text-[13px]">
-                      {formatIDR(bill.amount_min_minor)}–{formatIDR(bill.amount_max_minor)}
-                    </TableCell>
-                    <TableCell className="text-[13px]">
-                      {CADENCES.find((cadence) => cadence.value === bill.cadence)?.label ??
-                        bill.cadence}
-                    </TableCell>
-                    <TableCell className="tabular-nums text-[13px]">
-                      {shortDateLabel(`${bill.next_due_date}T00:00:00+07:00`)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {bill.active ? (
-                        <Badge variant="safe">aktif</Badge>
-                      ) : (
-                        <Badge variant="secondary">nonaktif</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditing(bill);
-                            setFormOpen(true);
-                          }}
-                        >
-                          Ubah
-                        </Button>
-                        {bill.active ? (
-                          <Button
-                            variant="dangerGhost"
-                            size="sm"
-                            disabled={deactivate.isPending}
-                            onClick={() =>
-                              deactivate.mutate(bill.id, {
-                                onSuccess: () => toast.success("Tagihan dinonaktifkan"),
-                                onError: (error) => toastError(error.message),
-                              })
-                            }
-                          >
-                            Nonaktifkan
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </section>
+        <aside className="hidden lg:block" aria-label="Kalender jatuh tempo">
+          {calendarPanel}
+        </aside>
       </div>
 
-      <BillFormDialog
+      <BillFormSheet
         open={formOpen}
         onOpenChange={setFormOpen}
         editing={editing}
         sources={sources.data?.sources ?? []}
         categories={categories.data?.categories ?? []}
       />
+
+      <ConfirmDialog
+        open={deactivateTarget !== null}
+        onOpenChange={(open) => !open && setDeactivateTarget(null)}
+        title={`Nonaktifkan tagihan ${deactivateTarget?.name ?? ""}?`}
+        description="Tagihan berhenti dijadwalkan; bisa diaktifkan lagi nanti."
+        confirmLabel="Nonaktifkan"
+        pending={deactivate.isPending}
+        onConfirm={() => {
+          if (deactivateTarget === null) {
+            return;
+          }
+          deactivate.mutate(deactivateTarget.id, {
+            onSuccess: () => {
+              toast.success("Tagihan dinonaktifkan");
+              setDeactivateTarget(null);
+            },
+            onError: (error) => toastError(error.message),
+          });
+        }}
+      />
     </>
   );
 }
 
-function BillFormDialog({
+function AmountRange({ bill }: { bill: Bill }) {
+  if (bill.amount_min_minor === bill.amount_max_minor) {
+    return <MoneyText minor={bill.amount_min_minor} size="sm" tone="neutral" />;
+  }
+  return (
+    <span className="whitespace-nowrap">
+      <MoneyText minor={bill.amount_min_minor} size="sm" tone="neutral" />
+      <span className="text-muted-foreground">–</span>
+      <MoneyText minor={bill.amount_max_minor} size="sm" tone="neutral" />
+    </span>
+  );
+}
+
+function BillFormSheet({
   open,
   onOpenChange,
   editing,
@@ -226,10 +289,10 @@ function BillFormDialog({
   const update = useUpdateBill();
 
   const [name, setName] = useState("");
-  const [min, setMin] = useState("");
-  const [max, setMax] = useState("");
+  const [minMinor, setMinMinor] = useState<number | null>(null);
+  const [maxMinor, setMaxMinor] = useState<number | null>(null);
   const [cadence, setCadence] = useState("monthly");
-  const [due, setDue] = useState("");
+  const [due, setDue] = useState<Date | undefined>(undefined);
   const [sourceId, setSourceId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
@@ -238,10 +301,12 @@ function BillFormDialog({
   if (open && initializedFor !== sessionKey) {
     setInitializedFor(sessionKey);
     setName(editing?.name ?? "");
-    setMin(editing === null ? "" : String(editing.amount_min_minor));
-    setMax(editing === null ? "" : String(editing.amount_max_minor));
+    setMinMinor(editing?.amount_min_minor ?? null);
+    setMaxMinor(editing?.amount_max_minor ?? null);
     setCadence(editing?.cadence ?? "monthly");
-    setDue(editing?.next_due_date ?? "");
+    setDue(
+      editing === null ? undefined : new Date(editing.next_due_date),
+    );
     setSourceId(editing?.linked_source_id ?? "");
     setCategoryId(editing?.category_id ?? "");
   }
@@ -251,151 +316,121 @@ function BillFormDialog({
   function submit() {
     const body: Record<string, unknown> = {
       name: name.trim(),
-      amount_min_minor: Number.parseInt(min.replace(/\D/g, ""), 10) || 0,
-      amount_max_minor: Number.parseInt(max.replace(/\D/g, ""), 10) || 0,
+      amount_min_minor: minMinor ?? 0,
+      amount_max_minor: maxMinor ?? minMinor ?? 0,
       cadence,
-      next_due_date: due === "" ? undefined : due,
+      next_due_date: due === undefined ? undefined : jakartaDateKey(due),
       linked_source_id: sourceId === "" ? undefined : sourceId,
       category_id: categoryId === "" ? undefined : categoryId,
+    };
+    const done = (message: string) => {
+      toast.success(message);
+      onOpenChange(false);
     };
     if (editing !== null) {
       update.mutate(
         { id: editing.id, ...body },
-        {
-          onSuccess: () => {
-            toast.success("Tagihan diubah");
-            onOpenChange(false);
-          },
-          onError: (error) => toastError(error.message),
-        },
+        { onSuccess: () => done("Tagihan diubah"), onError: (error) => toastError(error.message) },
       );
       return;
     }
     create.mutate(body, {
-      onSuccess: () => {
-        toast.success("Tagihan dibuat");
-        onOpenChange(false);
-      },
+      onSuccess: () => done("Tagihan dibuat"),
       onError: (error) => toastError(error.message),
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editing === null ? "Tambah tagihan" : "Ubah tagihan"}</DialogTitle>
-          <DialogDescription>
-            Band min–max: reservasi memakai batas atas (konservatif).
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
-          <div className="grid gap-1.5">
-            <Label htmlFor="bill-name">Nama</Label>
-            <Input
-              id="bill-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="mis. Listrik"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="bill-min">Band min</Label>
-              <Input
-                id="bill-min"
-                value={min}
-                onChange={(event) => setMin(event.target.value)}
-                inputMode="numeric"
-                className="text-right tabular-nums"
-                placeholder="100000"
-              />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="bill-max">Band max</Label>
-              <Input
-                id="bill-max"
-                value={max}
-                onChange={(event) => setMax(event.target.value)}
-                inputMode="numeric"
-                className="text-right tabular-nums"
-                placeholder="250000"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label>Kadence</Label>
-              <Select value={cadence} onValueChange={setCadence}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CADENCES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="bill-due">Jatuh tempo berikutnya</Label>
-              <Input
-                id="bill-due"
-                type="date"
-                value={due}
-                onChange={(event) => setDue(event.target.value)}
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label>Sumber terhubung</Label>
-              <Select value={sourceId} onValueChange={(value) => setSourceId(value === "none" ? "" : value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Opsional" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Tidak ada</SelectItem>
-                  {sources.map((source) => (
-                    <SelectItem key={source.id} value={source.id}>
-                      {source.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label>Kategori</Label>
-              <Select value={categoryId} onValueChange={(value) => setCategoryId(value === "none" ? "" : value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Opsional" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Tidak ada</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={editing === null ? "Tambah tagihan" : "Ubah tagihan"}
+      description="Rentang nominal min–max: reservasi memakai batas atas (konservatif)."
+      footer={
+        <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button
             onClick={submit}
-            disabled={pending || name.trim() === "" || due === ""}
+            disabled={pending || name.trim() === "" || due === undefined || minMinor === null}
           >
             Simpan
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <FormField label="Nama" htmlFor="bill-name">
+        <Input
+          id="bill-name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="mis. Listrik"
+        />
+      </FormField>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <FormField label="Minimal" htmlFor="bill-min">
+          <AmountInput id="bill-min" valueMinor={minMinor} onChangeMinor={setMinMinor} />
+        </FormField>
+        <FormField label="Maksimal" htmlFor="bill-max">
+          <AmountInput id="bill-max" valueMinor={maxMinor} onChangeMinor={setMaxMinor} />
+        </FormField>
+      </div>
+
+      <FormField label="Siklus" htmlFor="bill-cadence">
+        <Select value={cadence} onValueChange={setCadence}>
+          <SelectTrigger id="bill-cadence" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CADENCES.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <FormField label="Jatuh tempo berikutnya" htmlFor="bill-due">
+        <DatePicker id="bill-due" date={due} onChange={setDue} />
+      </FormField>
+
+      <FormField label="Sumber terhubung" htmlFor="bill-source" hint="opsional">
+        <Select value={sourceId} onValueChange={(value) => setSourceId(value === "none" ? "" : value)}>
+          <SelectTrigger id="bill-source" className="w-full">
+            <SelectValue placeholder="Tidak ada" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Tidak ada</SelectItem>
+            {sources.map((source) => (
+              <SelectItem key={source.id} value={source.id}>
+                {source.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <FormField label="Kategori" htmlFor="bill-category" hint="opsional">
+        <Select
+          value={categoryId}
+          onValueChange={(value) => setCategoryId(value === "none" ? "" : value)}
+        >
+          <SelectTrigger id="bill-category" className="w-full">
+            <SelectValue placeholder="Tidak ada" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Tidak ada</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+    </ResponsiveSheet>
   );
 }

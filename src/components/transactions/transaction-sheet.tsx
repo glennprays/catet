@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CalendarIcon } from "lucide-react";
 
+import { AmountInput } from "@/components/amount-input";
+import { DatePicker } from "@/components/date-picker";
+import { FormField } from "@/components/form-field";
+import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { SegmentedControl } from "@/components/segmented-control";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -16,25 +17,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api/client";
 import { useCreateTransaction, useUpdateTransaction } from "@/lib/api/hooks";
 import type { Category, LedgerItem, Source } from "@/lib/api/hooks";
-import { parseAmountToMinor } from "@/lib/money";
-import { jakartaDateKey, shortDateLabel } from "@/lib/time";
+import { jakartaDateKey } from "@/lib/time";
 
 export type Direction = "expense" | "income" | "transfer";
+
+const DIRECTIONS = [
+  { value: "expense", label: "Keluar" },
+  { value: "income", label: "Masuk" },
+  { value: "transfer", label: "Pindah" },
+];
+
 export function validateTransactionFields({
   editing,
   direction,
@@ -89,7 +85,7 @@ export function TransactionSheet({
   initialDirection?: Direction;
 }) {
   const [direction, setDirection] = useState<Direction>("expense");
-  const [amount, setAmount] = useState("");
+  const [amountMinor, setAmountMinor] = useState<number | null>(null);
   const [sourceId, setSourceId] = useState("");
   const [destinationId, setDestinationId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -112,7 +108,7 @@ export function TransactionSheet({
     setFieldErrors({});
     if (editing !== null && editing !== undefined) {
       setDirection(editing.type === "adjustment" ? "expense" : (editing.type as Direction));
-      setAmount(String(Math.abs(editing.amount_minor)));
+      setAmountMinor(Math.abs(editing.amount_minor));
       setSourceId(editing.source_id);
       setDestinationId("");
       setCategoryId(editing.category_id ?? "");
@@ -121,7 +117,7 @@ export function TransactionSheet({
       setDate(new Date(editing.occurred_at));
     } else {
       setDirection(initialDirection ?? "expense");
-      setAmount("");
+      setAmountMinor(null);
       setSourceId("");
       setDestinationId("");
       setCategoryId("");
@@ -141,20 +137,17 @@ export function TransactionSheet({
   );
   const isEditing = editing !== null && editing !== undefined;
   const isAdjustment = editing?.type === "adjustment";
-
-
   const pending = createTx.isPending || updateTx.isPending;
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
-    const minor = parseAmountToMinor(amount);
-    if (minor === null || minor === 0) {
+    if (amountMinor === null || amountMinor === 0) {
       errors.amount_minor = "Nominal harus lebih dari nol";
     }
     Object.assign(
       errors,
       validateTransactionFields({
-        editing: editing !== null && editing !== undefined,
+        editing: isEditing,
         direction,
         sourceId,
         destinationId,
@@ -169,7 +162,7 @@ export function TransactionSheet({
     if (!validate()) {
       return;
     }
-    const minor = parseAmountToMinor(amount) ?? 0;
+    const minor = amountMinor ?? 0;
 
     const onError = (error: unknown) => {
       if (error instanceof ApiError && error.details !== undefined) {
@@ -186,7 +179,12 @@ export function TransactionSheet({
       if (minor !== Math.abs(editing.amount_minor)) {
         body.amount_minor = minor;
       }
-      if (direction !== "transfer" && !isAdjustment && categoryId !== "" && categoryId !== editing.category_id) {
+      if (
+        direction !== "transfer" &&
+        !isAdjustment &&
+        categoryId !== "" &&
+        categoryId !== editing.category_id
+      ) {
         body.category_id = categoryId;
       }
       if (note !== (editing.note ?? "")) {
@@ -200,13 +198,16 @@ export function TransactionSheet({
         // the user picked regardless of the browser's timezone.
         body.occurred_at = new Date(`${jakartaDateKey(date)}T12:00:00+07:00`).toISOString();
       }
-      updateTx.mutate({ id: editing.transaction_id, ...body }, {
-        onError,
-        onSuccess: () => {
-          toast.success("Transaksi diubah");
-          onOpenChange(false);
+      updateTx.mutate(
+        { id: editing.transaction_id, ...body },
+        {
+          onError,
+          onSuccess: () => {
+            toast.success("Transaksi diubah");
+            onOpenChange(false);
+          },
         },
-      });
+      );
       return;
     }
 
@@ -234,191 +235,118 @@ export function TransactionSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-md" side="right">
-        <SheetHeader>
-          <SheetTitle>{editing === null || editing === undefined ? "Tambah Transaksi" : "Ubah Transaksi"}</SheetTitle>
-          <SheetDescription>Catat uang keluar, masuk, atau pindah antar sumber.</SheetDescription>
-        </SheetHeader>
-
-        <div className="grid gap-4 px-4 py-2">
-          {!editing ? (
-            <Tabs
-              value={direction}
-              onValueChange={(value) => setDirection(value as Direction)}
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="expense">Keluar</TabsTrigger>
-                <TabsTrigger value="income">Masuk</TabsTrigger>
-                <TabsTrigger value="transfer">Pindah</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          ) : null}
-
-          <Field label="Nominal" error={fieldErrors.amount_minor}>
-            <div className="relative">
-              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[13px] text-muted-foreground">
-                Rp
-              </span>
-              <Input
-                inputMode="numeric"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                placeholder="0"
-                className="pr-3 pl-9 text-right text-[15px] font-medium tabular-nums"
-                autoFocus
-              />
-            </div>
-          </Field>
-
-          <Field
-            label={direction === "transfer" ? "Dari" : "Sumber"}
-            error={fieldErrors.source_id}
-            hint={isEditing ? "tidak bisa diubah — balikkan lalu catat ulang" : undefined}
-          >
-            <Select value={sourceId} onValueChange={setSourceId} disabled={isEditing}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih sumber" />
-              </SelectTrigger>
-              <SelectContent>
-                {activeSources.map((source) => (
-                  <SelectItem key={source.id} value={source.id}>
-                    {source.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          {direction === "transfer" && !isEditing ? (
-            <Field label="Ke" error={fieldErrors.destination_source_id}>
-              <Select value={destinationId} onValueChange={setDestinationId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pilih tujuan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeSources
-                    .filter((source) => source.id !== sourceId)
-                    .map((source) => (
-                      <SelectItem key={source.id} value={source.id}>
-                        {source.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          ) : direction !== "transfer" && (!isEditing || !isAdjustment) ? (
-            <Field label="Kategori" error={fieldErrors.category_id}>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pilih kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          ) : null}
-
-          <Field label="Tanggal">
-            <DatePicker date={date} onChange={setDate} />
-          </Field>
-
-          <Field label="Merchant" hint="opsional">
-            <Input
-              value={merchant}
-              onChange={(event) => setMerchant(event.target.value)}
-              placeholder="mis. Kopi Kenangan"
-            />
-          </Field>
-
-          <Field label="Catatan" hint="opsional">
-            <Textarea
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              rows={2}
-              placeholder="detail kecil"
-            />
-          </Field>
-        </div>
-
-        <Separator />
-        <SheetFooter className="mt-2">
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? "Ubah Transaksi" : "Tambah Transaksi"}
+      description="Catat uang keluar, masuk, atau pindah antar sumber."
+      footer={
+        <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button onClick={submit} disabled={pending} className="min-w-24">
-            {editing === null || editing === undefined ? "Simpan" : "Ubah"}
+            {isEditing ? "Ubah" : "Simpan"}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function Field({
-  label,
-  error,
-  hint,
-  children,
-}: {
-  label: string;
-  error?: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label className="flex items-baseline justify-between">
-        <span>{label}</span>
-        {hint !== undefined ? (
-          <span className="text-xs font-normal text-muted-foreground">{hint}</span>
-        ) : null}
-      </Label>
-      {children}
-      {error !== undefined ? (
-        <p className="text-xs text-over-text" role="alert">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function DatePicker({
-  date,
-  onChange,
-}: {
-  date: Date | undefined;
-  onChange: (date: Date | undefined) => void;
-}) {
-  const [pickerOpen, setPickerOpen] = useState(false);
-  return (
-    <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          className={cn("w-full justify-start font-normal", date === undefined && "text-muted-foreground")}
-        >
-          <CalendarIcon className="size-4 text-ash" />
-          {date !== undefined ? shortDateLabel(date) : "Pilih tanggal"}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={(selected) => {
-            onChange(selected);
-            setPickerOpen(false);
-          }}
-          disabled={{ after: new Date() }}
+        </>
+      }
+    >
+      {isEditing ? null : (
+        <SegmentedControl
+          aria-label="Arah transaksi"
+          value={direction}
+          onValueChange={(value) => setDirection(value as Direction)}
+          options={DIRECTIONS}
+          className="w-full"
         />
-      </PopoverContent>
-    </Popover>
+      )}
+
+      <FormField label="Nominal" htmlFor="tx-amount" error={fieldErrors.amount_minor}>
+        <AmountInput
+          id="tx-amount"
+          valueMinor={amountMinor}
+          onChangeMinor={setAmountMinor}
+          autoFocus
+          aria-describedby={fieldErrors.amount_minor === undefined ? undefined : "tx-amount-error"}
+        />
+      </FormField>
+
+      <FormField
+        label={direction === "transfer" ? "Dari" : "Sumber"}
+        htmlFor="tx-source"
+        error={fieldErrors.source_id}
+        hint={isEditing ? "tidak bisa diubah — balikkan lalu catat ulang" : undefined}
+      >
+        <Select value={sourceId} onValueChange={setSourceId} disabled={isEditing}>
+          <SelectTrigger id="tx-source" className="w-full">
+            <SelectValue placeholder="Pilih sumber" />
+          </SelectTrigger>
+          <SelectContent>
+            {activeSources.map((source) => (
+              <SelectItem key={source.id} value={source.id}>
+                {source.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      {direction === "transfer" && !isEditing ? (
+        <FormField label="Ke" htmlFor="tx-destination" error={fieldErrors.destination_source_id}>
+          <Select value={destinationId} onValueChange={setDestinationId}>
+            <SelectTrigger id="tx-destination" className="w-full">
+              <SelectValue placeholder="Pilih tujuan" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeSources
+                .filter((source) => source.id !== sourceId)
+                .map((source) => (
+                  <SelectItem key={source.id} value={source.id}>
+                    {source.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      ) : direction !== "transfer" && (!isEditing || !isAdjustment) ? (
+        <FormField label="Kategori" htmlFor="tx-category" error={fieldErrors.category_id}>
+          <Select value={categoryId} onValueChange={setCategoryId}>
+            <SelectTrigger id="tx-category" className="w-full">
+              <SelectValue placeholder="Pilih kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeCategories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      ) : null}
+
+      <FormField label="Tanggal" htmlFor="tx-date">
+        <DatePicker id="tx-date" date={date} onChange={setDate} disableFuture />
+      </FormField>
+
+      <FormField label="Merchant" htmlFor="tx-merchant" hint="opsional">
+        <Input
+          id="tx-merchant"
+          value={merchant}
+          onChange={(event) => setMerchant(event.target.value)}
+          placeholder="mis. Kopi Kenangan"
+        />
+      </FormField>
+
+      <FormField label="Catatan" htmlFor="tx-note" hint="opsional">
+        <Textarea
+          id="tx-note"
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+          rows={2}
+          placeholder="detail kecil"
+        />
+      </FormField>
+    </ResponsiveSheet>
   );
 }

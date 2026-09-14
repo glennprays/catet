@@ -88,9 +88,14 @@ export function dayLabel(iso: string | Date): string {
   return `${weekdayFmt.format(new Date(iso))}, ${dayFmt.format(new Date(iso))}`;
 }
 
-/** Whole days from today (Jakarta) to a `yyyy-MM-dd` key; negative = past. */
-export function daysUntilJakarta(dateKey: string): number {
-  const target = Date.parse(`${dateKey}T00:00:00+07:00`);
+/**
+ * Whole days from today to a date, in Jakarta. Accepts either a
+ * `yyyy-MM-dd` key or a full instant (the API sends both shapes).
+ * Negative = in the past.
+ */
+export function daysUntilJakarta(date: string | Date): number {
+  const key = /^\d{4}-\d{2}-\d{2}$/.test(String(date)) ? String(date) : jakartaDateKey(date);
+  const target = Date.parse(`${key}T00:00:00+07:00`);
   const today = Date.parse(`${todayJakartaKey()}T00:00:00+07:00`);
   return Math.round((target - today) / 86_400_000);
 }

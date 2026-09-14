@@ -211,7 +211,7 @@ function attentionItems({
 
   const nextBill = (bills ?? [])
     .filter((bill) => bill.active && daysUntilJakarta(bill.next_due_date) <= 7)
-    .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date))[0];
+    .sort((a, b) => daysUntilJakarta(a.next_due_date) - daysUntilJakarta(b.next_due_date))[0];
   if (nextBill !== undefined) {
     const days = daysUntilJakarta(nextBill.next_due_date);
     items.push({

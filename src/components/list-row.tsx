@@ -43,7 +43,7 @@ export function ListRow({
   return (
     <div
       className={cn(
-        "flex min-h-12 items-center gap-3 border-b border-border pr-1",
+        "flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border py-1.5 pr-1",
         flash && "catet-flash",
         className,
       )}
@@ -51,12 +51,12 @@ export function ListRow({
     >
       {leading !== undefined ? <span className="shrink-0">{leading}</span> : null}
       {onClick === undefined ? (
-        <span className="min-w-0 flex-1 leading-tight">{body}</span>
+        <span className="min-w-0 flex-1 basis-40 leading-tight">{body}</span>
       ) : (
         <button
           type="button"
           onClick={onClick}
-          className="min-w-0 flex-1 rounded-sm py-1 text-left leading-tight focus-visible:ring-[3px] focus-visible:ring-safe-wash focus-visible:outline-none"
+          className="min-w-0 flex-1 basis-40 rounded-sm py-1 text-left leading-tight focus-visible:ring-[3px] focus-visible:ring-safe-wash focus-visible:outline-none"
         >
           {body}
         </button>
