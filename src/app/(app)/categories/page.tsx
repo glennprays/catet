@@ -96,7 +96,7 @@ export default function CategoriesPage() {
         title="Categories"
         actions={
           <Button onClick={() => openCreate(null)}>
-            <Tags className="size-4" /> Tambah kategori
+            <Tags className="size-4" strokeWidth={1.75} /> Tambah kategori
           </Button>
         }
       />

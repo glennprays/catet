@@ -61,8 +61,8 @@ export function formatJakartaDate(iso: string | Date, opts: Intl.DateTimeFormatO
   );
 }
 
-/** "08.14" in Asia/Jakarta. */
-export function timeLabel(iso: string | Date): string {
+/** "08.14" in Asia/Jakarta. Accepts epoch millis for cache timestamps. */
+export function timeLabel(iso: string | number | Date): string {
   return timeFmt.format(new Date(iso)).replace(":", ".");
 }
 

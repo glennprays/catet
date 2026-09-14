@@ -64,7 +64,7 @@ export default function BudgetsPage() {
                 setFormOpen(true);
               }}
             >
-              <PiggyBank className="size-4" /> Tambah
+              <PiggyBank className="size-4" strokeWidth={1.75} /> Tambah
             </Button>
           </div>
         }

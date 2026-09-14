@@ -110,7 +110,7 @@ export default function SettingsPage() {
               Keluar dari dashboard di perangkat ini.
             </p>
             <Button variant="secondary" onClick={logout} disabled={loggingOut}>
-              <LogOut className="size-4" /> {loggingOut ? "Keluar…" : "Logout"}
+              <LogOut className="size-4" strokeWidth={1.75} /> {loggingOut ? "Keluar…" : "Logout"}
             </Button>
           </div>
         </Panel>

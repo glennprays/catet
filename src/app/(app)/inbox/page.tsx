@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { CircleCheck, Inbox } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,6 +35,7 @@ import {
   type LedgerItem,
   type PendingAction,
   type Source,
+  type TransactionListEnvelope,
 } from "@/lib/api/hooks";
 import { groupByJakartaDay } from "@/lib/group-by-day";
 import { dateTimeLabel } from "@/lib/time";
@@ -247,6 +249,7 @@ function ReviewRow({
   onOpen: () => void;
 }) {
   const update = useUpdateTransaction();
+  const qc = useQueryClient();
   const [flash, setFlash] = useState(false);
 
   function save(categoryId: string) {
@@ -256,6 +259,28 @@ function ReviewRow({
         onSuccess: () => {
           setFlash(true);
           toast.success("Kategori disimpan");
+          // Let the teal flash play, then drop the row locally so the
+          // list settles even before the refetch lands.
+          setTimeout(() => {
+            qc.setQueryData<InfiniteData<TransactionListEnvelope>>(
+              ["transactions", "infinite", REVIEW_FILTERS],
+              (current) =>
+                current === undefined
+                  ? current
+                  : {
+                      ...current,
+                      pages: current.pages.map((page) => ({
+                        ...page,
+                        data: {
+                          ...page.data,
+                          transactions: (page.data?.transactions ?? []).filter(
+                            (row) => row.transaction_id !== item.transaction_id,
+                          ),
+                        },
+                      })),
+                    },
+            );
+          }, 900);
         },
         onError: (error) => toastError(error.message, () => save(categoryId)),
       },

@@ -25,6 +25,8 @@ import { jakartaDateKey } from "@/lib/time";
 
 export type Direction = "expense" | "income" | "transfer";
 
+const LAST_SOURCE_KEY = "catet:last-source-id";
+
 const DIRECTIONS = [
   { value: "expense", label: "Keluar" },
   { value: "income", label: "Masuk" },
@@ -118,7 +120,15 @@ export function TransactionSheet({
     } else {
       setDirection(initialDirection ?? "expense");
       setAmountMinor(null);
-      setSourceId("");
+      // Most captures come from the same wallet; remember it, but only
+      // honour it while that source still exists and is active.
+      const remembered = window.localStorage.getItem(LAST_SOURCE_KEY);
+      setSourceId(
+        remembered !== null &&
+          sources.some((source) => source.id === remembered && source.archived_at === null)
+          ? remembered
+          : "",
+      );
       setDestinationId("");
       setCategoryId("");
       setMerchant("");
@@ -228,6 +238,7 @@ export function TransactionSheet({
     createTx.mutate(body, {
       onError,
       onSuccess: () => {
+        window.localStorage.setItem(LAST_SOURCE_KEY, sourceId);
         toast.success("Transaksi dicatat");
         onOpenChange(false);
       },

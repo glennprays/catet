@@ -19,7 +19,7 @@ import {
   useSourceTypeMap,
 } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
-import { daysUntilJakarta, todayJakartaKey } from "@/lib/time";
+import { daysUntilJakarta, timeLabel, todayJakartaKey } from "@/lib/time";
 
 function stsTone(stsMinor: number): "safe" | "warn" | "over" {
   if (stsMinor > 0) {
@@ -51,10 +51,10 @@ export default function OverviewPage() {
         actions={
           <>
             <Button variant="secondary" onClick={() => openCreate("transfer")}>
-              <Send className="size-4" /> Transfer
+              <Send className="size-4" strokeWidth={1.75} /> Transfer
             </Button>
             <Button onClick={() => openCreate()}>
-              <Plus className="size-4" /> Tambah
+              <Plus className="size-4" strokeWidth={1.75} /> Tambah
             </Button>
           </>
         }
@@ -75,7 +75,14 @@ export default function OverviewPage() {
             />
           ) : (
             <>
-              <p className="text-xs text-muted-foreground">Safe-to-Spend</p>
+              <p className="text-xs text-muted-foreground">
+                Safe-to-Spend
+                {!overview.isFetching && overview.isStale ? (
+                  <span className="ml-1.5 text-ash">
+                    diperbarui {timeLabel(overview.dataUpdatedAt)} WIB
+                  </span>
+                ) : null}
+              </p>
               <MoneyText minor={data.sts_minor} size="xl" tone={stsTone(data.sts_minor)} />
               <p className="mt-1 text-[13px] text-muted-foreground">
                 Tersedia <MoneyText minor={data.available_minor} size="sm" tone="neutral" /> −
@@ -124,7 +131,7 @@ export default function OverviewPage() {
                 href="/transactions"
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-ink"
               >
-                Lihat semua <ArrowRight className="size-3" />
+                Lihat semua <ArrowRight className="size-3" strokeWidth={1.75} />
               </Link>
             }
           />

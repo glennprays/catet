@@ -66,10 +66,10 @@ export default function SourcesPage() {
         actions={
           <>
             <Button variant="secondary" onClick={() => openCreate("transfer")}>
-              <Send className="size-4" /> Transfer
+              <Send className="size-4" strokeWidth={1.75} /> Transfer
             </Button>
             <Button onClick={() => openForm(null)}>
-              <Plus className="size-4" /> Tambah
+              <Plus className="size-4" strokeWidth={1.75} /> Tambah
             </Button>
           </>
         }

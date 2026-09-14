@@ -75,14 +75,14 @@ export default function TransactionsPage() {
         title="Transactions"
         actions={
           <Button onClick={() => openCreate()}>
-            <Plus className="size-4" /> Tambah Transaksi
+            <Plus className="size-4" strokeWidth={1.75} /> Tambah Transaksi
           </Button>
         }
       />
 
       <FilterBar className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <div className="relative col-span-2 lg:col-span-1">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ash" />
+          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ash" strokeWidth={1.75} />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}

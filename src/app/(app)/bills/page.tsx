@@ -113,7 +113,7 @@ export default function BillsPage() {
         title="Bills & Calendar"
         actions={
           <Button onClick={() => openForm(null)}>
-            <CalendarPlus className="size-4" /> Tambah tagihan
+            <CalendarPlus className="size-4" strokeWidth={1.75} /> Tambah tagihan
           </Button>
         }
       />

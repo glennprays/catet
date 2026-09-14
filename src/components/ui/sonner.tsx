@@ -16,10 +16,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       position="bottom-right"
       duration={4000}
       icons={{
-        success: <CircleCheckIcon className="size-4 text-safe" />,
-        info: <InfoIcon className="size-4 text-ink-soft" />,
-        warning: <TriangleAlertIcon className="size-4 text-warn" />,
-        error: <OctagonXIcon className="size-4 text-over" />,
+        success: <CircleCheckIcon className="size-4 text-safe" strokeWidth={1.75} />,
+        info: <InfoIcon className="size-4 text-ink-soft" strokeWidth={1.75} />,
+        warning: <TriangleAlertIcon className="size-4 text-warn" strokeWidth={1.75} />,
+        error: <OctagonXIcon className="size-4 text-over" strokeWidth={1.75} />,
         loading: <Loader2Icon className="size-4 animate-spin text-muted-foreground" />,
       }}
       style={
