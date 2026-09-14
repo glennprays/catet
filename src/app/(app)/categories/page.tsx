@@ -6,19 +6,15 @@ import { toast } from "sonner";
 
 import { toastError } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { FormField } from "@/components/form-field";
+import { ListRow } from "@/components/list-row";
+import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { RowActions } from "@/components/row-actions";
+import { SwitchRow } from "@/components/switch-row";
 
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -126,7 +122,7 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="rounded-md border border-border bg-surface">
+          <ul aria-label="Kategori" className="rounded-md border border-border bg-surface">
             {tree.map((node) => (
               <CategoryBranch
                 key={node.category.id}
@@ -137,11 +133,11 @@ export default function CategoriesPage() {
                 onArchive={setArchiveTarget}
               />
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
-      <CategoryFormDialog
+      <CategoryFormSheet
         open={formOpen}
         onOpenChange={setFormOpen}
         editing={editing}
@@ -188,75 +184,65 @@ function CategoryBranch({
   onArchive: (category: Category) => void;
 }) {
   const update = useUpdateCategory();
+  const switchId = `category-essential-${node.category.id}`;
 
   return (
-    <div>
-      <div
-        className="group flex h-11 items-center gap-3 border-b border-border px-3 last:border-b-0"
-        style={{ paddingLeft: `${12 + depth * 20}px` }}
-      >
-        <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{node.category.name}</span>
-
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">Essential</span>
-          <label
-            htmlFor={`category-essential-${node.category.id}`}
-            className="flex size-11 shrink-0 items-center justify-center"
-          >
+    <li>
+      <ListRow
+        indent={depth}
+        title={node.category.name}
+        trailing={
+          <span className="flex items-center gap-2">
+            <label htmlFor={switchId} className="text-xs text-muted-foreground">
+              Kebutuhan
+            </label>
             <Switch
-              id={`category-essential-${node.category.id}`}
+              id={switchId}
               checked={node.category.essential}
               disabled={update.isPending}
               onCheckedChange={(essential) =>
                 update.mutate(
                   { id: node.category.id, essential },
                   {
+                    onSuccess: () =>
+                      toast.success(essential ? "Ditandai Kebutuhan" : "Ditandai Gaya hidup"),
                     onError: (error) => toastError(error.message),
                   },
                 )
               }
-              aria-label={`Essential ${node.category.name}`}
             />
-          </label>
-        </div>
+          </span>
+        }
+        actions={
+          <RowActions
+            actions={[
+              { label: "Sub", onClick: () => onAddChild(node.category) },
+              { label: "Ubah", onClick: () => onEdit(node.category) },
+              { label: "Arsipkan", tone: "danger", onClick: () => onArchive(node.category) },
+            ]}
+          />
+        }
+      />
 
-        <div className="flex gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onAddChild(node.category)}
-          >
-            Sub
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onEdit(node.category)}>
-            Ubah
-          </Button>
-          <Button
-            variant="dangerGhost"
-            size="sm"
-            onClick={() => onArchive(node.category)}
-          >
-            Arsipkan
-          </Button>
-        </div>
-      </div>
-
-      {node.children.map((child) => (
-        <CategoryBranch
-          key={child.category.id}
-          node={child}
-          depth={depth + 1}
-          onAddChild={onAddChild}
-          onEdit={onEdit}
-          onArchive={onArchive}
-        />
-      ))}
-    </div>
+      {node.children.length > 0 ? (
+        <ul>
+          {node.children.map((child) => (
+            <CategoryBranch
+              key={child.category.id}
+              node={child}
+              depth={depth + 1}
+              onAddChild={onAddChild}
+              onEdit={onEdit}
+              onArchive={onArchive}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </li>
   );
 }
 
-function CategoryFormDialog({
-
+function CategoryFormSheet({
   open,
   onOpenChange,
   editing,
@@ -333,63 +319,60 @@ function CategoryFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editing === null ? "Tambah kategori" : "Ubah kategori"}</DialogTitle>
-          <DialogDescription>
-            {parent !== null && editing === null
-              ? `Sub-kategori dari ${parent.name}.`
-              : "Kategori pengeluaran, bisa bertingkat."}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
-          <div className="grid gap-1.5">
-            <Label htmlFor="category-name">Nama</Label>
-            <Input
-              id="category-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="mis. Makanan"
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Induk</Label>
-            <Select value={parentId} onValueChange={(value) => setParentId(value === "root" ? "" : value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Tanpa induk" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="root">Tanpa induk</SelectItem>
-                {categories
-                  .filter((category) => category.id !== editing?.id)
-                  .map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-between rounded-md bg-surface-100 px-3 py-2.5">
-            <div>
-              <Label htmlFor="category-essential">Essential</Label>
-              <p className="text-xs text-muted-foreground">Kebutuhan pokok, bukan gaya hidup</p>
-            </div>
-            <label htmlFor="category-essential" className="flex size-11 shrink-0 items-center justify-center">
-              <Switch id="category-essential" checked={essential} onCheckedChange={setEssential} />
-            </label>
-          </div>
-        </div>
-        <DialogFooter>
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={editing === null ? "Tambah kategori" : "Ubah kategori"}
+      description={
+        parent !== null && editing === null
+          ? `Sub-kategori dari ${parent.name}.`
+          : "Kategori pengeluaran, bisa bertingkat."
+      }
+      footer={
+        <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button onClick={submit} disabled={pending || name.trim() === ""}>
             Simpan
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      <FormField label="Nama" htmlFor="category-name">
+        <Input
+          id="category-name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="mis. Makanan"
+        />
+      </FormField>
+
+      <FormField label="Induk" htmlFor="category-parent">
+        <Select value={parentId} onValueChange={(value) => setParentId(value === "root" ? "" : value)}>
+          <SelectTrigger id="category-parent" className="w-full">
+            <SelectValue placeholder="Tanpa induk" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="root">Tanpa induk</SelectItem>
+            {categories
+              .filter((category) => category.id !== editing?.id)
+              .map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </FormField>
+
+      <SwitchRow
+        id="category-essential"
+        label="Kebutuhan"
+        caption="Kebutuhan pokok, bukan gaya hidup"
+        checked={essential}
+        onCheckedChange={setEssential}
+      />
+    </ResponsiveSheet>
   );
 }

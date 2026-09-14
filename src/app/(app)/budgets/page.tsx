@@ -7,20 +7,16 @@ import { toast } from "sonner";
 import { toastError } from "@/lib/toast";
 
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
+import { AmountInput } from "@/components/amount-input";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { FormField } from "@/components/form-field";
+import { ListRow } from "@/components/list-row";
+import { ProgressBar } from "@/components/progress-bar";
+import { ResponsiveSheet } from "@/components/responsive-sheet";
+import { StatusBadge } from "@/components/status-badge";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -38,16 +34,6 @@ import {
   type BudgetRow,
 } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
-
-function thresholdOf(ratio: number): { badge: "safe" | "warn" | "over" | null; label: string; fill: string } {
-  if (ratio >= 1) {
-    return { badge: "over", label: "100%", fill: "bg-over" };
-  }
-  if (ratio >= 0.8) {
-    return { badge: "warn", label: "80%", fill: "bg-warn" };
-  }
-  return { badge: null, label: "", fill: "bg-safe" };
-}
 
 export default function BudgetsPage() {
   const [period, setPeriod] = useState(() => new Date().toISOString().slice(0, 7));
@@ -111,47 +97,51 @@ export default function BudgetsPage() {
             }
           />
         ) : (
-          <ul className="grid gap-3">
+          <ul>
             {rows.map((row) => {
               const ratio = row.amount_minor === 0 ? 0 : row.spent_minor / row.amount_minor;
-              const pct = Math.min(100, Math.round(ratio * 100));
-              const threshold = thresholdOf(ratio);
+              const tone = ratio >= 1 ? "over" : ratio >= 0.8 ? "warn" : "safe";
               return (
-                <li key={row.id} className="rounded-md border border-border bg-surface p-3">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-[15px] font-medium text-ink">{row.category_name}</p>
-                    <p className="text-[13px] tabular-nums text-ink-soft">
-                      <span className={ratio >= 1 ? "text-over-text" : ""}>
-                        {formatIDR(row.spent_minor)}
+                <li key={row.id}>
+                  <ListRow
+                    title={row.category_name}
+                    caption={
+                      <>
+                        {formatIDR(row.spent_minor)} dari {formatIDR(row.amount_minor)}
+                      </>
+                    }
+                    trailing={
+                      <span className="flex w-40 items-center gap-2 sm:w-56">
+                        <ProgressBar
+                          ratio={ratio}
+                          tone={tone}
+                          label={`Terpakai ${Math.round(ratio * 100)}% dari anggaran ${row.category_name}`}
+                        />
+                        {tone === "safe" ? (
+                          <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">
+                            {Math.round(ratio * 100)}%
+                          </span>
+                        ) : (
+                          <StatusBadge tone={tone}>{Math.round(ratio * 100)}%</StatusBadge>
+                        )}
                       </span>
-                      <span className="text-muted-foreground"> / {formatIDR(row.amount_minor)}</span>
-                    </p>
-                  </div>
-                  <div className="mt-2 flex items-center gap-3">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-300">
-                      <div className={`h-full rounded-full ${threshold.fill}`} style={{ width: `${pct}%` }} />
-                    </div>
-                    {threshold.badge !== null ? (
-                      <Badge variant={threshold.badge}>{threshold.label}</Badge>
-                    ) : (
-                      <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">
-                        {pct}%
+                    }
+                    actions={
+                      <span className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditing(row);
+                            setFormOpen(true);
+                          }}
+                        >
+                          Ubah
+                        </Button>
+                        <DeleteButton row={row} />
                       </span>
-                    )}
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditing(row);
-                          setFormOpen(true);
-                        }}
-                      >
-                        Ubah
-                      </Button>
-                      <DeleteButton row={row} />
-                    </div>
-                  </div>
+                    }
+                  />
                 </li>
               );
             })}
@@ -159,7 +149,7 @@ export default function BudgetsPage() {
         )}
       </div>
 
-      <BudgetFormDialog
+      <BudgetFormSheet
         open={formOpen}
         onOpenChange={setFormOpen}
         editing={editing}
@@ -201,7 +191,7 @@ function DeleteButton({ row }: { row: BudgetRow }) {
   );
 }
 
-function BudgetFormDialog({
+function BudgetFormSheet({
   open,
   onOpenChange,
   editing,
@@ -219,7 +209,7 @@ function BudgetFormDialog({
   const create = useCreateBudget();
   const update = useUpdateBudget();
   const [categoryId, setCategoryId] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amountMinor, setAmountMinor] = useState<number | null>(null);
   const [editPeriod, setEditPeriod] = useState(period);
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
@@ -227,7 +217,7 @@ function BudgetFormDialog({
   if (open && initializedFor !== sessionKey) {
     setInitializedFor(sessionKey);
     setCategoryId(editing?.category_id ?? "");
-    setAmount(editing === null ? "" : String(editing.amount_minor));
+    setAmountMinor(editing?.amount_minor ?? null);
     setEditPeriod(period);
   }
 
@@ -242,7 +232,7 @@ function BudgetFormDialog({
   );
 
   function submit() {
-    const minor = Number.parseInt(amount.replace(/\D/g, ""), 10) || 0;
+    const minor = amountMinor ?? 0;
     if (minor <= 0) {
       toastError("Isi nominal anggaran");
       return;
@@ -277,62 +267,52 @@ function BudgetFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{editing === null ? "Tambah anggaran" : "Ubah anggaran"}</DialogTitle>
-          <DialogDescription>Batas belanja per kategori per bulan.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
-          {editing === null ? (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
-                <Label>Kategori</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Pilih" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {available.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="budget-period">Periode</Label>
-                <Input
-                  id="budget-period"
-                  type="month"
-                  value={editPeriod}
-                  onChange={(event) => setEditPeriod(event.target.value)}
-                />
-              </div>
-            </div>
-          ) : null}
-          <div className="grid gap-1.5">
-            <Label htmlFor="budget-amount">Nominal</Label>
-            <Input
-              id="budget-amount"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              inputMode="numeric"
-              className="text-right tabular-nums"
-              placeholder="1500000"
-            />
-          </div>
-        </div>
-        <DialogFooter>
+    <ResponsiveSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={editing === null ? "Tambah anggaran" : "Ubah anggaran"}
+      description="Batas belanja per kategori per bulan."
+      footer={
+        <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button onClick={submit} disabled={create.isPending || update.isPending}>
             Simpan
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </>
+      }
+    >
+      {editing === null ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Kategori" htmlFor="budget-category">
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger id="budget-category" className="w-full">
+                <SelectValue placeholder="Pilih" />
+              </SelectTrigger>
+              <SelectContent>
+                {available.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label="Periode" htmlFor="budget-period">
+            <Input
+              id="budget-period"
+              type="month"
+              value={editPeriod}
+              onChange={(event) => setEditPeriod(event.target.value)}
+            />
+          </FormField>
+        </div>
+      ) : null}
+
+      <FormField label="Nominal" htmlFor="budget-amount">
+        <AmountInput id="budget-amount" valueMinor={amountMinor} onChangeMinor={setAmountMinor} />
+      </FormField>
+    </ResponsiveSheet>
   );
 }
