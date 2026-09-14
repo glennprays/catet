@@ -59,8 +59,8 @@ export default function HoldQueuePage() {
                   </div>
                   <div className="flex shrink-0 gap-1.5">
                     <Button
-                      variant="ghost"
-                      className="text-over-text hover:bg-over-wash"
+                      variant="dangerGhost"
+                      size="sm"
                       disabled={resolve.isPending}
                       onClick={() => resolveItem(item, "discard")}
                     >

@@ -218,20 +218,20 @@ function CategoryBranch({
         <div className="flex gap-1.5">
           <Button
             variant="ghost"
-            className="h-11 px-2 text-xs"
+            size="sm"
             onClick={() => onAddChild(node.category)}
           >
             Sub
           </Button>
-          <Button variant="ghost" className="h-11 px-2 text-xs" onClick={() => onEdit(node.category)}>
+          <Button variant="ghost" size="sm" onClick={() => onEdit(node.category)}>
             Ubah
           </Button>
           <Button
-            variant="ghost"
-            className="h-11 px-2 text-xs text-over-text hover:bg-over-wash"
+            variant="dangerGhost"
+            size="sm"
             onClick={() => onArchive(node.category)}
           >
-            Arsip
+            Arsipkan
           </Button>
         </div>
       </div>

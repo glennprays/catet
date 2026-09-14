@@ -138,7 +138,7 @@ export default function BudgetsPage() {
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
-                        className="h-7 px-2 text-xs"
+                        size="sm"
                         onClick={() => {
                           setEditing(row);
                           setFormOpen(true);
@@ -172,8 +172,8 @@ function DeleteButton({ id }: { id: string }) {
   const remove = useDeleteBudget();
   return (
     <Button
-      variant="ghost"
-      className="h-7 px-2 text-xs text-over-text hover:bg-over-wash"
+      variant="dangerGhost"
+      size="sm"
       disabled={remove.isPending}
       onClick={() =>
         remove.mutate(id, {

@@ -163,7 +163,7 @@ export default function BillsPage() {
                       <div className="flex justify-end gap-1">
                         <Button
                           variant="ghost"
-                          className="h-7 px-2 text-xs"
+                          size="sm"
                           onClick={() => {
                             setEditing(bill);
                             setFormOpen(true);
@@ -173,8 +173,8 @@ export default function BillsPage() {
                         </Button>
                         {bill.active ? (
                           <Button
-                            variant="ghost"
-                            className="h-7 px-2 text-xs text-over-text hover:bg-over-wash"
+                            variant="dangerGhost"
+                            size="sm"
                             disabled={deactivate.isPending}
                             onClick={() =>
                               deactivate.mutate(bill.id, {

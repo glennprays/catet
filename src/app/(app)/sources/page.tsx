@@ -132,7 +132,7 @@ export default function SourcesPage() {
                   <div className="mt-2 flex gap-1.5">
                     <Button
                       variant="ghost"
-                      className="h-11 px-2 text-xs"
+                      size="sm"
                       onClick={() => {
                         setEditing(source);
                         setFormOpen(true);
@@ -142,15 +142,15 @@ export default function SourcesPage() {
                     </Button>
                     <Button
                       variant="ghost"
-                      className="h-11 px-2 text-xs"
+                      size="sm"
                       onClick={() => setAdjustTarget(source)}
                     >
                       Setor koreksi
                     </Button>
                     {source.archived_at === null ? (
                       <Button
-                        variant="ghost"
-                        className="h-11 px-2 text-xs text-over-text hover:bg-over-wash"
+                        variant="dangerGhost"
+                        size="sm"
                         onClick={() => setArchiveTarget(source)}
                       >
                         Arsipkan
