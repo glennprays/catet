@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { EChartsOption } from "echarts";
 
-import { CHART_COLORS, EChart, chartBase, jutaLabel } from "@/components/charts/echart";
-
+import { CHART_COLORS, chartBase, jutaLabel } from "@/components/charts/echart";
+import { ChartFrame } from "@/components/chart-frame";
 import { PageHeader } from "@/components/page-header";
-import { QueryErrorState } from "@/components/empty-state";
-
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SegmentedControl } from "@/components/segmented-control";
+import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/lib/use-media-query";
 import {
   useAnalytics,
   type CategoryBreakdownData,
@@ -21,19 +21,21 @@ import {
 import { formatIDR } from "@/lib/money";
 
 const RANGES = [
-  { days: "7", label: "7 hari" },
-  { days: "30", label: "30 hari" },
-  { days: "90", label: "90 hari" },
-] as const;
+  { value: "7", label: "7 hari" },
+  { value: "30", label: "30 hari" },
+  { value: "90", label: "90 hari" },
+];
 
-const { INK, MUTED, BORDER, SAFE, WARN, OVER } = CHART_COLORS;
+const { INK, MUTED, BORDER, SAFE, WARN, OVER, SHEET, CANVAS, SURFACE_300 } = CHART_COLORS;
+
 export function runwayChartValue(runwayDays: number): number {
   return runwayDays === 0 ? 90 : runwayDays;
 }
 
-
 export default function AnalyticsPage() {
   const [rangeDays, setRangeDays] = useState<"7" | "30" | "90">("30");
+  const [drilled, setDrilled] = useState<string | null>(null);
+  const isPhone = useMediaQuery("(max-width: 767px)");
 
   // Trailing-N-day window ending today, Asia/Jakarta.
   const range = useMemo(() => {
@@ -53,154 +55,138 @@ export default function AnalyticsPage() {
   const merchants = useAnalytics<TopMerchantsData>("top-merchants", { ...queryParams, limit: 8 });
   const essential = useAnalytics<EssentialLifestyleData>("essential-lifestyle", queryParams);
 
+  const donutOption = useCallback(
+    (data: CategoryBreakdownData) => categoryDonutOption(data, drilled, !isPhone),
+    [drilled, isPhone],
+  );
+  const heatmapWindow = useCallback(
+    (data: HeatmapData) => heatmapOption(data, isPhone),
+    [isPhone],
+  );
+
   return (
     <>
       <PageHeader
         title="Analytics"
         actions={
-          <Tabs value={rangeDays} onValueChange={(value) => setRangeDays(value as "7" | "30" | "90")}>
-            <TabsList>
-              {RANGES.map((item) => (
-                <TabsTrigger key={item.days} value={item.days}>
-                  {item.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <SegmentedControl
+            aria-label="Rentang waktu"
+            value={rangeDays}
+            onValueChange={(value) => setRangeDays(value as "7" | "30" | "90")}
+            options={RANGES}
+          />
         }
       />
 
       <div className="grid gap-4 py-4 lg:grid-cols-2">
-        <ChartCard title="Kategori" caption={drillCaption(breakdown.data)}>
-          {breakdown.isError ? (
-            <QueryErrorState message="Kategori gagal dimuat." onRetry={() => breakdown.refetch()} />
-          ) : breakdown.data !== undefined && breakdown.data.categories.length > 0 ? (
-            <CategoryDonut data={breakdown.data} />
-          ) : (
-            <ChartEmpty />
+        <ChartFrame
+          title="Kategori"
+          caption={drilled === null ? "klik irisan untuk detail" : undefined}
+          action={
+            drilled === null ? undefined : (
+              <Button variant="ghost" size="sm" onClick={() => setDrilled(null)}>
+                ← kembali
+              </Button>
+            )
+          }
+          query={breakdown}
+          isEmpty={(data) => data.categories.length === 0}
+          ariaSummary={(data) =>
+            `Pengeluaran per kategori, total ${formatIDR(data.total_minor)}, terbesar ${
+              data.categories[0]?.name ?? "—"
+            }`
+          }
+          option={donutOption}
+          onSelect={(name) => setDrilled((current) => (current === null ? name : null))}
+        >
+          {(data) => <CategoryLegend data={data} drilled={drilled} />}
+        </ChartFrame>
 
-          )}
-        </ChartCard>
+        <ChartFrame
+          title="Pemasukan vs Pengeluaran"
+          caption="per minggu"
+          query={incomeExpense}
+          isEmpty={(data) => data.buckets.length === 0}
+          ariaSummary={(data) =>
+            `Pemasukan versus pengeluaran per minggu, ${data.buckets.length} minggu`
+          }
+          option={incomeExpenseOption}
+        />
 
-        <ChartCard title="Pemasukan vs Pengeluaran" caption="per minggu">
-          {incomeExpense.isError ? (
-            <QueryErrorState message="Arus kas gagal dimuat." onRetry={() => incomeExpense.refetch()} />
-          ) : incomeExpense.data !== undefined && incomeExpense.data.buckets.length > 0 ? (
-            <EChart className="h-64 w-full" option={incomeExpenseOption(incomeExpense.data)} />
-          ) : (
-            <ChartEmpty />
+        <ChartFrame
+          title="Safe-to-Spend & Runway"
+          caption="STS kini, runway per hari"
+          query={stsTrend}
+          isEmpty={(data) => data.points.length === 0}
+          ariaSummary={(data) =>
+            `Tren Safe-to-Spend, terakhir ${formatIDR(
+              data.points[data.points.length - 1]?.sts_minor ?? 0,
+            )}`
+          }
+          option={stsOption}
+        />
 
-          )}
-        </ChartCard>
+        <ChartFrame
+          title="Heatmap harian"
+          caption="pengeluaran per hari, anomali > 2σ"
+          query={heatmap}
+          isEmpty={(data) => data.days.length === 0}
+          ariaSummary={(data) =>
+            `Pengeluaran harian, ${data.days.filter((day) => day.anomaly).length} hari anomali`
+          }
+          option={heatmapWindow}
+          height={isPhone ? 140 : 256}
+        />
 
-        <ChartCard title="Safe-to-Spend & Runway" caption="STS kini, runway per hari">
-          {stsTrend.isError ? (
-            <QueryErrorState message="Safe-to-Spend gagal dimuat." onRetry={() => stsTrend.refetch()} />
-          ) : stsTrend.data !== undefined && stsTrend.data.points.length > 0 ? (
-            <EChart className="h-64 w-full" option={stsOption(stsTrend.data)} />
-          ) : (
-            <ChartEmpty />
+        <ChartFrame
+          title="Merchant teratas"
+          caption="berdasarkan pengeluaran"
+          query={merchants}
+          isEmpty={(data) => data.merchants.length === 0}
+          ariaSummary={(data) =>
+            `Merchant teratas, terbesar ${data.merchants[0]?.name ?? "—"} ${formatIDR(
+              data.merchants[0]?.amount_minor ?? 0,
+            )}`
+          }
+          option={merchantsOption}
+        />
 
-          )}
-        </ChartCard>
-
-        <ChartCard title="Heatmap harian" caption="pengeluaran per hari, anomali > 2σ">
-          {heatmap.isError ? (
-            <QueryErrorState message="Heatmap gagal dimuat." onRetry={() => heatmap.refetch()} />
-          ) : heatmap.data !== undefined && heatmap.data.days.length > 0 ? (
-            <EChart className="h-64 w-full" option={heatmapOption(heatmap.data)} />
-          ) : (
-            <ChartEmpty />
-
-          )}
-        </ChartCard>
-
-        <ChartCard title="Merchant teratas" caption="berdasarkan pengeluaran">
-          {merchants.isError ? (
-            <QueryErrorState message="Merchant gagal dimuat." onRetry={() => merchants.refetch()} />
-          ) : merchants.data !== undefined && merchants.data.merchants.length > 0 ? (
-            <EChart className="h-64 w-full" option={merchantsOption(merchants.data)} />
-          ) : (
-            <ChartEmpty />
-
-          )}
-        </ChartCard>
-
-        <ChartCard title="Kebutuhan vs Gaya hidup" caption="periode terpilih">
-          {essential.isError ? (
-            <QueryErrorState message="Rincian kebutuhan gagal dimuat." onRetry={() => essential.refetch()} />
-          ) : essential.data !== undefined &&
-            essential.data.essential_minor + essential.data.lifestyle_minor > 0 ? (
-            <EChart className="h-64 w-full" option={essentialOption(essential.data)} />
-          ) : (
-            <ChartEmpty />
-          )}
-        </ChartCard>
+        <ChartFrame
+          title="Kebutuhan vs Gaya hidup"
+          caption="periode terpilih"
+          query={essential}
+          isEmpty={(data) => data.essential_minor + data.lifestyle_minor === 0}
+          ariaSummary={(data) =>
+            `Kebutuhan ${formatIDR(data.essential_minor)}, gaya hidup ${formatIDR(
+              data.lifestyle_minor,
+            )}`
+          }
+          option={essentialOption}
+        />
       </div>
     </>
   );
 }
 
-function drillCaption(data: CategoryBreakdownData | undefined): string {
-  return data === undefined ? "" : `total ${formatIDR(data.total_minor)} · klik irisan untuk detail`;
-}
+const SLICE_COLORS = [INK, MUTED, "#9b968e", "#c3bdb4", SAFE, WARN];
 
-function ChartCard({
-  title,
-  caption,
-  children,
-}: {
-  title: string;
-  caption?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-md border border-border bg-surface p-3">
-      <div className="mb-1 flex items-baseline justify-between">
-        <h2 className="text-[15px] font-medium text-ink">{title}</h2>
-        {caption !== undefined && caption !== "" ? (
-          <p className="text-xs text-muted-foreground">{caption}</p>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function ChartEmpty() {
-  return (
-    <div className="flex h-64 items-center justify-center text-[13px] text-muted-foreground">
-      Belum ada data pada periode ini.
-    </div>
-  );
-}
-
-// --------------------------------------------------------------- donut
-
-function CategoryDonut({ data }: { data: CategoryBreakdownData }) {
-  const [drilled, setDrilled] = useState<string | null>(null);
-  const [showInlineLabels, setShowInlineLabels] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 1024px)");
-    const update = () => setShowInlineLabels(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  const view = useMemo(() => {
-    if (drilled !== null) {
-      const parent = data.categories.find((node) => node.name === drilled);
-      if (parent !== undefined && (parent.children?.length ?? 0) > 0) {
-        return { name: `${parent.name} — sub`, items: parent.children ?? [] };
-      }
+function drilledView(data: CategoryBreakdownData, drilled: string | null) {
+  if (drilled !== null) {
+    const parent = data.categories.find((node) => node.name === drilled);
+    if (parent !== undefined && (parent.children?.length ?? 0) > 0) {
+      return parent.children ?? [];
     }
-    return { name: "Semua kategori", items: data.categories };
-  }, [data, drilled]);
+  }
+  return data.categories;
+}
 
-  const sliceColors = [INK, MUTED, "#9b968e", "#c3bdb4", SAFE, WARN];
-  const option: EChartsOption = {
+function categoryDonutOption(
+  data: CategoryBreakdownData,
+  drilled: string | null,
+  inlineLabels: boolean,
+): EChartsOption {
+  const items = drilledView(data, drilled);
+  return {
     ...chartBase(),
     tooltip: {
       ...chartBase().tooltip,
@@ -212,44 +198,43 @@ function CategoryDonut({ data }: { data: CategoryBreakdownData }) {
         type: "pie",
         radius: ["55%", "82%"],
         center: ["50%", "52%"],
-        itemStyle: { borderRadius: 4, borderColor: "#faf9f6", borderWidth: 2 },
-        label: { show: showInlineLabels, color: MUTED, fontSize: 11 },
-        labelLine: { show: showInlineLabels, lineStyle: { color: BORDER } },
-        data: view.items.map((node, index) => ({
+        itemStyle: { borderRadius: 4, borderColor: SHEET, borderWidth: 2 },
+        label: { show: inlineLabels, color: MUTED, fontSize: 11 },
+        labelLine: { show: inlineLabels, lineStyle: { color: BORDER } },
+        data: items.map((node, index) => ({
           name: node.name,
           value: node.amount_minor,
-          itemStyle: { color: sliceColors[index % sliceColors.length] },
+          itemStyle: { color: SLICE_COLORS[index % SLICE_COLORS.length] },
         })),
       },
     ],
   };
+}
 
+function CategoryLegend({
+  data,
+  drilled,
+}: {
+  data: CategoryBreakdownData;
+  drilled: string | null;
+}) {
+  const items = drilledView(data, drilled);
   return (
-    <div className="relative">
-      <EChart
-        className="h-64 w-full"
-        option={option}
-        onSelect={(name) => setDrilled((current) => (current === null ? name : null))}
-      />
-      <button
-        type="button"
-        className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 text-center text-xs text-muted-foreground hover:text-ink"
-        onClick={() => setDrilled(drilled === null ? data.categories[0]?.name ?? null : null)}
-      >
-        {drilled === null ? "klik irisan" : "← kembali"}
-      </button>
-      <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 lg:hidden" aria-label="Kategori">
-        {view.items.map((node, index) => {
-          const color = sliceColors[index % sliceColors.length];
-          return (
-            <li key={node.name} className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-              <span className="size-2 shrink-0 rounded-sm" style={{ backgroundColor: color }} aria-hidden="true" />
-              <span className="truncate">{node.name}</span>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
+    <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 lg:hidden" aria-label="Kategori">
+      {items.map((node, index) => (
+        <li
+          key={node.name}
+          className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+        >
+          <span
+            className="size-2 shrink-0 rounded-sm"
+            style={{ backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length] }}
+            aria-hidden="true"
+          />
+          <span className="truncate">{node.name}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -365,7 +350,7 @@ function stsOption(data: StsTrendData): EChartsOption {
   };
 }
 
-function heatmapOption(data: HeatmapData): EChartsOption {
+function heatmapOption(data: HeatmapData, isPhone: boolean): EChartsOption {
   const points: [string, number][] = data.days.map((day) => [day.date, day.outflow_minor]);
   const anomalies = data.days.filter((day) => day.anomaly).map((day) => [day.date, day.outflow_minor]);
   return {
@@ -381,14 +366,16 @@ function heatmapOption(data: HeatmapData): EChartsOption {
       min: 0,
       max: Math.max(...data.days.map((day) => day.outflow_minor), 1),
       show: false,
-      inRange: { color: ["#f2f1ee", "#e7e3dc", "rgba(196,122,18,0.45)", "#c47a12"] },
+      inRange: { color: [CANVAS, SURFACE_300, "rgba(196,122,18,0.45)", WARN] },
     },
     calendar: {
+      // Below md the month grid is unreadable: show a trailing strip instead.
       range: [data.days[0]?.date ?? "1970-01-01", data.days[data.days.length - 1]?.date ?? "1970-01-01"],
-      cellSize: ["auto", 18],
-      itemStyle: { color: "#f2f1ee", borderColor: "rgba(38,35,29,0.10)", borderWidth: 3 },
+      orient: isPhone ? "horizontal" : "horizontal",
+      cellSize: isPhone ? ["auto", 14] : ["auto", 18],
+      dayLabel: { show: !isPhone, color: MUTED, fontSize: 10 },
+      itemStyle: { color: CANVAS, borderColor: BORDER, borderWidth: 3 },
       splitLine: { show: false },
-      dayLabel: { color: MUTED, fontSize: 10 },
       monthLabel: { color: MUTED, fontSize: 11 },
       yearLabel: { show: false },
     },
@@ -405,7 +392,7 @@ function heatmapOption(data: HeatmapData): EChartsOption {
         coordinateSystem: "calendar",
         symbolSize: 10,
         data: anomalies,
-        itemStyle: { color: "#cf3f52" },
+        itemStyle: { color: OVER },
         z: 3,
       },
     ],
