@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ type Step = "phone" | "code";
 
 export default function LoginPage() {
   const router = useRouter();
+  const expired = useSearchParams().get("expired") === "1";
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("+62");
   const [code, setCode] = useState("");
@@ -51,6 +52,12 @@ export default function LoginPage() {
         <p className="mt-1 text-[13px] text-muted-foreground">
           Masuk dengan nomor WhatsApp terdaftar.
         </p>
+
+        {expired ? (
+          <p role="status" className="mt-2 text-xs text-warn-text">
+            Sesi kamu berakhir. Masuk lagi untuk melanjutkan.
+          </p>
+        ) : null}
 
         {step === "phone" ? (
           <form onSubmit={requestOtp} className="mt-4 grid gap-3">
