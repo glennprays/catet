@@ -38,6 +38,8 @@ export function useOverview() {
   return useQuery({
     queryKey: ["overview"],
     queryFn: () => apiGet<Overview>("/overview"),
+    // The WhatsApp bot writes while the dashboard is open.
+    refetchInterval: 60_000,
   });
 }
 
@@ -45,15 +47,18 @@ export function useBadges() {
   return useQuery({
     queryKey: ["badges"],
     queryFn: () => apiGet<BadgeCounts>("/badges"),
+    refetchInterval: 60_000,
   });
 }
 
 // ------------------------------------------------------------------ sources
 
-export function useSources(includeArchived = false) {
+/** `initialData` lets the server-rendered shell seed the rail's cache. */
+export function useSources(includeArchived = false, initialData?: SourcesData) {
   return useQuery({
     queryKey: ["sources", includeArchived],
     queryFn: () => apiGet<SourcesData>(`/sources${includeArchived ? "?include_archived=true" : ""}`),
+    initialData,
   });
 }
 
@@ -93,6 +98,7 @@ export function useAdjustSource() {
       qc.invalidateQueries({ queryKey: ["overview"] });
       qc.invalidateQueries({ queryKey: ["transactions"] });
       qc.invalidateQueries({ queryKey: ["analytics"] });
+      qc.invalidateQueries({ queryKey: ["badges"] });
     },
   });
 }
@@ -171,6 +177,7 @@ export function useUpdateTransaction() {
       qc.invalidateQueries({ queryKey: ["sources"] });
       qc.invalidateQueries({ queryKey: ["analytics"] });
       qc.invalidateQueries({ queryKey: ["budgets"] });
+      qc.invalidateQueries({ queryKey: ["badges"] });
     },
   });
 }
@@ -185,6 +192,7 @@ export function useVoidTransaction() {
       qc.invalidateQueries({ queryKey: ["sources"] });
       qc.invalidateQueries({ queryKey: ["analytics"] });
       qc.invalidateQueries({ queryKey: ["budgets"] });
+      qc.invalidateQueries({ queryKey: ["badges"] });
     },
   });
 }
@@ -200,6 +208,7 @@ export function useReverseTransaction() {
       qc.invalidateQueries({ queryKey: ["sources"] });
       qc.invalidateQueries({ queryKey: ["analytics"] });
       qc.invalidateQueries({ queryKey: ["budgets"] });
+      qc.invalidateQueries({ queryKey: ["badges"] });
     },
   });
 }

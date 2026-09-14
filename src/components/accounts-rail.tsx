@@ -2,13 +2,14 @@
 
 import { createElement } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { sourceGlyph } from "@/lib/source-glyph";
 import { formatIDR } from "@/lib/money";
-import { useBadges, type Source } from "@/lib/api/hooks";
+import { useBadges, useSources, type SourcesData } from "@/lib/api/hooks";
 
 const MANAGE_LINKS = [
   { href: "/", label: "Overview" },
@@ -23,38 +24,45 @@ const MANAGE_LINKS = [
 ];
 
 /**
- * Accounts rail. When the balance fetch failed, `totals` is null and
- * `failed` is true: the rail says so instead of rendering Rp0, which
- * would read as "you are broke" (truthfulness law, DESIGN.md §4).
+ * Accounts rail. Balances live in the client cache seeded by the server
+ * render, so bot writes and local mutations both refresh it. A failed
+ * fetch says so instead of rendering Rp0, which would read as "you are
+ * broke" (truthfulness law, DESIGN.md §4).
  */
-export function AccountsRail({
-  sources,
-  totals,
-  failed,
-}: {
-  sources: Source[];
-  totals: { available: number; debt: number } | null;
-  failed: boolean;
-}) {
+export function AccountsRail({ initialSources }: { initialSources: SourcesData | undefined }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const query = useSources(false, initialSources);
   const badges = useBadges().data;
-  const assets = sources.filter((source) => !source.is_debt);
-  const debts = sources.filter((source) => source.is_debt);
+  const data = query.data;
+  const assets = data?.sources.filter((source) => !source.is_debt) ?? [];
+  const debts = data?.sources.filter((source) => source.is_debt) ?? [];
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r border-border bg-canvas px-4 py-5 lg:flex">
       <p className="px-2 text-[20px] font-medium leading-[1.2] tracking-[-0.01em]">catet</p>
 
-      {failed ? (
-        <div className="mt-5 grid gap-1.5">
-          <p role="alert" className="rounded-sm bg-over-wash px-3 py-2 text-xs text-over-text">
-            Saldo tidak bisa dimuat.
-          </p>
-          <Button variant="ghost" size="sm" className="justify-self-start" onClick={() => router.refresh()}>
-            Muat ulang
-          </Button>
-        </div>
+      {data === undefined ? (
+        query.isError ? (
+          <div className="mt-5 grid gap-1.5">
+            <p role="alert" className="rounded-sm bg-over-wash px-3 py-2 text-xs text-over-text">
+              Saldo tidak bisa dimuat.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="justify-self-start"
+              onClick={() => query.refetch()}
+            >
+              Muat ulang
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-1.5 px-2">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-8 w-full rounded-sm" />
+            ))}
+          </div>
+        )
       ) : (
         <>
           <GroupLabel>Aset</GroupLabel>
@@ -90,20 +98,22 @@ export function AccountsRail({
             </>
           ) : null}
 
-          {totals !== null ? (
-            <div className="mt-3 border-t border-border px-2 pt-3 text-[13px]">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Total tersedia</span>
-                <span className="font-medium tabular-nums text-ink">{formatIDR(totals.available)}</span>
-              </div>
-              {totals.debt > 0 ? (
-                <div className="mt-1 flex items-center justify-between">
-                  <span className="text-muted-foreground">Utang</span>
-                  <span className="font-medium tabular-nums text-over-text">−{formatIDR(totals.debt)}</span>
-                </div>
-              ) : null}
+          <div className="mt-3 border-t border-border px-2 pt-3 text-[13px]">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Total tersedia</span>
+              <span className="font-medium tabular-nums text-ink">
+                {formatIDR(data.total_available_minor)}
+              </span>
             </div>
-          ) : null}
+            {data.total_debt_minor > 0 ? (
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-muted-foreground">Utang</span>
+                <span className="font-medium tabular-nums text-over-text">
+                  −{formatIDR(data.total_debt_minor)}
+                </span>
+              </div>
+            ) : null}
+          </div>
         </>
       )}
 

@@ -12,7 +12,9 @@ export function Providers({ children }: { children: ReactNode }) {
           queries: {
             staleTime: 30_000,
             retry: 1,
-            refetchOnWindowFocus: false,
+            // The bot writes while the tab is hidden; a focus is the
+            // cheapest signal that the view may be stale.
+            refetchOnWindowFocus: true,
           },
         },
       }),
