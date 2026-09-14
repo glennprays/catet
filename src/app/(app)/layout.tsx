@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AccountsRail } from "@/components/accounts-rail";
+import { CaptureSheetProvider } from "@/components/capture-sheet-provider";
 import { BottomNav } from "@/components/bottom-nav";
 import { backendFetch } from "@/lib/api/backend-fetch";
 import type { components } from "@/lib/api/schema";
@@ -31,14 +32,16 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-full">
-      <AccountsRail initialSources={sources} />
-      <div className="flex min-h-full w-full flex-col lg:pl-60">
-        <main className="mx-auto w-full max-w-[1160px] flex-1 px-4 pb-24 pt-0 lg:px-6 lg:pb-10">
-          {children}
-        </main>
+    <CaptureSheetProvider>
+      <div className="flex min-h-full">
+        <AccountsRail initialSources={sources} />
+        <div className="flex min-h-full w-full flex-col lg:pl-60">
+          <main className="mx-auto w-full max-w-[1160px] flex-1 px-4 pb-24 pt-0 lg:px-6 lg:pb-10">
+            {children}
+          </main>
+        </div>
+        <BottomNav />
       </div>
-      <BottomNav />
-    </div>
+    </CaptureSheetProvider>
   );
 }

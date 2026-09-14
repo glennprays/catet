@@ -16,17 +16,10 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
-import { TransactionSheet } from "@/components/transactions/transaction-sheet";
+import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
-import {
-  useCategories,
-  useOverview,
-  useSources,
-  type LedgerItem,
-} from "@/lib/api/hooks";
+import { useOverview, useSources } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
-import { useState } from "react";
-import type { Direction } from "@/components/transactions/transaction-sheet";
 
 const QUICK_ACTIONS = [
   { key: "add", label: "Tambah", icon: Plus },
@@ -50,25 +43,11 @@ function stsTone(stsMinor: number): string {
 export default function OverviewPage() {
   const overview = useOverview();
   const sources = useSources();
-  const categories = useCategories();
-
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [preset, setPreset] = useState<Direction | undefined>(undefined);
-  const [editing, setEditing] = useState<LedgerItem | null>(null);
+  const { openCreate, openEdit } = useCaptureSheet();
 
   const data = overview.data;
   const hasSources = (sources.data?.sources.length ?? 0) > 0;
   const totalSplit = (data?.essential_minor ?? 0) + (data?.lifestyle_minor ?? 0);
-
-  function openSheet(direction: Direction) {
-    setPreset(direction);
-    setSheetOpen(true);
-  }
-
-  function onEdit(item: LedgerItem) {
-    setEditing(item);
-    setSheetOpen(true);
-  }
 
   return (
     <>
@@ -135,7 +114,7 @@ export default function OverviewPage() {
                   key={action.key}
                   type="button"
                   className={className}
-                  onClick={() => openSheet(action.key === "transfer" ? "transfer" : "expense")}
+                  onClick={() => openCreate(action.key === "transfer" ? "transfer" : "expense")}
                 >
                   {inner}
                 </button>
@@ -180,7 +159,7 @@ export default function OverviewPage() {
           ) : data !== undefined && data.recent.length > 0 ? (
             <div>
               {data.recent.map((item) => (
-                <LedgerRow key={item.transaction_id} item={item} onEdit={onEdit} />
+                <LedgerRow key={item.transaction_id} item={item} onEdit={openEdit} />
               ))}
             </div>
           ) : (
@@ -212,20 +191,6 @@ export default function OverviewPage() {
           </section>
         ) : null}
       </div>
-
-      <TransactionSheet
-        open={sheetOpen}
-        onOpenChange={(open) => {
-          setSheetOpen(open);
-          if (!open) {
-            setEditing(null);
-          }
-        }}
-        categories={categories.data?.categories ?? []}
-        sources={sources.data?.sources ?? []}
-        initialDirection={preset}
-        editing={editing}
-      />
     </>
   );
 }

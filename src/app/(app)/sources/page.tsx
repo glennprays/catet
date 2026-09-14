@@ -8,6 +8,7 @@ import { EmptyState, QueryErrorState } from "@/components/empty-state";
 
 import { PageHeader } from "@/components/page-header";
 import { TypedConfirmation } from "@/components/typed-confirmation";
+import { useCaptureSheet } from "@/components/capture-sheet-provider";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,12 +34,11 @@ import {
   useAdjustSource,
   useArchiveSource,
   useCreateSource,
-  useCreateTransaction,
   useSources,
   useUpdateSource,
   type Source,
 } from "@/lib/api/hooks";
-import { formatIDR, parseAmountToMinor, parseSignedAmountToMinor } from "@/lib/money";
+import { formatIDR, parseSignedAmountToMinor } from "@/lib/money";
 
 
 const SOURCE_TYPES = [
@@ -54,15 +54,14 @@ function typeIcon(type: string) {
 
 export default function SourcesPage() {
   const sources = useSources();
+  const { openCreate } = useCaptureSheet();
   const list = sources.data?.sources ?? [];
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Source | null>(null);
   const [adjustTarget, setAdjustTarget] = useState<Source | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Source | null>(null);
-  const [transferOpen, setTransferOpen] = useState(false);
-
-  function openCreate() {
+  function openForm() {
     setEditing(null);
     setFormOpen(true);
   }
@@ -73,10 +72,10 @@ export default function SourcesPage() {
         title="Sources"
         actions={
           <>
-            <Button variant="secondary" onClick={() => setTransferOpen(true)}>
+            <Button variant="secondary" onClick={() => openCreate("transfer")}>
               <Send className="size-4" /> Transfer
             </Button>
-            <Button onClick={openCreate}>
+            <Button onClick={openForm}>
               <Plus className="size-4" /> Tambah
             </Button>
           </>
@@ -98,7 +97,7 @@ export default function SourcesPage() {
             heading="Belum ada sumber dana"
             caption="Rekening, tunai, atau e-wallet — ini titik awal catet."
             action={
-              <Button variant="secondary" onClick={openCreate}>
+              <Button variant="secondary" onClick={openForm}>
                 Tambah sumber
               </Button>
             }
@@ -173,11 +172,6 @@ export default function SourcesPage() {
 
       <SourceFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
       <AdjustDialog source={adjustTarget} onClose={() => setAdjustTarget(null)} />
-      <TransferDialog
-        open={transferOpen}
-        onOpenChange={setTransferOpen}
-        sources={list.filter((source) => source.archived_at === null)}
-      />
 
       <Dialog
         open={archiveTarget !== null}
@@ -401,107 +395,6 @@ function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () 
           </Button>
           <Button onClick={submit} disabled={adjust.isPending}>
             Catat koreksi
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function TransferDialog({
-  open,
-  onOpenChange,
-  sources,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  sources: Source[];
-}) {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [amount, setAmount] = useState("");
-  const createTx = useCreateTransaction();
-
-  function submit() {
-    const minor = parseAmountToMinor(amount);
-    if (from === "" || to === "" || minor === null || minor <= 0) {
-      toast.error("Lengkapi sumber, tujuan, dan nominal");
-      return;
-    }
-    if (from === to) {
-      toast.error("Tujuan harus berbeda dari sumber");
-      return;
-    }
-    createTx.mutate(
-      { type: "transfer", amount_minor: minor, source_id: from, destination_source_id: to },
-      {
-        onSuccess: () => {
-          toast.success("Transfer dicatat");
-          setAmount("");
-          onOpenChange(false);
-        },
-        onError: (error) => toast.error(error.message),
-      },
-    );
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Transfer antar sumber</DialogTitle>
-          <DialogDescription>Pindah uang antar rekening atau e-wallet milikmu.</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-3">
-          <div className="grid gap-1.5">
-            <Label>Dari</Label>
-            <Select value={from} onValueChange={setFrom}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih sumber" />
-              </SelectTrigger>
-              <SelectContent>
-                {sources.map((source) => (
-                  <SelectItem key={source.id} value={source.id}>
-                    {source.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-1.5">
-            <Label>Ke</Label>
-            <Select value={to} onValueChange={setTo}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih tujuan" />
-              </SelectTrigger>
-              <SelectContent>
-                {sources
-                  .filter((source) => source.id !== from)
-                  .map((source) => (
-                    <SelectItem key={source.id} value={source.id}>
-                      {source.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="transfer-amount">Nominal</Label>
-            <Input
-              id="transfer-amount"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              placeholder="0"
-              className="text-right tabular-nums"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Batal
-          </Button>
-          <Button onClick={submit} disabled={createTx.isPending}>
-            Transfer
           </Button>
         </DialogFooter>
       </DialogContent>

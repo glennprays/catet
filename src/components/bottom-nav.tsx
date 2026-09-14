@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, LayoutDashboard, MoreHorizontal, Plus, ReceiptText } from "lucide-react";
+import { useCaptureSheet } from "@/components/capture-sheet-provider";
 
 const ITEMS = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
@@ -15,22 +16,24 @@ const ITEMS = [
 /** Mobile bottom navigation with the center Add FAB (DESIGN.md §8). */
 export function BottomNav() {
   const pathname = usePathname();
+  const { openCreate } = useCaptureSheet();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(4rem+env(safe-area-inset-bottom))] items-stretch border-t border-border bg-canvas/95 pb-[env(safe-area-inset-bottom)] lg:hidden">
       {ITEMS.map((item) => {
         if (item.href === "add") {
           return (
-            <Link
+            <button
               key="add"
-              href="/transactions?add=1"
+              type="button"
               aria-label="Tambah transaksi"
               className="flex flex-1 items-center justify-center"
+              onClick={() => openCreate()}
             >
               <span className="flex size-11 items-center justify-center rounded-full bg-ink text-canvas">
                 <item.icon className="size-5" strokeWidth={2} />
               </span>
-            </Link>
+            </button>
           );
         }
         const active = pathname === item.href;

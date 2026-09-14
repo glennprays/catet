@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Inbox, Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,7 +9,7 @@ import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
 import { TypedConfirmation } from "@/components/typed-confirmation";
 
-import { TransactionSheet } from "@/components/transactions/transaction-sheet";
+import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  useCategories,
   useReverseTransaction,
   useSources,
   useTransactionsInfinite,
@@ -39,15 +37,13 @@ import {
 import { dayLabel } from "@/lib/time";
 
 export default function TransactionsPage() {
-  const searchParams = useSearchParams();
+  const { openCreate, openEdit } = useCaptureSheet();
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [direction, setDirection] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [sheetOpen, setSheetOpen] = useState(searchParams.get("add") === "1");
-  const [editing, setEditing] = useState<LedgerItem | null>(null);
   const [voidTarget, setVoidTarget] = useState<LedgerItem | null>(null);
   const [reverseTarget, setReverseTarget] = useState<LedgerItem | null>(null);
 
@@ -57,7 +53,6 @@ export default function TransactionsPage() {
   }, [query]);
 
   const sources = useSources();
-  const categories = useCategories();
   const voidTx = useVoidTransaction();
   const reverseTx = useReverseTransaction();
 
@@ -78,10 +73,6 @@ export default function TransactionsPage() {
     [pages.data],
   );
 
-  function onEdit(item: LedgerItem) {
-    setEditing(item);
-    setSheetOpen(true);
-  }
 
   function confirmVoid() {
     if (voidTarget === null) {
@@ -129,12 +120,7 @@ export default function TransactionsPage() {
       <PageHeader
         title="Transactions"
         actions={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setSheetOpen(true);
-            }}
-          >
+          <Button onClick={() => openCreate()}>
             <Plus className="size-4" /> Tambah Transaksi
           </Button>
         }
@@ -222,7 +208,7 @@ export default function TransactionsPage() {
                 <LedgerRow
                   key={item.transaction_id}
                   item={item}
-                  onEdit={onEdit}
+                  onEdit={openEdit}
                   onReverse={setReverseTarget}
                   onVoid={setVoidTarget}
                 />
@@ -239,19 +225,6 @@ export default function TransactionsPage() {
           ) : null}
         </div>
       )}
-
-      <TransactionSheet
-        open={sheetOpen}
-        onOpenChange={(open) => {
-          setSheetOpen(open);
-          if (!open) {
-            setEditing(null);
-          }
-        }}
-        categories={categories.data?.categories ?? []}
-        sources={sources.data?.sources ?? []}
-        editing={editing}
-      />
 
       <Dialog open={voidTarget !== null} onOpenChange={(open) => !open && setVoidTarget(null)}>
         <DialogContent>
