@@ -2,13 +2,13 @@
 
 import { createElement } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { sourceGlyph } from "@/lib/source-glyph";
 import { formatIDR } from "@/lib/money";
-import type { Source } from "@/lib/api/hooks";
-import type { BadgeCounts } from "@/lib/api/hooks";
+import { useBadges, type Source } from "@/lib/api/hooks";
 
 const MANAGE_LINKS = [
   { href: "/", label: "Overview" },
@@ -22,18 +22,23 @@ const MANAGE_LINKS = [
   { href: "/settings", label: "Settings" },
 ];
 
+/**
+ * Accounts rail. When the balance fetch failed, `totals` is null and
+ * `failed` is true: the rail says so instead of rendering Rp0, which
+ * would read as "you are broke" (truthfulness law, DESIGN.md §4).
+ */
 export function AccountsRail({
   sources,
-  totalAvailableMinor,
-  totalDebtMinor,
-  badges,
+  totals,
+  failed,
 }: {
   sources: Source[];
-  totalAvailableMinor: number;
-  totalDebtMinor: number;
-  badges: BadgeCounts;
+  totals: { available: number; debt: number } | null;
+  failed: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const badges = useBadges().data;
   const assets = sources.filter((source) => !source.is_debt);
   const debts = sources.filter((source) => source.is_debt);
 
@@ -41,57 +46,72 @@ export function AccountsRail({
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r border-border bg-canvas px-4 py-5 lg:flex">
       <p className="px-2 text-[20px] font-medium leading-[1.2] tracking-[-0.01em]">catet</p>
 
-      <GroupLabel>Aset</GroupLabel>
-      <ul className="grid gap-0.5">
-        {assets.map((source) => (
-          <li key={source.id} className="flex h-8 items-center gap-2 rounded-sm px-2">
-            <SourceGlyphIcon type={source.type} />
-            <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
-            <span className="text-[13px] font-medium tabular-nums text-ink">
-              {formatIDR(source.balance_minor)}
-            </span>
-          </li>
-        ))}
-        {assets.length === 0 ? (
-          <li className="px-2 text-xs text-muted-foreground">Belum ada aset</li>
-        ) : null}
-      </ul>
-
-      {debts.length > 0 ? (
+      {failed ? (
+        <div className="mt-5 grid gap-1.5">
+          <p role="alert" className="rounded-sm bg-over-wash px-3 py-2 text-xs text-over-text">
+            Saldo tidak bisa dimuat.
+          </p>
+          <Button variant="ghost" size="sm" className="justify-self-start" onClick={() => router.refresh()}>
+            Muat ulang
+          </Button>
+        </div>
+      ) : (
         <>
-          <GroupLabel>Utang</GroupLabel>
+          <GroupLabel>Aset</GroupLabel>
           <ul className="grid gap-0.5">
-            {debts.map((source) => (
+            {assets.map((source) => (
               <li key={source.id} className="flex h-8 items-center gap-2 rounded-sm px-2">
                 <SourceGlyphIcon type={source.type} />
                 <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
-                <span className="text-[13px] font-medium tabular-nums text-over-text">
+                <span className="text-[13px] font-medium tabular-nums text-ink">
                   {formatIDR(source.balance_minor)}
                 </span>
               </li>
             ))}
+            {assets.length === 0 ? (
+              <li className="px-2 text-xs text-muted-foreground">Belum ada aset</li>
+            ) : null}
           </ul>
-        </>
-      ) : null}
 
-      <div className="mt-3 border-t border-border px-2 pt-3 text-[13px]">
-        <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">Total tersedia</span>
-          <span className="font-medium tabular-nums text-ink">{formatIDR(totalAvailableMinor)}</span>
-        </div>
-        {totalDebtMinor > 0 ? (
-          <div className="mt-1 flex items-center justify-between">
-            <span className="text-muted-foreground">Utang</span>
-            <span className="font-medium tabular-nums text-over-text">−{formatIDR(totalDebtMinor)}</span>
-          </div>
-        ) : null}
-      </div>
+          {debts.length > 0 ? (
+            <>
+              <GroupLabel>Utang</GroupLabel>
+              <ul className="grid gap-0.5">
+                {debts.map((source) => (
+                  <li key={source.id} className="flex h-8 items-center gap-2 rounded-sm px-2">
+                    <SourceGlyphIcon type={source.type} />
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{source.name}</span>
+                    <span className="text-[13px] font-medium tabular-nums text-over-text">
+                      {formatIDR(source.balance_minor)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
+          {totals !== null ? (
+            <div className="mt-3 border-t border-border px-2 pt-3 text-[13px]">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total tersedia</span>
+                <span className="font-medium tabular-nums text-ink">{formatIDR(totals.available)}</span>
+              </div>
+              {totals.debt > 0 ? (
+                <div className="mt-1 flex items-center justify-between">
+                  <span className="text-muted-foreground">Utang</span>
+                  <span className="font-medium tabular-nums text-over-text">−{formatIDR(totals.debt)}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </>
+      )}
 
       <GroupLabel>Kelola</GroupLabel>
-      <nav className="grid gap-0.5">
+      <nav aria-label="Navigasi utama" className="grid gap-0.5">
         {MANAGE_LINKS.map((link) => {
           const active = pathname === link.href;
-          const count = link.badge ? badges[link.badge] : 0;
+          const count = link.badge !== undefined && badges !== undefined ? badges[link.badge] : 0;
           return (
             <Link
               key={link.href}
