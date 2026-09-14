@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { QueryErrorState } from "@/components/empty-state";
+import { useAnnounce } from "@/components/live-region";
 
 export type BoundaryQuery<T> = {
   isPending: boolean;
@@ -31,6 +32,21 @@ export function QueryBoundary<T>({
   errorMessage?: string;
   children: (data: T) => ReactNode;
 }) {
+  const announce = useAnnounce();
+  const state = query.isPending
+    ? "pending"
+    : query.isError || query.data === undefined
+      ? "error"
+      : "ready";
+
+  useEffect(() => {
+    if (state === "error") {
+      announce(errorMessage ?? "Data gagal dimuat.");
+    } else if (state === "ready") {
+      announce("Data dimuat.");
+    }
+  }, [state, errorMessage, announce]);
+
   if (query.isPending) {
     return <>{skeleton}</>;
   }

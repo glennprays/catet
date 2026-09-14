@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { AccountsRail } from "@/components/accounts-rail";
 import { CaptureSheetProvider } from "@/components/capture-sheet-provider";
+import { LiveRegion } from "@/components/live-region";
 import { BottomNav } from "@/components/bottom-nav";
 import { backendFetch } from "@/lib/api/backend-fetch";
 import type { components } from "@/lib/api/schema";
@@ -33,24 +34,26 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <CaptureSheetProvider>
-      <a
-        href="#main"
-        className="sr-only rounded-sm bg-ink px-3 py-2 text-[13px] text-canvas focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
-      >
-        Lompat ke konten
-      </a>
-      <div className="flex min-h-full">
-        <AccountsRail initialSources={sources} />
-        <div className="flex min-h-full w-full flex-col lg:pl-60">
-          <main
-            id="main"
-            className="mx-auto w-full max-w-[1160px] flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-0 lg:px-6 lg:pb-10"
-          >
-            {children}
-          </main>
+      <LiveRegion>
+        <a
+          href="#main"
+          className="sr-only rounded-sm bg-ink px-3 py-2 text-[13px] text-canvas focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+        >
+          Lompat ke konten
+        </a>
+        <div className="flex min-h-full">
+          <AccountsRail initialSources={sources} />
+          <div className="flex min-h-full w-full flex-col lg:pl-60">
+            <main
+              id="main"
+              className="mx-auto w-full max-w-[1160px] flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-0 lg:px-6 lg:pb-10"
+            >
+              {children}
+            </main>
+          </div>
+          <BottomNav />
         </div>
-        <BottomNav />
-      </div>
+      </LiveRegion>
     </CaptureSheetProvider>
   );
 }

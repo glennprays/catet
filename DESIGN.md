@@ -164,6 +164,9 @@ Absolute rules:
 
 ### Hierarchy
 
+Screen titles render at **Heading SM (20px)** inside the 56px sticky bar;
+Display LG (40px) is reserved for the Safe-to-Spend figure.
+
 | Role | Size | Weight | Line height | Tracking | Use |
 |---|---|---|---|---|---|
 | Display LG | 40px | 500 | 1.1 | −0.02em | Screen titles |
@@ -182,6 +185,36 @@ Absolute rules:
 Every component implements five states: **Empty · Loading · Success · Filled ·
 Error**. Listed as `states:` per component.
 
+### Component vocabulary (product layer, `src/components/*`)
+
+Screens compose these; they never hand-roll an equivalent. A second
+convention beside one of these is a bug.
+
+| Component | Owns |
+|---|---|
+| `Panel` | the one boxed surface (`compact` 12px lists, `comfortable` 16px forms) |
+| `SectionHeader` · `GroupLabel` | section titles and group/day labels |
+| `MoneyText` | every rupiah figure, tone and tabular figures included |
+| `FormField` · `AmountInput` · `SwitchRow` | labelled controls; `htmlFor` mandatory |
+| `ResponsiveSheet` | every form and detail view (right sheet ≥640px, bottom sheet below) |
+| `ConfirmDialog` | the whole destructive ladder, typed gate included |
+| `ListRow` · `LedgerRow` · `RowActions` | rows and their always-visible actions |
+| `StatusBadge` · `SourceChip` · `ProgressBar` | status, source, progress |
+| `QueryBoundary` · `ChartFrame` | the five states of any query-backed surface |
+| `SegmentedControl` · `FilterBar` | range/segment choice and sticky toolbars |
+
+### Truthfulness law (branch order, product-wide)
+
+Every query-backed surface branches in exactly this order:
+
+1. `isPending` → skeleton in the **final geometry** (row heights, column bars).
+2. `isError` → `QueryErrorState` with a retry that refetches.
+3. empty → `EmptyState` (a real sentence, not a blank box).
+4. data → data.
+
+Never render `0`, an em dash, or a default where the value is unknown. A failed
+fetch is never drawn as "you have nothing".
+
 ### Buttons
 
 **Primary (Ink Fill)** — `--ink` fill, `--canvas` text; radius `pill`; padding
@@ -195,7 +228,10 @@ states: empty n/a · loading spinner-lock-width · success check-icon swap (900m
 hover `--surface-200`.
 **Ghost** — no fill/border; ink-soft text; hover `--surface-200`.
 **Danger Ghost** — ghost geometry, `--over-text` text, `--over-wash` hover.
-Minimum hit area 44×44px on every variant (icon buttons `size-11` = 44px); visual size may be smaller only when an ancestor guarantees ≥44px.
+Minimum hit area 44×44px on every variant. Compact sizes (`sm`, `icon-sm`) stay
+visually compact and restore reach with a transparent hit-area expander
+(`before:absolute before:inset-[-6px]`) — never with a `min-height` that would
+make every dense row 44px tall.
 Destructive flows additionally require typed confirmation elsewhere — the button
 alone is never the gate.
 
@@ -310,10 +346,21 @@ slides 240ms cubic-bezier(0.2, 0.8, 0.2, 1).
 states: filled default · loading skeleton inside sheet · success auto-close with
 safe-wash flash · error inline block (never self-closes).
 
+**Sheet policy.** Every form and detail view goes through `ResponsiveSheet`:
+right sheet (`sm:max-w-md|lg`) at ≥640px, bottom sheet (`h-[92dvh]`,
+`rounded-t-lg`) below. No screen opens its own `Dialog` for a form.
+
+**Confirmation ladder.** `ConfirmDialog` owns all of it, graduated by
+reversibility: plain confirm for reversible actions (archive, deactivate),
+confirm-with-preview for consequential ones (reversal shows the mirrored
+amount), typed phrase (`HAPUS`) only for void. Copy says `di-void`, never
+`dihapus`.
+
 ### Toasts
 
 Bottom-right floating sheet, radius 12px, 1px `--border` ring + half-strength
-shadow, auto-dismiss 4s, one visible at a time.
+shadow, auto-dismiss 4s for success, one visible at a time. Error toasts
+**never auto-dismiss** and carry a retry when one exists (`toastError`).
 states: neutral · success check-glyph + safe edge · error over-tone + retry
 link (does not auto-dismiss).
 
@@ -435,6 +482,27 @@ treat generated screens as raw exploratory references. On-screen copy is
 Indonesian-first. Entity language law:
 **Source** (never account/wallet/vault). All money uses tabular figures in the
 single sans voice.
+
+### Copy law
+
+Chrome (navigation, page titles) is **English**: Overview · Transactions ·
+Inbox · Sources · Categories · Bills & Calendar · Budgets · Analytics ·
+Settings · More. Body copy is **Indonesian**, informal register ("kamu").
+
+Vocabulary (binding):
+
+| Use | Never |
+|---|---|
+| Koreksi saldo | Setor koreksi |
+| Balikkan / pembalikan | Balaskan / reversal |
+| Siklus | Kadence |
+| Rentang nominal | Band |
+| Kebutuhan / Gaya hidup | Essential / Lifestyle (body copy) |
+| di-void | dihapus (soft) |
+| Tutup | Close |
+
+Absolute timestamps always carry `WIB`; every date is formatted in
+`Asia/Jakarta` through `src/lib/time.ts`, never in the browser's timezone.
 
 ### Quick reference (semantic)
 
