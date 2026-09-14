@@ -7,18 +7,11 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
-import { TypedConfirmation } from "@/components/typed-confirmation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { MoneyText } from "@/components/money-text";
 
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -80,7 +73,7 @@ export default function TransactionsPage() {
     }
     voidTx.mutate(voidTarget.transaction_id, {
       onSuccess: () => {
-        toast.success("Transaksi dihapus (soft)");
+        toast.success("Transaksi di-void");
         setVoidTarget(null);
       },
       onError: (error) => toast.error(error.message),
@@ -95,7 +88,7 @@ export default function TransactionsPage() {
       { id: reverseTarget.transaction_id },
       {
         onSuccess: () => {
-          toast.success("Reversal dibuat");
+          toast.success("Pembalikan dibuat");
           setReverseTarget(null);
         },
         onError: (error) => toast.error(error.message),
@@ -226,45 +219,33 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      <Dialog open={voidTarget !== null} onOpenChange={(open) => !open && setVoidTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Hapus &quot;{voidTarget?.merchant ?? voidTarget?.note ?? "transaksi"}&quot;?
-            </DialogTitle>
-            <DialogDescription>
-              Transaksi di-void (soft delete): hilang dari semua hitungan, tapi tetap terlihat
-              di riwayat.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setVoidTarget(null)}>
-              Batal
-            </Button>
-            <TypedConfirmation phrase="HAPUS" label="Hapus" pending={voidTx.isPending} onConfirm={confirmVoid} />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={voidTarget !== null}
+        onOpenChange={(open) => !open && setVoidTarget(null)}
+        title="Void transaksi ini?"
+        description="Transaksi di-void: hilang dari semua hitungan, tetap terlihat di riwayat."
+        confirmLabel="Void"
+        tone="danger"
+        typedPhrase="HAPUS"
+        pending={voidTx.isPending}
+        onConfirm={confirmVoid}
+      />
 
-      <Dialog open={reverseTarget !== null} onOpenChange={(open) => !open && setReverseTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Balaskan transaksi ini?</DialogTitle>
-            <DialogDescription>
-              Membuat transaksi reversal tertaut dengan nominal terbalik. Keduanya tetap
-              terlihat di riwayat.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setReverseTarget(null)}>
-              Batal
-            </Button>
-            <Button onClick={confirmReverse} disabled={reverseTx.isPending}>
-              Buat reversal
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={reverseTarget !== null}
+        onOpenChange={(open) => !open && setReverseTarget(null)}
+        title="Balikkan transaksi ini?"
+        description={
+          <p>
+            Akan dibuat transaksi kebalikan sebesar{" "}
+            <MoneyText size="sm" signed minor={-(reverseTarget?.amount_minor ?? 0)} /> pada{" "}
+            {reverseTarget?.source_name ?? "sumber yang sama"}. Transaksi asli tetap ada.
+          </p>
+        }
+        confirmLabel="Buat pembalikan"
+        pending={reverseTx.isPending}
+        onConfirm={confirmReverse}
+      />
     </>
   );
 }

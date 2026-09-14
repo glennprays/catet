@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tags } from "lucide-react";
 import { toast } from "sonner";
-import { TypedConfirmation } from "@/components/typed-confirmation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ export function buildTree(categories: Category[]): CategoryNode[] {
 
 export default function CategoriesPage() {
   const categories = useCategories();
+  const archive = useArchiveCategory();
   const list = categories.data?.categories ?? [];
   const tree = buildTree(list);
 
@@ -146,25 +147,27 @@ export default function CategoriesPage() {
         categories={list}
       />
 
-      <Dialog
+      <ConfirmDialog
         open={archiveTarget !== null}
         onOpenChange={(open) => !open && setArchiveTarget(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Arsipkan &quot;{archiveTarget?.name}&quot;?</DialogTitle>
-            <DialogDescription>
-              Kategori diarsipkan; transaksi lama tetap memakainya.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setArchiveTarget(null)}>
-              Batal
-            </Button>
-            <ArchiveButton id={archiveTarget?.id ?? ""} onDone={() => setArchiveTarget(null)} />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        title={`Arsipkan ${archiveTarget?.name ?? "kategori"}?`}
+        description="Kategori diarsipkan; transaksi lama tetap memakainya."
+        confirmLabel="Arsipkan"
+        tone="danger"
+        pending={archive.isPending}
+        onConfirm={() => {
+          if (archiveTarget === null) {
+            return;
+          }
+          archive.mutate(archiveTarget.id, {
+            onSuccess: () => {
+              toast.success("Kategori diarsipkan");
+              setArchiveTarget(null);
+            },
+            onError: (error) => toast.error(error.message, { duration: Infinity }),
+          });
+        }}
+      />
     </>
   );
 }
@@ -250,27 +253,8 @@ function CategoryBranch({
   );
 }
 
-function ArchiveButton({ id, onDone }: { id: string; onDone: () => void }) {
-  const archive = useArchiveCategory();
-  return (
-    <TypedConfirmation
-      phrase="ARSIPKAN"
-      label="Arsipkan"
-      pending={archive.isPending}
-      onConfirm={() =>
-        archive.mutate(id, {
-          onSuccess: () => {
-            toast.success("Kategori diarsipkan");
-            onDone();
-          },
-          onError: (error) => toast.error(error.message),
-        })
-      }
-    />
-  );
-}
-
 function CategoryFormDialog({
+
   open,
   onOpenChange,
   editing,

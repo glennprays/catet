@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 
 import { PageHeader } from "@/components/page-header";
-import { TypedConfirmation } from "@/components/typed-confirmation";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ function typeIcon(type: string) {
 
 export default function SourcesPage() {
   const sources = useSources();
+  const archive = useArchiveSource();
   const { openCreate } = useCaptureSheet();
   const list = sources.data?.sources ?? [];
 
@@ -145,7 +146,7 @@ export default function SourcesPage() {
                       size="sm"
                       onClick={() => setAdjustTarget(source)}
                     >
-                      Setor koreksi
+                      Koreksi saldo
                     </Button>
                     {source.archived_at === null ? (
                       <Button
@@ -173,49 +174,28 @@ export default function SourcesPage() {
       <SourceFormDialog open={formOpen} onOpenChange={setFormOpen} editing={editing} />
       <AdjustDialog source={adjustTarget} onClose={() => setAdjustTarget(null)} />
 
-      <Dialog
+      <ConfirmDialog
         open={archiveTarget !== null}
         onOpenChange={(open) => !open && setArchiveTarget(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Arsipkan &quot;{archiveTarget?.name}&quot;?</DialogTitle>
-            <DialogDescription>
-              Sumber diarsipkan dan hilang dari daftar aktif. Riwayat transaksinya tetap ada.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setArchiveTarget(null)}>
-              Batal
-            </Button>
-            <ArchiveConfirmButton
-              id={archiveTarget?.id ?? ""}
-              onDone={() => setArchiveTarget(null)}
-            />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        title={`Arsipkan ${archiveTarget?.name ?? "sumber"}?`}
+        description="Sumber diarsipkan dan hilang dari daftar aktif. Riwayat transaksinya tetap ada."
+        confirmLabel="Arsipkan"
+        tone="danger"
+        pending={archive.isPending}
+        onConfirm={() => {
+          if (archiveTarget === null) {
+            return;
+          }
+          archive.mutate(archiveTarget.id, {
+            onSuccess: () => {
+              toast.success("Sumber diarsipkan");
+              setArchiveTarget(null);
+            },
+            onError: (error) => toast.error(error.message, { duration: Infinity }),
+          });
+        }}
+      />
     </>
-  );
-}
-
-function ArchiveConfirmButton({ id, onDone }: { id: string; onDone: () => void }) {
-  const archive = useArchiveSource();
-  return (
-    <TypedConfirmation
-      phrase="ARSIPKAN"
-      label="Arsipkan"
-      pending={archive.isPending}
-      onConfirm={() =>
-        archive.mutate(id, {
-          onSuccess: () => {
-            toast.success("Sumber diarsipkan");
-            onDone();
-          },
-          onError: (error) => toast.error(error.message),
-        })
-      }
-    />
   );
 }
 

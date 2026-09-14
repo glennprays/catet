@@ -5,6 +5,7 @@ import { PiggyBank } from "lucide-react";
 import { toast } from "sonner";
 
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,7 @@ export default function BudgetsPage() {
                       >
                         Ubah
                       </Button>
-                      <DeleteButton id={row.id} />
+                      <DeleteButton row={row} />
                     </div>
                   </div>
                 </li>
@@ -168,22 +169,33 @@ export default function BudgetsPage() {
   );
 }
 
-function DeleteButton({ id }: { id: string }) {
+function DeleteButton({ row }: { row: BudgetRow }) {
   const remove = useDeleteBudget();
+  const [open, setOpen] = useState(false);
   return (
-    <Button
-      variant="dangerGhost"
-      size="sm"
-      disabled={remove.isPending}
-      onClick={() =>
-        remove.mutate(id, {
-          onSuccess: () => toast.success("Anggaran dihapus"),
-          onError: (error) => toast.error(error.message),
-        })
-      }
-    >
-      Hapus
-    </Button>
+    <>
+      <Button variant="dangerGhost" size="sm" disabled={remove.isPending} onClick={() => setOpen(true)}>
+        Hapus
+      </Button>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={`Hapus anggaran ${row.category_name}?`}
+        description="Riwayat pengeluaran tetap ada; hanya batas anggaran yang dihapus."
+        confirmLabel="Hapus"
+        tone="danger"
+        pending={remove.isPending}
+        onConfirm={() =>
+          remove.mutate(row.id, {
+            onSuccess: () => {
+              toast.success("Anggaran dihapus");
+              setOpen(false);
+            },
+            onError: (error) => toast.error(error.message, { duration: Infinity }),
+          })
+        }
+      />
+    </>
   );
 }
 
