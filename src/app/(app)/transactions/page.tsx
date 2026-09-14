@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
+import { TypedConfirmation } from "@/components/typed-confirmation";
+
 import { TransactionSheet } from "@/components/transactions/transaction-sheet";
 import { Button } from "@/components/ui/button";
 import {
@@ -213,7 +215,7 @@ export default function TransactionsPage() {
         <div className="pb-4">
           {groups.map((group) => (
             <section key={group.day}>
-              <h3 className="sticky top-[104px] z-[5] -mx-4 bg-canvas/95 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.05em] text-muted-foreground lg:-mx-6 lg:px-6">
+              <h3 className="sticky top-[104px] max-lg:top-[197px] z-[5] -mx-4 bg-canvas/95 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.05em] text-muted-foreground lg:-mx-6 lg:px-6">
                 {group.day}
               </h3>
               {group.items.map((item) => (
@@ -266,9 +268,7 @@ export default function TransactionsPage() {
             <Button variant="ghost" onClick={() => setVoidTarget(null)}>
               Batal
             </Button>
-            <Button variant="destructive" onClick={confirmVoid} disabled={voidTx.isPending}>
-              Hapus
-            </Button>
+            <TypedConfirmation phrase="HAPUS" label="Hapus" pending={voidTx.isPending} onConfirm={confirmVoid} />
           </DialogFooter>
         </DialogContent>
       </Dialog>

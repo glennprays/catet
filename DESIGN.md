@@ -64,7 +64,9 @@ white, never clinical black, never a gray constant.
 
 One density: **compact**. Every surface earns its pixels. The overview is not a
 marketing hero — it is a working stat strip over a data feed. Ledgers are dense
-40px rows. Whitespace is used for grouping, never for atmosphere.
+36px desktop rows, growing to 48px on touch viewports. Whitespace is used for
+grouping, never for atmosphere.
+
 
 Color is rationed to *meaning only*: teal = safe, amber = thin, crimson = over.
 ~97% of the interface is achromatic warm grays; when an accent appears it is
@@ -427,7 +429,10 @@ cream base is a defended product choice (§1) — detector flags are answered wi
 
 Never place raw hex/fonts/radii inside a generation prompt when this design
 system is attached — refer semantically ("positive accent", "warning tone",
-"sheet surface"). Stitch generation prompts never mention token names, hex, fonts, or radii — semantics only; DESIGN.md is uploaded as the project design system instead. On-screen copy is Indonesian-first. Entity language law:
+"sheet surface"). Stitch generation prompts never mention token names, hex,
+fonts, or radii. When the system is not attached, keep prompts semantic and
+treat generated screens as raw exploratory references. On-screen copy is
+Indonesian-first. Entity language law:
 **Source** (never account/wallet/vault). All money uses tabular figures in the
 single sans voice.
 

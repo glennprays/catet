@@ -92,6 +92,42 @@ describe("backendFetch", () => {
     }
   });
 
+  test("attaches the bearer token when one is provided", async () => {
+    const server = await withServer((req, res) => {
+      expect(req.headers.authorization).toBe("Bearer jwt-abc");
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ data: { ok: true }, trace_id: "t" }));
+    });
+    process.env.CATET_BACKEND_URL = server.baseUrl;
+
+    try {
+      await expect(backendFetch("/api/v1/sources", { token: "jwt-abc" })).resolves.toEqual({
+        data: { ok: true },
+        trace_id: "t",
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  test("omits the authorization header without a token", async () => {
+    const server = await withServer((req, res) => {
+      expect(req.headers.authorization).toBeUndefined();
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ data: { ok: true }, trace_id: "t" }));
+    });
+    process.env.CATET_BACKEND_URL = server.baseUrl;
+
+    try {
+      await expect(backendFetch("/api/v1/sources")).resolves.toEqual({
+        data: { ok: true },
+        trace_id: "t",
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   test("requires CATET_BACKEND_URL in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
 

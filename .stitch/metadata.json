@@ -1,0 +1,15 @@
+{
+  "projectId": "8388192028915929441",
+  "title": "catet — Paper Ledger raw reference",
+  "referenceOnly": true,
+  "screens": [
+    {
+      "screenId": "c739ce90543645da8faa03ef18deb0c0",
+      "slug": "overview-raw",
+      "title": "Overview (Desktop)",
+      "deviceType": "DESKTOP"
+    }
+  ],
+  "designSystem": null,
+  "note": "Existing raw Overview reference retained. The project-level blue/Inter design system was not refreshed because the user requested a basic raw reference only."
+}

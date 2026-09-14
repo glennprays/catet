@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Banknote, Landmark, Plus, Send, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
+
 import { PageHeader } from "@/components/page-header";
+import { TypedConfirmation } from "@/components/typed-confirmation";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,7 +38,8 @@ import {
   useUpdateSource,
   type Source,
 } from "@/lib/api/hooks";
-import { formatIDR, parseAmountToMinor } from "@/lib/money";
+import { formatIDR, parseAmountToMinor, parseSignedAmountToMinor } from "@/lib/money";
+
 
 const SOURCE_TYPES = [
   { value: "bank", label: "Bank", icon: Landmark },
@@ -86,6 +90,8 @@ export default function SourcesPage() {
               <Skeleton key={index} className="h-12 w-full rounded-md" />
             ))}
           </div>
+        ) : sources.isError ? (
+          <QueryErrorState message="Sumber gagal dimuat." onRetry={() => sources.refetch()} />
         ) : list.length === 0 ? (
           <EmptyState
             icon={Wallet}
@@ -202,10 +208,11 @@ export default function SourcesPage() {
 function ArchiveConfirmButton({ id, onDone }: { id: string; onDone: () => void }) {
   const archive = useArchiveSource();
   return (
-    <Button
-      variant="destructive"
-      disabled={archive.isPending}
-      onClick={() =>
+    <TypedConfirmation
+      phrase="ARSIPKAN"
+      label="Arsipkan"
+      pending={archive.isPending}
+      onConfirm={() =>
         archive.mutate(id, {
           onSuccess: () => {
             toast.success("Sumber diarsipkan");
@@ -214,9 +221,7 @@ function ArchiveConfirmButton({ id, onDone }: { id: string; onDone: () => void }
           onError: (error) => toast.error(error.message),
         })
       }
-    >
-      Arsipkan
-    </Button>
+    />
   );
 }
 
@@ -326,7 +331,9 @@ function SourceFormDialog({
               <Label htmlFor="source-debt">Sumber utang</Label>
               <p className="text-xs text-muted-foreground">Boleh minus (paylater, kartu kredit)</p>
             </div>
-            <Switch id="source-debt" checked={isDebt} onCheckedChange={setIsDebt} />
+            <label htmlFor="source-debt" className="flex size-11 shrink-0 items-center justify-center">
+              <Switch id="source-debt" checked={isDebt} onCheckedChange={setIsDebt} />
+            </label>
           </div>
         </div>
         <DialogFooter>
@@ -350,7 +357,7 @@ function AdjustDialog({ source, onClose }: { source: Source | null; onClose: () 
     if (source === null) {
       return;
     }
-    const minor = parseAmountToMinor(amount);
+    const minor = parseSignedAmountToMinor(amount);
     if (minor === null || minor === 0) {
       toast.error("Isi nominal koreksi");
       return;

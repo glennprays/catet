@@ -38,6 +38,460 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/otp/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request a WhatsApp OTP code */
+        post: operations["requestOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/otp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify an OTP code and obtain a session JWT */
+        post: operations["verifyOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current session owner */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List sources with ledger-computed balances */
+        get: operations["listSources"];
+        put?: never;
+        /** Create a source */
+        post: operations["createSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-archive a source */
+        delete: operations["archiveSource"];
+        options?: never;
+        head?: never;
+        /** Rename a source or toggle its debt flag */
+        patch: operations["updateSource"];
+        trace?: never;
+    };
+    "/api/v1/sources/{id}/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Write an adjustment journal against a source */
+        post: operations["createAdjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List ledger items (keyset pagination, occurred_at DESC) */
+        get: operations["listTransactions"];
+        put?: never;
+        /** Create a manual transaction (dashboard peer capture) */
+        post: operations["createTransaction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/transactions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transaction detail with legs and edit history */
+        get: operations["getTransaction"];
+        put?: never;
+        post?: never;
+        /** Void a transaction (soft, excluded from all math) */
+        delete: operations["voidTransaction"];
+        options?: never;
+        head?: never;
+        /** Edit a transaction (legs rewritten, edit_history appended) */
+        patch: operations["updateTransaction"];
+        trace?: never;
+    };
+    "/api/v1/transactions/{id}/reversals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a linked reversal (mirrored legs) */
+        post: operations["reverseTransaction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List categories (flat; tree built client-side) */
+        get: operations["listCategories"];
+        put?: never;
+        /** Create a category */
+        post: operations["createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft-archive a category */
+        delete: operations["archiveCategory"];
+        options?: never;
+        head?: never;
+        /** Update a category */
+        patch: operations["updateCategory"];
+        trace?: never;
+    };
+    "/api/v1/bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List bills */
+        get: operations["listBills"];
+        put?: never;
+        /** Create a bill */
+        post: operations["createBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deactivate a bill */
+        delete: operations["deactivateBill"];
+        options?: never;
+        head?: never;
+        /** Update any subset of a bill */
+        patch: operations["updateBill"];
+        trace?: never;
+    };
+    "/api/v1/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Budget rows with computed spend for a period */
+        get: operations["listBudgets"];
+        put?: never;
+        /** Create a budget */
+        post: operations["createBudget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/budgets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a budget */
+        delete: operations["deleteBudget"];
+        options?: never;
+        head?: never;
+        /** Update a budget amount */
+        patch: operations["updateBudget"];
+        trace?: never;
+    };
+    "/api/v1/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Safe-to-Spend hero cluster plus recent activity */
+        get: operations["getOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/category-breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hierarchical expense breakdown (top-level donut, children sum to parent) */
+        get: operations["getCategoryBreakdown"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/income-expense": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Weekly income-vs-expense buckets (Asia/Jakarta, Mon start) */
+        get: operations["getIncomeExpense"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/sts-trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Safe-to-Spend (now value) with per-day trailing-burn runway */
+        get: operations["getStsTrend"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/heatmap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Daily outflow heatmap with mean/std and >2σ anomaly flags */
+        get: operations["getHeatmap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/top-merchants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Merchants ranked by outflow in period */
+        get: operations["getTopMerchants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/essential-lifestyle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Essential vs lifestyle expense split */
+        get: operations["getEssentialLifestyle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hold-queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Parked pending actions awaiting confirmation */
+        get: operations["listHoldQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hold-queue/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm (execute) or discard a parked pending action */
+        post: operations["resolveHoldQueueItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/badges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rail badge counts */
+        get: operations["getBadges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** App settings */
+        get: operations["getSettings"];
+        /** Update settings */
+        put: operations["updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -72,13 +526,479 @@ export interface components {
             trace_id: string;
         };
         ErrorBody: {
+            /** @description apperror.Kind */
             code: string;
             message: string;
             details?: components["schemas"]["FieldError"][];
         };
         FieldError: {
             field: string;
+            rule?: string;
             message: string;
+        };
+        PageMeta: {
+            next_cursor?: string;
+            prev_cursor?: string;
+            page?: number;
+            page_size?: number;
+            /** Format: int64 */
+            total?: number;
+        };
+        OtpRequestEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                sent: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        OtpVerifyEnvelope: {
+            data: {
+                token: string;
+                /** Format: date-time */
+                expires_at: string;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        MeEnvelope: {
+            data: {
+                phone: string;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Source: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            type: "cash" | "bank" | "ewallet" | "custom";
+            is_debt: boolean;
+            currency: string;
+            /**
+             * Format: int64
+             * @description Σ non-voided legs
+             */
+            balance_minor: number;
+            /** Format: date-time */
+            archived_at?: string | null;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        SourcesEnvelope: {
+            data: {
+                sources: components["schemas"]["Source"][];
+                /**
+                 * Format: int64
+                 * @description Σ balances of non-debt sources
+                 */
+                total_available_minor: number;
+                /**
+                 * Format: int64
+                 * @description Σ negative balances of debt sources (positive magnitude)
+                 */
+                total_debt_minor: number;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        SourceEnvelope: {
+            data: components["schemas"]["Source"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        ArchivedEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                archived: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        LedgerItem: {
+            /** Format: uuid */
+            transaction_id: string;
+            /** Format: date-time */
+            occurred_at: string;
+            /** @enum {string} */
+            type: "expense" | "income" | "transfer" | "adjustment";
+            merchant?: string | null;
+            note?: string | null;
+            /**
+             * Format: int64
+             * @description user-perspective signed (expense −
+             */
+            amount_minor: number;
+            /** Format: uuid */
+            category_id?: string | null;
+            category_name?: string | null;
+            /** Format: uuid */
+            source_id: string;
+            source_name: string;
+            /** @enum {string} */
+            review_status: "clean" | "needs_review";
+            voided: boolean;
+            /** Format: uuid */
+            reverses_transaction_id?: string | null;
+        };
+        TransactionListEnvelope: {
+            data: {
+                transactions: components["schemas"]["LedgerItem"][];
+            };
+            page?: components["schemas"]["PageMeta"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        TransactionLeg: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            source_id?: string | null;
+            source_name?: string | null;
+            /** Format: uuid */
+            category_id?: string | null;
+            category_name?: string | null;
+            /** Format: int64 */
+            signed_amount: number;
+        };
+        EditHistoryEntry: {
+            /** Format: date-time */
+            edited_at?: string;
+            changes?: {
+                [key: string]: {
+                    from?: unknown;
+                    to?: unknown;
+                };
+            };
+        };
+        Transaction: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            occurred_at: string;
+            /** @enum {string} */
+            origin: "whatsapp_text" | "whatsapp_photo" | "dashboard_manual" | "import";
+            /** @enum {string} */
+            type: "expense" | "income" | "transfer" | "adjustment";
+            merchant?: string | null;
+            note?: string | null;
+            /**
+             * Format: int64
+             * @description unsigned base amount
+             */
+            amount_minor: number;
+            /** Format: uuid */
+            category_id?: string | null;
+            category_name?: string | null;
+            /** @enum {string|null} */
+            category_source?: "rules" | "llm" | "user" | "import" | null;
+            category_confidence?: number | null;
+            /** @enum {string} */
+            review_status: "clean" | "needs_review";
+            external_id?: string | null;
+            /** Format: uuid */
+            reverses_transaction_id?: string | null;
+            /** @description merchant of the reversed transaction when present */
+            reverses_merchant?: string | null;
+            edit_history: components["schemas"]["EditHistoryEntry"][];
+            voided: boolean;
+            /** Format: date-time */
+            voided_at?: string | null;
+            /** Format: date-time */
+            created_at?: string;
+            legs: components["schemas"]["TransactionLeg"][];
+        };
+        TransactionEnvelope: {
+            data: components["schemas"]["Transaction"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        VoidedEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                voided: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Category: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: uuid */
+            parent_id?: string | null;
+            icon?: string | null;
+            essential: boolean;
+            /** Format: date-time */
+            archived_at?: string | null;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        CategoriesEnvelope: {
+            data: {
+                categories: components["schemas"]["Category"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        CategoryEnvelope: {
+            data: components["schemas"]["Category"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BillInput: {
+            name: string;
+            /** Format: int64 */
+            amount_min_minor: number;
+            /** Format: int64 */
+            amount_max_minor: number;
+            /** @enum {string} */
+            cadence: "weekly" | "monthly" | "annual";
+            /** Format: date */
+            next_due_date: string;
+            /** Format: uuid */
+            linked_source_id?: string | null;
+            /** Format: uuid */
+            category_id?: string | null;
+        };
+        Bill: components["schemas"]["BillInput"] & {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            linked_source_id?: string | null;
+            linked_source_name?: string | null;
+            /** Format: uuid */
+            category_id?: string | null;
+            category_name?: string | null;
+            active: boolean;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        BillsEnvelope: {
+            data: {
+                bills: components["schemas"]["Bill"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BillEnvelope: {
+            data: components["schemas"]["Bill"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BillActiveEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                active: false;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BudgetRow: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            category_id: string;
+            category_name: string;
+            essential: boolean;
+            /** Format: int64 */
+            amount_minor: number;
+            /** Format: int64 */
+            spent_minor: number;
+        };
+        BudgetsEnvelope: {
+            data: {
+                period?: string;
+                budgets: components["schemas"]["BudgetRow"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BudgetEnvelope: {
+            data: components["schemas"]["BudgetRow"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        DeletedEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                deleted: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Overview: {
+            /** Format: int64 */
+            sts_minor: number;
+            /**
+             * Format: int64
+             * @description 0 when burn ≤ 0 → render ∞
+             */
+            runway_days: number;
+            /** Format: int64 */
+            daily_allowance_minor: number;
+            /** Format: int64 */
+            reserved_tomorrow_minor: number;
+            /** Format: int64 */
+            reserved_minor: number;
+            /** Format: int64 */
+            available_minor: number;
+            /** Format: int64 */
+            essential_minor: number;
+            /** Format: int64 */
+            lifestyle_minor: number;
+            recent: components["schemas"]["LedgerItem"][];
+            badges: components["schemas"]["BadgeCounts"];
+        };
+        OverviewEnvelope: {
+            data: components["schemas"]["Overview"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BadgeCounts: {
+            /** Format: int64 */
+            needs_review: number;
+            /** Format: int64 */
+            hold_queue: number;
+        };
+        BadgesEnvelope: {
+            data: components["schemas"]["BadgeCounts"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        CategoryBreakdownNode: {
+            /** Format: uuid */
+            category_id: string;
+            name: string;
+            essential: boolean;
+            /**
+             * Format: int64
+             * @description includes descendants
+             */
+            amount_minor: number;
+            /** @description fraction of total_minor */
+            share: number;
+            children?: components["schemas"]["CategoryBreakdownNode"][];
+        };
+        CategoryBreakdownEnvelope: {
+            data: {
+                /** Format: int64 */
+                total_minor: number;
+                categories: components["schemas"]["CategoryBreakdownNode"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        IncomeExpenseBucket: {
+            /** Format: date */
+            week_start: string;
+            /** Format: int64 */
+            income_minor: number;
+            /**
+             * Format: int64
+             * @description positive magnitude
+             */
+            expense_minor: number;
+        };
+        IncomeExpenseEnvelope: {
+            data: {
+                buckets: components["schemas"]["IncomeExpenseBucket"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        StsPoint: {
+            /** Format: date */
+            date: string;
+            /** Format: int64 */
+            sts_minor: number;
+            /** Format: int64 */
+            runway_days: number;
+        };
+        StsTrendEnvelope: {
+            data: {
+                points: components["schemas"]["StsPoint"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        HeatmapDay: {
+            /** Format: date */
+            date: string;
+            /** Format: int64 */
+            outflow_minor: number;
+            anomaly: boolean;
+        };
+        HeatmapEnvelope: {
+            data: {
+                days: components["schemas"]["HeatmapDay"][];
+                /** Format: int64 */
+                mean_minor: number;
+                /** Format: int64 */
+                std_minor: number;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        TopMerchant: {
+            name: string;
+            /** Format: int64 */
+            amount_minor: number;
+            /** Format: int64 */
+            tx_count: number;
+        };
+        TopMerchantsEnvelope: {
+            data: {
+                merchants: components["schemas"]["TopMerchant"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        EssentialLifestyleEnvelope: {
+            data: {
+                /** Format: int64 */
+                essential_minor: number;
+                /** Format: int64 */
+                lifestyle_minor: number;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        PendingAction: {
+            /** Format: uuid */
+            id: string;
+            kind: string;
+            params: {
+                [key: string]: unknown;
+            };
+            summary: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        HoldQueueEnvelope: {
+            data: {
+                items: components["schemas"]["PendingAction"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        ResolvedEnvelope: {
+            data: {
+                /** @enum {boolean} */
+                resolved: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Settings: {
+            income_horizon_days: number;
+            phone: string;
+        };
+        SettingsEnvelope: {
+            data: components["schemas"]["Settings"];
+            /** Format: uuid */
+            trace_id: string;
         };
     };
     responses: {
@@ -92,8 +1012,42 @@ export interface components {
                 "application/json": components["schemas"]["ErrorEnvelope"];
             };
         };
+        /** @description VALIDATION_FAILED with FieldError details */
+        ValidationError: {
+            headers: {
+                "X-Trace-Id": components["headers"]["TraceId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Missing or invalid bearer token */
+        UnauthorizedError: {
+            headers: {
+                "X-Trace-Id": components["headers"]["TraceId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
+        /** @description Not found */
+        NotFoundError: {
+            headers: {
+                "X-Trace-Id": components["headers"]["TraceId"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorEnvelope"];
+            };
+        };
     };
-    parameters: never;
+    parameters: {
+        Id: string;
+        From: string;
+        To: string;
+    };
     requestBodies: never;
     headers: {
         /** @description Request trace identifier mirrored in the response envelope. */
@@ -144,6 +1098,1103 @@ export interface operations {
                     "application/json": components["schemas"]["VersionEnvelope"];
                 };
             };
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    requestOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description E.164 owner phone
+                     * @example +628000000000
+                     */
+                    phone: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Code dispatched (log sender in dev) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpRequestEnvelope"];
+                };
+            };
+            /** @description Phone is not the configured owner phone */
+            400: components["responses"]["ErrorResponse"];
+            /** @description An unexpired unconsumed code was requested less than 60s ago */
+            429: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    verifyOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    phone: string;
+                    /** @example 123456 */
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Session token issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpVerifyEnvelope"];
+                };
+            };
+            /**
+             * @description Wrong/expired code, or `attempts_exceeded` after 5 bad tries
+             *     (the code is invalidated).
+             */
+            400: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session phone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+        };
+    };
+    listSources: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sources plus ready-to-render totals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourcesEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** @enum {string} */
+                    type: "cash" | "bank" | "ewallet" | "custom";
+                    /** @default false */
+                    is_debt?: boolean;
+                    /** @default IDR */
+                    currency?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created source */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    archiveSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archived */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchivedEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Referenced by open (active) bills */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    is_debt?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated source */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createAdjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: int64
+                     * @description signed balance correction
+                     */
+                    amount_minor: number;
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Adjustment transaction */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listTransactions: {
+        parameters: {
+            query?: {
+                source_id?: string;
+                category_id?: string;
+                review_status?: "clean" | "needs_review";
+                q?: string;
+                from?: string;
+                to?: string;
+                direction?: "expense" | "income" | "transfer" | "adjustment";
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ledger items page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionListEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    type: "expense" | "income" | "transfer" | "adjustment";
+                    /** Format: date-time */
+                    occurred_at?: string;
+                    /**
+                     * Format: date
+                     * @description used when occurred_at absent (Asia/Jakarta)
+                     */
+                    occurred_date?: string;
+                    /** Format: int64 */
+                    amount_minor: number;
+                    /** Format: uuid */
+                    source_id: string;
+                    /**
+                     * Format: uuid
+                     * @description required for transfer
+                     */
+                    destination_source_id?: string;
+                    /** Format: uuid */
+                    category_id?: string;
+                    note?: string;
+                    merchant?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Created transaction */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionEnvelope"];
+                };
+            };
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations */
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Transaction */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    voidTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Voided */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VoidedEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: int64 */
+                    amount_minor?: number;
+                    /** Format: date-time */
+                    occurred_at?: string;
+                    /** Format: uuid */
+                    category_id?: string | null;
+                    note?: string | null;
+                    merchant?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated transaction */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Transaction is voided */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    reverseTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Reversal transaction */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Already voided or already reversed */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listCategories: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Categories */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoriesEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** Format: uuid */
+                    parent_id?: string | null;
+                    icon?: string | null;
+                    /** @default false */
+                    essential?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Created category */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    archiveCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archived */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchivedEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Used by a budget in the current period */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    /** Format: uuid */
+                    parent_id?: string | null;
+                    icon?: string | null;
+                    essential?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated category */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listBills: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bills */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillsEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillInput"];
+            };
+        };
+        responses: {
+            /** @description Created bill */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    deactivateBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deactivated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillActiveEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillInput"];
+            };
+        };
+        responses: {
+            /** @description Updated bill */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listBudgets: {
+        parameters: {
+            query?: {
+                period?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Budget rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetsEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    createBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    category_id: string;
+                    period: string;
+                    /** Format: int64 */
+                    amount_minor: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Created budget row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description Budget already exists for (category, period) */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    deleteBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: int64 */
+                    amount_minor?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated budget row */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Overview snapshot */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getCategoryBreakdown: {
+        parameters: {
+            query?: {
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Breakdown tree */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryBreakdownEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getIncomeExpense: {
+        parameters: {
+            query?: {
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Weekly buckets */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncomeExpenseEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getStsTrend: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Trend points */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StsTrendEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getHeatmap: {
+        parameters: {
+            query?: {
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Daily outflow series */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HeatmapEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getTopMerchants: {
+        parameters: {
+            query?: {
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ranked merchants */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopMerchantsEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getEssentialLifestyle: {
+        parameters: {
+            query?: {
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Split totals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EssentialLifestyleEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listHoldQueue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pending actions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HoldQueueEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    resolveHoldQueueItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    action: "confirm" | "discard";
+                };
+            };
+        };
+        responses: {
+            /** @description Resolved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvedEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getBadges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Badge counts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgesEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Settings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    income_horizon_days: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Updated settings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["ErrorResponse"];
         };
     };

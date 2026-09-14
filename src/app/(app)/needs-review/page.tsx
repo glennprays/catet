@@ -4,9 +4,11 @@ import { useState } from "react";
 import { CircleCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+
 import {
   Select,
   SelectContent,
@@ -67,7 +69,10 @@ export default function NeedsReviewPage() {
               <LedgerRowSkeleton key={index} />
             ))}
           </div>
+        ) : transactions.isError ? (
+          <QueryErrorState message="Review gagal dimuat." onRetry={() => transactions.refetch()} />
         ) : rows.length === 0 ? (
+
           <EmptyState
             icon={CircleCheck}
             heading="Semua beres"
@@ -108,14 +113,16 @@ export default function NeedsReviewPage() {
                             ))}
                         </SelectContent>
                       </Select>
-                      <button
+                      <Button
                         type="button"
-                        className="shrink-0 rounded-sm border border-border-strong px-2.5 py-1.5 text-xs text-ink hover:bg-surface-200 disabled:opacity-50"
+                        variant="secondary"
+                        size="sm"
+                        className="shrink-0"
                         disabled={update.isPending}
                         onClick={() => commit(item)}
                       >
                         Simpan
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}

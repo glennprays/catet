@@ -34,6 +34,39 @@ import type { Category, LedgerItem, Source } from "@/lib/api/hooks";
 import { parseAmountToMinor } from "@/lib/money";
 
 export type Direction = "expense" | "income" | "transfer";
+export function validateTransactionFields({
+  editing,
+  direction,
+  sourceId,
+  destinationId,
+  categoryId,
+}: {
+  editing: boolean;
+  direction: Direction;
+  sourceId: string;
+  destinationId: string;
+  categoryId: string;
+}): Record<string, string> {
+  if (editing) {
+    return {};
+  }
+
+  const errors: Record<string, string> = {};
+  if (sourceId === "") {
+    errors.source_id = "Pilih sumber dana";
+  }
+  if (direction === "transfer") {
+    if (destinationId === "") {
+      errors.destination_source_id = "Pilih tujuan transfer";
+    } else if (destinationId === sourceId) {
+      errors.destination_source_id = "Tujuan harus berbeda dari sumber";
+    }
+  } else if (categoryId === "") {
+    errors.category_id = "Pilih kategori";
+  }
+  return errors;
+}
+
 /**
  * TransactionSheet: peer capture form (ADR-0004). Manual validation
  * mirrors the backend FieldError rules inline; the backend stays the
@@ -105,6 +138,9 @@ export function TransactionSheet({
     () => sources.filter((source) => source.archived_at === null),
     [sources],
   );
+  const isEditing = editing !== null && editing !== undefined;
+  const isAdjustment = editing?.type === "adjustment";
+
 
   const pending = createTx.isPending || updateTx.isPending;
 
@@ -114,18 +150,16 @@ export function TransactionSheet({
     if (minor === null || minor === 0) {
       errors.amount_minor = "Nominal harus lebih dari nol";
     }
-    if (sourceId === "") {
-      errors.source_id = "Pilih sumber dana";
-    }
-    if (direction === "transfer") {
-      if (destinationId === "") {
-        errors.destination_source_id = "Pilih tujuan transfer";
-      } else if (destinationId === sourceId) {
-        errors.destination_source_id = "Tujuan harus berbeda dari sumber";
-      }
-    } else if (categoryId === "") {
-      errors.category_id = "Pilih kategori";
-    }
+    Object.assign(
+      errors,
+      validateTransactionFields({
+        editing: editing !== null && editing !== undefined,
+        direction,
+        sourceId,
+        destinationId,
+        categoryId,
+      }),
+    );
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -151,7 +185,7 @@ export function TransactionSheet({
       if (minor !== Math.abs(editing.amount_minor)) {
         body.amount_minor = minor;
       }
-      if (direction !== "transfer" && categoryId !== "" && categoryId !== editing.category_id) {
+      if (direction !== "transfer" && !isAdjustment && categoryId !== "" && categoryId !== editing.category_id) {
         body.category_id = categoryId;
       }
       if (note !== (editing.note ?? "")) {
@@ -230,7 +264,7 @@ export function TransactionSheet({
           </Field>
 
           <Field label={direction === "transfer" ? "Dari" : "Sumber"} error={fieldErrors.source_id}>
-            <Select value={sourceId} onValueChange={setSourceId}>
+            <Select value={sourceId} onValueChange={setSourceId} disabled={isEditing}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih sumber" />
               </SelectTrigger>
@@ -244,7 +278,7 @@ export function TransactionSheet({
             </Select>
           </Field>
 
-          {direction === "transfer" ? (
+          {direction === "transfer" && !isEditing ? (
             <Field label="Ke" error={fieldErrors.destination_source_id}>
               <Select value={destinationId} onValueChange={setDestinationId}>
                 <SelectTrigger className="w-full">
@@ -261,7 +295,7 @@ export function TransactionSheet({
                 </SelectContent>
               </Select>
             </Field>
-          ) : (
+          ) : direction !== "transfer" && (!isEditing || !isAdjustment) ? (
             <Field label="Kategori" error={fieldErrors.category_id}>
               <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger className="w-full">
@@ -276,7 +310,7 @@ export function TransactionSheet({
                 </SelectContent>
               </Select>
             </Field>
-          )}
+          ) : null}
 
           <Field label="Tanggal">
             <DatePicker date={date} onChange={setDate} />

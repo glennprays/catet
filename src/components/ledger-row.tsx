@@ -9,8 +9,8 @@ import type { LedgerItem } from "@/lib/api/hooks";
 
 /**
  * Ledger row (DESIGN.md §4): 48px below lg, 36px at lg+, grid of status dot,
- * merchant+time, category chip, source chip, signed figure. Actions reveal
- * on hover and on keyboard focus, each with an accessible name.
+ * merchant+time, category chip, source chip, signed figure. Actions reveal on
+ * desktop hover and keyboard focus, and remain visible on touch viewports.
  */
 export function LedgerRow({
   item,
@@ -31,6 +31,19 @@ export function LedgerRow({
     : item.review_status === "needs_review"
       ? "bg-warn"
       : "bg-ash/40";
+  const actionCount =
+    (onEdit !== undefined ? 1 : 0) +
+    (onReverse !== undefined ? 1 : 0) +
+    (onVoid !== undefined ? 1 : 0);
+  const mobileActionPadding =
+    actionCount >= 3
+      ? "max-lg:pr-40"
+      : actionCount === 2
+        ? "max-lg:pr-28"
+        : actionCount === 1
+          ? "max-lg:pr-14"
+          : "";
+
 
   function handleRowClick() {
     if (window.innerWidth < 1024 && onEdit !== undefined && !item.voided) {
@@ -40,7 +53,7 @@ export function LedgerRow({
 
   return (
     <div
-      className={`group relative grid h-12 lg:h-9 grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto] ${
+      className={`group relative grid h-12 lg:h-9 grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto] ${mobileActionPadding} ${
         onEdit !== undefined && !item.voided ? "cursor-pointer lg:cursor-default" : ""
       }`}
       onClick={onEdit !== undefined && !item.voided ? handleRowClick : undefined}
@@ -53,7 +66,7 @@ export function LedgerRow({
         >
           {name}
           {item.reverses_transaction_id !== null && item.reverses_transaction_id !== undefined ? (
-            <span className="ml-1.5 rounded-full bg-safe-wash px-1.5 py-px text-[10px] text-safe-text">
+            <span className="ml-1.5 rounded-full bg-safe-wash px-1.5 py-px text-xs text-safe-text">
               reversal
             </span>
           ) : null}
@@ -132,11 +145,12 @@ export function LedgerRow({
 /** Loading skeleton matching the row geometry (DESIGN.md skeleton rule). */
 export function LedgerRowSkeleton() {
   return (
-    <div className="grid h-12 catet-shimmer grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border lg:h-9">
+    <div className="grid h-12 catet-shimmer grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-border lg:h-9 sm:grid-cols-[8px_minmax(0,1fr)_auto_auto_auto]">
       <span className="size-2 rounded-full bg-surface-300" />
       <span className="h-3.5 w-40 rounded-sm bg-surface-200" />
-      <span className="h-3.5 w-16 rounded-sm bg-surface-200" />
-      <span className="h-3.5 w-20 rounded-sm bg-surface-200" />
+      <span className="hidden h-3.5 w-16 rounded-sm bg-surface-200 sm:block" />
+      <span className="hidden h-3.5 w-20 rounded-sm bg-surface-200 sm:block" />
+      <span className="h-3.5 w-20 justify-self-end rounded-sm bg-surface-200" />
     </div>
   );
 }

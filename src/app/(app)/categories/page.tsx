@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Tags } from "lucide-react";
 import { toast } from "sonner";
+import { TypedConfirmation } from "@/components/typed-confirmation";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
+
 import { PageHeader } from "@/components/page-header";
 import {
   useArchiveCategory,
@@ -39,9 +42,9 @@ type CategoryNode = {
   children: CategoryNode[];
 };
 
-function buildTree(categories: Category[]): CategoryNode[] {
-  const byParent = new Map<string, CategoryNode[]>();
+export function buildTree(categories: Category[]): CategoryNode[] {
   const nodes = new Map<string, CategoryNode>();
+  const roots: CategoryNode[] = [];
 
   for (const category of categories) {
     nodes.set(category.id, { category, children: [] });
@@ -51,12 +54,13 @@ function buildTree(categories: Category[]): CategoryNode[] {
     if (node === undefined) {
       continue;
     }
-    const key = category.parent_id ?? "root";
-    const siblings = byParent.get(key) ?? [];
-    siblings.push(node);
-    byParent.set(key, siblings);
+    if (category.parent_id === null || category.parent_id === undefined) {
+      roots.push(node);
+      continue;
+    }
+    nodes.get(category.parent_id)?.children.push(node);
   }
-  return byParent.get("root") ?? [];
+  return roots;
 }
 
 export default function CategoriesPage() {
@@ -105,6 +109,8 @@ export default function CategoriesPage() {
               <Skeleton key={index} className="h-9 w-full rounded-sm" />
             ))}
           </div>
+        ) : categories.isError ? (
+          <QueryErrorState message="Kategori gagal dimuat." onRetry={() => categories.refetch()} />
         ) : list.length === 0 ? (
           <EmptyState
             icon={Tags}
@@ -188,19 +194,25 @@ function CategoryBranch({
 
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Essential</span>
-          <Switch
-            checked={node.category.essential}
-            disabled={update.isPending}
-            onCheckedChange={(essential) =>
-              update.mutate(
-                { id: node.category.id, essential },
-                {
-                  onError: (error) => toast.error(error.message),
-                },
-              )
-            }
-            aria-label={`Essential ${node.category.name}`}
-          />
+          <label
+            htmlFor={`category-essential-${node.category.id}`}
+            className="flex size-11 shrink-0 items-center justify-center"
+          >
+            <Switch
+              id={`category-essential-${node.category.id}`}
+              checked={node.category.essential}
+              disabled={update.isPending}
+              onCheckedChange={(essential) =>
+                update.mutate(
+                  { id: node.category.id, essential },
+                  {
+                    onError: (error) => toast.error(error.message),
+                  },
+                )
+              }
+              aria-label={`Essential ${node.category.name}`}
+            />
+          </label>
         </div>
 
         <div className="flex gap-1.5">
@@ -241,10 +253,11 @@ function CategoryBranch({
 function ArchiveButton({ id, onDone }: { id: string; onDone: () => void }) {
   const archive = useArchiveCategory();
   return (
-    <Button
-      variant="destructive"
-      disabled={archive.isPending}
-      onClick={() =>
+    <TypedConfirmation
+      phrase="ARSIPKAN"
+      label="Arsipkan"
+      pending={archive.isPending}
+      onConfirm={() =>
         archive.mutate(id, {
           onSuccess: () => {
             toast.success("Kategori diarsipkan");
@@ -253,9 +266,7 @@ function ArchiveButton({ id, onDone }: { id: string; onDone: () => void }) {
           onError: (error) => toast.error(error.message),
         })
       }
-    >
-      Arsipkan
-    </Button>
+    />
   );
 }
 
@@ -291,15 +302,15 @@ function CategoryFormDialog({
 
   function submit() {
     if (editing !== null) {
-      const body: { name?: string; parent_id?: string; essential?: boolean } = {};
+      const body: { name?: string; parent_id?: string | null; essential?: boolean } = {};
       if (name.trim() !== "" && name !== editing.name) {
         body.name = name.trim();
       }
       if (essential !== editing.essential) {
         body.essential = essential;
       }
-      const nextParent = parentId === "" ? undefined : parentId;
-      if (nextParent !== editing.parent_id) {
+      const nextParent = parentId === "" ? null : parentId;
+      if (nextParent !== (editing.parent_id ?? null)) {
         body.parent_id = nextParent;
       }
       if (Object.keys(body).length === 0) {
@@ -379,7 +390,9 @@ function CategoryFormDialog({
               <Label htmlFor="category-essential">Essential</Label>
               <p className="text-xs text-muted-foreground">Kebutuhan pokok, bukan gaya hidup</p>
             </div>
-            <Switch id="category-essential" checked={essential} onCheckedChange={setEssential} />
+            <label htmlFor="category-essential" className="flex size-11 shrink-0 items-center justify-center">
+              <Switch id="category-essential" checked={essential} onCheckedChange={setEssential} />
+            </label>
           </div>
         </div>
         <DialogFooter>

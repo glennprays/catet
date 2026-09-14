@@ -6,6 +6,8 @@ import type { EChartsOption } from "echarts";
 import { CHART_COLORS, EChart, chartBase, jutaLabel } from "@/components/charts/echart";
 
 import { PageHeader } from "@/components/page-header";
+import { QueryErrorState } from "@/components/empty-state";
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   useAnalytics,
@@ -25,6 +27,10 @@ const RANGES = [
 ] as const;
 
 const { INK, MUTED, BORDER, SAFE, WARN, OVER } = CHART_COLORS;
+export function runwayChartValue(runwayDays: number): number {
+  return runwayDays === 0 ? 90 : runwayDays;
+}
+
 
 export default function AnalyticsPage() {
   const [rangeDays, setRangeDays] = useState<"7" | "30" | "90">("30");
@@ -66,48 +72,65 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-4 py-4 lg:grid-cols-2">
         <ChartCard title="Kategori" caption={drillCaption(breakdown.data)}>
-          {breakdown.data !== undefined && breakdown.data.categories.length > 0 ? (
+          {breakdown.isError ? (
+            <QueryErrorState message="Kategori gagal dimuat." onRetry={() => breakdown.refetch()} />
+          ) : breakdown.data !== undefined && breakdown.data.categories.length > 0 ? (
             <CategoryDonut data={breakdown.data} />
           ) : (
             <ChartEmpty />
+
           )}
         </ChartCard>
 
         <ChartCard title="Pemasukan vs Pengeluaran" caption="per minggu">
-          {incomeExpense.data !== undefined && incomeExpense.data.buckets.length > 0 ? (
+          {incomeExpense.isError ? (
+            <QueryErrorState message="Arus kas gagal dimuat." onRetry={() => incomeExpense.refetch()} />
+          ) : incomeExpense.data !== undefined && incomeExpense.data.buckets.length > 0 ? (
             <EChart className="h-64 w-full" option={incomeExpenseOption(incomeExpense.data)} />
           ) : (
             <ChartEmpty />
+
           )}
         </ChartCard>
 
         <ChartCard title="Safe-to-Spend & Runway" caption="STS kini, runway per hari">
-          {stsTrend.data !== undefined && stsTrend.data.points.length > 0 ? (
+          {stsTrend.isError ? (
+            <QueryErrorState message="Safe-to-Spend gagal dimuat." onRetry={() => stsTrend.refetch()} />
+          ) : stsTrend.data !== undefined && stsTrend.data.points.length > 0 ? (
             <EChart className="h-64 w-full" option={stsOption(stsTrend.data)} />
           ) : (
             <ChartEmpty />
+
           )}
         </ChartCard>
 
         <ChartCard title="Heatmap harian" caption="pengeluaran per hari, anomali > 2σ">
-          {heatmap.data !== undefined && heatmap.data.days.length > 0 ? (
+          {heatmap.isError ? (
+            <QueryErrorState message="Heatmap gagal dimuat." onRetry={() => heatmap.refetch()} />
+          ) : heatmap.data !== undefined && heatmap.data.days.length > 0 ? (
             <EChart className="h-64 w-full" option={heatmapOption(heatmap.data)} />
           ) : (
             <ChartEmpty />
+
           )}
         </ChartCard>
 
         <ChartCard title="Merchant teratas" caption="berdasarkan pengeluaran">
-          {merchants.data !== undefined && merchants.data.merchants.length > 0 ? (
+          {merchants.isError ? (
+            <QueryErrorState message="Merchant gagal dimuat." onRetry={() => merchants.refetch()} />
+          ) : merchants.data !== undefined && merchants.data.merchants.length > 0 ? (
             <EChart className="h-64 w-full" option={merchantsOption(merchants.data)} />
           ) : (
             <ChartEmpty />
+
           )}
         </ChartCard>
 
         <ChartCard title="Kebutuhan vs Gaya hidup" caption="periode terpilih">
-          {essential.data !== undefined &&
-          essential.data.essential_minor + essential.data.lifestyle_minor > 0 ? (
+          {essential.isError ? (
+            <QueryErrorState message="Rincian kebutuhan gagal dimuat." onRetry={() => essential.refetch()} />
+          ) : essential.data !== undefined &&
+            essential.data.essential_minor + essential.data.lifestyle_minor > 0 ? (
             <EChart className="h-64 w-full" option={essentialOption(essential.data)} />
           ) : (
             <ChartEmpty />
@@ -237,9 +260,11 @@ function incomeExpenseOption(data: IncomeExpenseData): EChartsOption {
     ...chartBase(),
     legend: {
       data: ["Masuk", "Keluar"],
+      icon: "none",
       textStyle: { color: MUTED, fontSize: 11 },
       top: 0,
     },
+
     xAxis: {
       ...chartBase().xAxis,
       data: data.buckets.map((bucket) => bucket.week_start),
@@ -265,13 +290,17 @@ function incomeExpenseOption(data: IncomeExpenseData): EChartsOption {
 }
 
 function stsOption(data: StsTrendData): EChartsOption {
+  const runwayByDate = new Map(data.points.map((point) => [point.date, point.runway_days]));
   return {
+
     ...chartBase(),
     legend: {
       data: ["STS", "Runway (hari)"],
+      icon: "none",
       textStyle: { color: MUTED, fontSize: 11 },
       top: 0,
     },
+
     tooltip: {
       ...chartBase().tooltip,
       trigger: "axis",
@@ -280,15 +309,19 @@ function stsOption(data: StsTrendData): EChartsOption {
         const title = entries[0]?.name ?? "";
         const lines = entries.map((entry) => {
           const value = Number(entry.value);
+          const rawRunway = runwayByDate.get(String(title));
           const formatted =
             entry.seriesName === "Runway (hari)"
-              ? `${value.toLocaleString("id-ID")} hari`
+              ? rawRunway === 0
+                ? "∞"
+                : `${(rawRunway ?? value).toLocaleString("id-ID")} hari`
               : formatIDR(value);
           return `${entry.seriesName ?? ""}: ${formatted}`;
         });
         return [title, ...lines].join("<br/>");
       },
-    },
+
+      },
     xAxis: {
       ...chartBase().xAxis,
       data: data.points.map((point) => point.date),
@@ -324,7 +357,7 @@ function stsOption(data: StsTrendData): EChartsOption {
         name: "Runway (hari)",
         type: "line",
         yAxisIndex: 1,
-        data: data.points.map((point) => point.runway_days),
+        data: data.points.map((point) => runwayChartValue(point.runway_days)),
         symbol: "none",
         lineStyle: { color: WARN, width: 1.5, type: "dashed" },
       },
