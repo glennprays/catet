@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PiggyBank } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -82,7 +83,13 @@ export default function BudgetsPage() {
 
       <div className="py-4">
         {budgets.isPending ? (
-          <p className="text-[13px] text-muted-foreground">Memuat…</p>
+          <div className="grid gap-2">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-12 w-full rounded-md" />
+            ))}
+          </div>
+        ) : budgets.isError ? (
+          <QueryErrorState message="Anggaran gagal dimuat." onRetry={() => budgets.refetch()} />
         ) : rows.length === 0 ? (
           <EmptyState
             icon={PiggyBank}

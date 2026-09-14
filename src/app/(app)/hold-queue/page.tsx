@@ -3,7 +3,7 @@
 import { Inbox } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,6 +37,8 @@ export default function HoldQueuePage() {
               <Skeleton key={index} className="h-24 w-full rounded-md" />
             ))}
           </div>
+        ) : queue.isError ? (
+          <QueryErrorState message="Hold queue gagal dimuat." onRetry={() => queue.refetch()} />
         ) : items.length === 0 ? (
           <EmptyState
             icon={Inbox}

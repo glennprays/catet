@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { TransactionSheet } from "@/components/transactions/transaction-sheet";
 import { Button } from "@/components/ui/button";
@@ -172,6 +172,11 @@ export default function OverviewPage() {
                 <LedgerRowSkeleton key={index} />
               ))}
             </div>
+          ) : overview.isError ? (
+            <QueryErrorState
+              message="Transaksi terakhir gagal dimuat."
+              onRetry={() => overview.refetch()}
+            />
           ) : data !== undefined && data.recent.length > 0 ? (
             <div>
               {data.recent.map((item) => (

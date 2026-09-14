@@ -5,11 +5,12 @@ import { format } from "date-fns";
 import { CalendarPlus, CalendarX } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -102,7 +103,13 @@ export default function BillsPage() {
 
         <section aria-label="Daftar tagihan">
           {bills.isPending ? (
-            <p className="text-[13px] text-muted-foreground">Memuat…</p>
+            <div className="grid gap-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <Skeleton key={index} className="h-12 w-full rounded-md" />
+              ))}
+            </div>
+          ) : bills.isError ? (
+            <QueryErrorState message="Tagihan gagal dimuat." onRetry={() => bills.refetch()} />
           ) : list.length === 0 ? (
             <EmptyState
               icon={CalendarX}
