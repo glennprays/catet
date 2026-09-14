@@ -1,5 +1,6 @@
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, test } from "vitest";
+// @vitest-environment jsdom
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, test, vi } from "vitest";
 
 import { LedgerRow } from "./ledger-row";
 import type { LedgerItem } from "@/lib/api/hooks";
@@ -20,12 +21,38 @@ const item: LedgerItem = {
   reverses_transaction_id: null,
 };
 
-describe("LedgerRow mobile action layout", () => {
-  test("reserves room for three actions beside the signed amount", () => {
-    const markup = renderToStaticMarkup(
-      <LedgerRow item={item} onEdit={() => undefined} onReverse={() => undefined} onVoid={() => undefined} />,
-    );
+describe("LedgerRow", () => {
+  test("the whole row opens the detail sheet", () => {
+    const onOpen = vi.fn();
+    render(<LedgerRow item={item} onOpen={onOpen} />);
 
-    expect(markup).toContain("max-lg:pr-40");
+    fireEvent.click(screen.getByRole("button", { name: "Kopi Kenangan, \u2212Rp25.000" }));
+
+    expect(onOpen).toHaveBeenCalledWith(item);
+  });
+
+  test("the amount is never covered by the open button", () => {
+    const { container } = render(<LedgerRow item={item} onOpen={() => undefined} />);
+    const amount = screen.getByText("\u2212Rp25.000");
+
+    // The overlay sits behind content; content cells opt out of hit testing.
+    expect(container.querySelector("button")?.className).toContain("absolute inset-0");
+    expect(amount.parentElement?.className).toContain("pointer-events-none");
+  });
+
+  test("status is exposed as text, not colour alone", () => {
+    render(<LedgerRow item={{ ...item, review_status: "needs_review" }} />);
+    expect(screen.getByText("Perlu review")).toBeDefined();
+  });
+
+  test("voided rows read as voided", () => {
+    render(<LedgerRow item={{ ...item, voided: true }} />);
+    expect(screen.getByText("Di-void")).toBeDefined();
+    expect(screen.getByText("\u2212Rp25.000").className).toContain("line-through");
+  });
+
+  test("a missing category renders nothing, not an em dash pill", () => {
+    render(<LedgerRow item={{ ...item, category_name: null }} />);
+    expect(screen.queryByText("—")).toBeNull();
   });
 });

@@ -2,16 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Inbox, Plus, Search } from "lucide-react";
-import { toast } from "sonner";
-
-import { toastError } from "@/lib/toast";
 
 import { EmptyState } from "@/components/empty-state";
+import { GroupLabel } from "@/components/group-label";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { MoneyText } from "@/components/money-text";
-
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,25 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  useReverseTransaction,
-  useSources,
-  useTransactionsInfinite,
-  useVoidTransaction,
-  type LedgerItem,
-} from "@/lib/api/hooks";
-import { dayLabel } from "@/lib/time";
+import { useSources, useSourceTypeMap, useTransactionsInfinite } from "@/lib/api/hooks";
+import { groupByJakartaDay } from "@/lib/group-by-day";
 
 export default function TransactionsPage() {
-  const { openCreate, openEdit } = useCaptureSheet();
+  const { openCreate, openDetail } = useCaptureSheet();
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [direction, setDirection] = useState("");
   const [sourceFilter, setSourceFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [voidTarget, setVoidTarget] = useState<LedgerItem | null>(null);
-  const [reverseTarget, setReverseTarget] = useState<LedgerItem | null>(null);
+
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 300);
@@ -48,8 +36,7 @@ export default function TransactionsPage() {
   }, [query]);
 
   const sources = useSources();
-  const voidTx = useVoidTransaction();
-  const reverseTx = useReverseTransaction();
+  const sourceTypes = useSourceTypeMap();
 
   const filters = useMemo(
     () => ({
@@ -69,46 +56,7 @@ export default function TransactionsPage() {
   );
 
 
-  function confirmVoid() {
-    if (voidTarget === null) {
-      return;
-    }
-    voidTx.mutate(voidTarget.transaction_id, {
-      onSuccess: () => {
-        toast.success("Transaksi di-void");
-        setVoidTarget(null);
-      },
-      onError: (error) => toastError(error.message),
-    });
-  }
-
-  function confirmReverse() {
-    if (reverseTarget === null) {
-      return;
-    }
-    reverseTx.mutate(
-      { id: reverseTarget.transaction_id },
-      {
-        onSuccess: () => {
-          toast.success("Pembalikan dibuat");
-          setReverseTarget(null);
-        },
-        onError: (error) => toastError(error.message),
-      },
-    );
-  }
-
-  // Group rows by Jakarta day for the sticky day headers.
-  const groups: { day: string; items: LedgerItem[] }[] = [];
-  for (const item of rows) {
-    const day = dayLabel(item.occurred_at);
-    const last = groups[groups.length - 1];
-    if (last !== undefined && last.day === day) {
-      last.items.push(item);
-    } else {
-      groups.push({ day, items: [item] });
-    }
-  }
+  const groups = groupByJakartaDay(rows);
 
   return (
     <>
@@ -196,16 +144,15 @@ export default function TransactionsPage() {
         <div className="pb-4">
           {groups.map((group) => (
             <section key={group.day}>
-              <h3 className="sticky top-[104px] max-lg:top-[197px] z-[5] -mx-4 bg-canvas/95 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.05em] text-muted-foreground lg:-mx-6 lg:px-6">
+              <GroupLabel sticky className="top-[calc(56px+var(--toolbar-h,0px))]">
                 {group.day}
-              </h3>
+              </GroupLabel>
               {group.items.map((item) => (
                 <LedgerRow
                   key={item.transaction_id}
                   item={item}
-                  onEdit={openEdit}
-                  onReverse={setReverseTarget}
-                  onVoid={setVoidTarget}
+                  onOpen={() => openDetail(item.transaction_id)}
+                  sourceType={sourceTypes.get(item.source_id)}
                 />
               ))}
             </section>
@@ -221,33 +168,7 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      <ConfirmDialog
-        open={voidTarget !== null}
-        onOpenChange={(open) => !open && setVoidTarget(null)}
-        title="Void transaksi ini?"
-        description="Transaksi di-void: hilang dari semua hitungan, tetap terlihat di riwayat."
-        confirmLabel="Void"
-        tone="danger"
-        typedPhrase="HAPUS"
-        pending={voidTx.isPending}
-        onConfirm={confirmVoid}
-      />
 
-      <ConfirmDialog
-        open={reverseTarget !== null}
-        onOpenChange={(open) => !open && setReverseTarget(null)}
-        title="Balikkan transaksi ini?"
-        description={
-          <p>
-            Akan dibuat transaksi kebalikan sebesar{" "}
-            <MoneyText size="sm" signed minor={-(reverseTarget?.amount_minor ?? 0)} /> pada{" "}
-            {reverseTarget?.source_name ?? "sumber yang sama"}. Transaksi asli tetap ada.
-          </p>
-        }
-        confirmLabel="Buat pembalikan"
-        pending={reverseTx.isPending}
-        onConfirm={confirmReverse}
-      />
     </>
   );
 }

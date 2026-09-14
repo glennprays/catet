@@ -7,6 +7,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { apiFetchEnvelope, apiGet, apiSend } from "./client";
 import type { components } from "./schema";
 
@@ -60,6 +62,18 @@ export function useSources(includeArchived = false, initialData?: SourcesData) {
     queryFn: () => apiGet<SourcesData>(`/sources${includeArchived ? "?include_archived=true" : ""}`),
     initialData,
   });
+}
+
+/**
+ * Ledger rows show a source glyph; the list payload carries only the
+ * source name, so the type comes from the sources cache.
+ */
+export function useSourceTypeMap(): Map<string, Source["type"]> {
+  const sources = useSources();
+  return useMemo(
+    () => new Map((sources.data?.sources ?? []).map((source) => [source.id, source.type])),
+    [sources.data],
+  );
 }
 
 export function useCreateSource() {
@@ -150,19 +164,43 @@ export function useTransactions(filters: TransactionFilters) {
   });
 }
 
+/**
+ * Invalidation policy. A category fix only moves labels, so it must not
+ * refetch balances or the whole analytics namespace: on a Pi-class host
+ * that was eight round trips per row.
+ */
+function invalidateLedger(qc: QueryClient, scope: "money" | "label"): void {
+  const keys: unknown[][] =
+    scope === "money"
+      ? [["overview"], ["sources"], ["transactions"], ["badges"], ["analytics"], ["budgets"]]
+      : [
+          ["transactions"],
+          ["badges"],
+          ["overview"],
+          ["analytics", "category-breakdown"],
+          ["analytics", "essential-lifestyle"],
+          ["budgets"],
+        ];
+  for (const queryKey of keys) {
+    qc.invalidateQueries({ queryKey });
+  }
+}
+
+/** Full transaction: legs, provenance, edit history (detail sheet). */
+export function useTransaction(id: string | null) {
+  return useQuery({
+    queryKey: ["transaction", id],
+    queryFn: () => apiGet<Transaction>(`/transactions/${id}`),
+    enabled: id !== null,
+  });
+}
+
 export function useCreateTransaction() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: Record<string, unknown>) =>
       apiSend<Transaction>("/transactions", "POST", body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["overview"] });
-      qc.invalidateQueries({ queryKey: ["sources"] });
-      qc.invalidateQueries({ queryKey: ["transactions"] });
-      qc.invalidateQueries({ queryKey: ["badges"] });
-      qc.invalidateQueries({ queryKey: ["analytics"] });
-      qc.invalidateQueries({ queryKey: ["budgets"] });
-    },
+    onSuccess: () => invalidateLedger(qc, "money"),
   });
 }
 
@@ -179,15 +217,12 @@ export function useUpdateTransaction() {
       category_id?: string;
       note?: string;
       merchant?: string;
-    }) =>
-      apiSend<Transaction>(`/transactions/${id}`, "PATCH", body),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["overview"] });
-      qc.invalidateQueries({ queryKey: ["transactions"] });
-      qc.invalidateQueries({ queryKey: ["sources"] });
-      qc.invalidateQueries({ queryKey: ["analytics"] });
-      qc.invalidateQueries({ queryKey: ["budgets"] });
-      qc.invalidateQueries({ queryKey: ["badges"] });
+    }) => apiSend<Transaction>(`/transactions/${id}`, "PATCH", body),
+    onSuccess: (_data, variables) => {
+      const { id, ...body } = variables;
+      const labelOnly = Object.keys(body).length === 1 && body.category_id !== undefined;
+      invalidateLedger(qc, labelOnly ? "label" : "money");
+      qc.invalidateQueries({ queryKey: ["transaction", id] });
     },
   });
 }
@@ -196,13 +231,9 @@ export function useVoidTransaction() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiSend<{ voided: boolean }>(`/transactions/${id}`, "DELETE"),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["overview"] });
-      qc.invalidateQueries({ queryKey: ["transactions"] });
-      qc.invalidateQueries({ queryKey: ["sources"] });
-      qc.invalidateQueries({ queryKey: ["analytics"] });
-      qc.invalidateQueries({ queryKey: ["budgets"] });
-      qc.invalidateQueries({ queryKey: ["badges"] });
+    onSuccess: (_data, id) => {
+      invalidateLedger(qc, "money");
+      qc.invalidateQueries({ queryKey: ["transaction", id] });
     },
   });
 }
@@ -211,14 +242,14 @@ export function useReverseTransaction() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, note }: { id: string; note?: string }) =>
-      apiSend<Transaction>(`/transactions/${id}/reversals`, "POST", note === undefined ? undefined : { note }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["overview"] });
-      qc.invalidateQueries({ queryKey: ["transactions"] });
-      qc.invalidateQueries({ queryKey: ["sources"] });
-      qc.invalidateQueries({ queryKey: ["analytics"] });
-      qc.invalidateQueries({ queryKey: ["budgets"] });
-      qc.invalidateQueries({ queryKey: ["badges"] });
+      apiSend<Transaction>(
+        `/transactions/${id}/reversals`,
+        "POST",
+        note === undefined ? undefined : { note },
+      ),
+    onSuccess: (_data, variables) => {
+      invalidateLedger(qc, "money");
+      qc.invalidateQueries({ queryKey: ["transaction", variables.id] });
     },
   });
 }

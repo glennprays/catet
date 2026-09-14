@@ -18,7 +18,7 @@ import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
-import { useOverview, useSources } from "@/lib/api/hooks";
+import { useOverview, useSources, useSourceTypeMap } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
 
 const QUICK_ACTIONS = [
@@ -43,7 +43,8 @@ function stsTone(stsMinor: number): string {
 export default function OverviewPage() {
   const overview = useOverview();
   const sources = useSources();
-  const { openCreate, openEdit } = useCaptureSheet();
+  const sourceTypes = useSourceTypeMap();
+  const { openCreate, openDetail } = useCaptureSheet();
 
   const data = overview.data;
   const hasSources = (sources.data?.sources.length ?? 0) > 0;
@@ -159,7 +160,12 @@ export default function OverviewPage() {
           ) : data !== undefined && data.recent.length > 0 ? (
             <div>
               {data.recent.map((item) => (
-                <LedgerRow key={item.transaction_id} item={item} onEdit={openEdit} />
+                <LedgerRow
+                  key={item.transaction_id}
+                  item={item}
+                  onOpen={() => openDetail(item.transaction_id)}
+                  sourceType={sourceTypes.get(item.source_id)}
+                />
               ))}
             </div>
           ) : (
