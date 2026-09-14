@@ -18,7 +18,7 @@ colors:
   warn: "#c47a12"
   over: "#cf3f52"
   safe-text: "#136b57"
-  warn-text: "#9c5c08"
+  warn-text: "#8a5107"
   over-text: "#b12e42"
 typography:
   display-lg:  {fontFamily: Hanken Grotesk, fontSize: 40px, fontWeight: 500, lineHeight: 1.1, letterSpacing: -0.02em}
@@ -107,7 +107,7 @@ Key characteristics:
 | `--safe-text` | `#136b57` | Safe-state *text* |
 | `--warn` | `#c47a12` | THIN state — bars, fills, dots, rings only |
 | `--warn-wash` | `rgba(196,122,18,0.12)` | Tint backgrounds behind warn signals |
-| `--warn-text` | `#9c5c08` | Thin-state *text* |
+| `--warn-text` | `#8a5107` | Thin-state *text* (AA on `--warn-wash`: 5.06:1) |
 | `--over` | `#cf3f52` | OVER/error — bars, fills, dots, rings only |
 | `--over-wash` | `rgba(207,63,82,0.10)` | Tint backgrounds behind error |
 | `--over-text` | `#b12e42` | Over/error *text* |
