@@ -169,7 +169,17 @@ export function useCreateTransaction() {
 export function useUpdateTransaction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: string; amount_minor?: number; category_id?: string; note?: string; merchant?: string }) =>
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: string;
+      amount_minor?: number;
+      occurred_at?: string;
+      category_id?: string;
+      note?: string;
+      merchant?: string;
+    }) =>
       apiSend<Transaction>(`/transactions/${id}`, "PATCH", body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["overview"] });

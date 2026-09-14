@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -194,9 +195,15 @@ export function TransactionSheet({
       if (merchant !== (editing.merchant ?? "")) {
         body.merchant = merchant;
       }
+      if (date !== undefined && jakartaDateKey(date) !== jakartaDateKey(editing.occurred_at)) {
+        // Anchor at Jakarta noon so the wire instant lands on the day
+        // the user picked regardless of the browser's timezone.
+        body.occurred_at = new Date(`${jakartaDateKey(date)}T12:00:00+07:00`).toISOString();
+      }
       updateTx.mutate({ id: editing.transaction_id, ...body }, {
         onError,
         onSuccess: () => {
+          toast.success("Transaksi diubah");
           onOpenChange(false);
         },
       });
@@ -220,6 +227,7 @@ export function TransactionSheet({
     createTx.mutate(body, {
       onError,
       onSuccess: () => {
+        toast.success("Transaksi dicatat");
         onOpenChange(false);
       },
     });
@@ -233,7 +241,7 @@ export function TransactionSheet({
           <SheetDescription>Catat uang keluar, masuk, atau pindah antar sumber.</SheetDescription>
         </SheetHeader>
 
-        <div className="grid gap-4 py-2">
+        <div className="grid gap-4 px-4 py-2">
           {!editing ? (
             <Tabs
               value={direction}
@@ -263,7 +271,11 @@ export function TransactionSheet({
             </div>
           </Field>
 
-          <Field label={direction === "transfer" ? "Dari" : "Sumber"} error={fieldErrors.source_id}>
+          <Field
+            label={direction === "transfer" ? "Dari" : "Sumber"}
+            error={fieldErrors.source_id}
+            hint={isEditing ? "tidak bisa diubah — balikkan lalu catat ulang" : undefined}
+          >
             <Select value={sourceId} onValueChange={setSourceId} disabled={isEditing}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih sumber" />
