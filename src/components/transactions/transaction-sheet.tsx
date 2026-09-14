@@ -27,6 +27,23 @@ export type Direction = "expense" | "income" | "transfer";
 
 const LAST_SOURCE_KEY = "catet:last-source-id";
 
+/** Private-mode browsers throw on storage access; a lost default is fine. */
+function rememberedSourceId(): string | null {
+  try {
+    return window.localStorage.getItem(LAST_SOURCE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function rememberSourceId(id: string): void {
+  try {
+    window.localStorage.setItem(LAST_SOURCE_KEY, id);
+  } catch {
+    // Nothing to do: the next capture just starts without a default.
+  }
+}
+
 const DIRECTIONS = [
   { value: "expense", label: "Keluar" },
   { value: "income", label: "Masuk" },
@@ -121,8 +138,8 @@ export function TransactionSheet({
       setDirection(initialDirection ?? "expense");
       setAmountMinor(null);
       // Most captures come from the same wallet; remember it, but only
-      // honour it while that source still exists and is active.
-      const remembered = window.localStorage.getItem(LAST_SOURCE_KEY);
+      // honour it in the browser and while that source is still active.
+      const remembered = typeof window === "undefined" ? null : rememberedSourceId();
       setSourceId(
         remembered !== null &&
           sources.some((source) => source.id === remembered && source.archived_at === null)
@@ -238,7 +255,7 @@ export function TransactionSheet({
     createTx.mutate(body, {
       onError,
       onSuccess: () => {
-        window.localStorage.setItem(LAST_SOURCE_KEY, sourceId);
+        rememberSourceId(sourceId);
         toast.success("Transaksi dicatat");
         onOpenChange(false);
       },

@@ -41,19 +41,22 @@ export function PendingActionParams({ params }: { params: Record<string, unknown
       {entries.map(([key, value]) => (
         <div key={key} className="contents">
           <dt className="text-muted-foreground">{LABELS[key] ?? key}</dt>
-          <dd className="min-w-0 truncate text-ink">{renderValue(key, value)}</dd>
+          <dd className="min-w-0 truncate text-ink">{renderValue(key, value, params)}</dd>
         </div>
       ))}
     </dl>
   );
 }
 
-function renderValue(key: string, value: unknown) {
+function renderValue(key: string, value: unknown, params: Record<string, unknown>) {
   if (value === null || value === undefined || value === "") {
     return <span className="text-muted-foreground">—</span>;
   }
   if (key === "amount_minor" && typeof value === "number") {
-    return <MoneyText minor={value} signed size="sm" />;
+    // Bot params carry an unsigned amount; the direction decides the
+    // sign, and confirming money must show the sign it will write.
+    const outgoing = params.type === "expense" || params.type === "transfer";
+    return <MoneyText minor={outgoing ? -Math.abs(value) : value} signed size="sm" />;
   }
   if ((key === "occurred_at" || key === "occurred_date") && typeof value === "string") {
     return shortDateLabel(key === "occurred_date" ? `${value}T00:00:00+07:00` : value);
