@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Inbox, Plus, Search } from "lucide-react";
 
-import { EmptyState } from "@/components/empty-state";
+import { EmptyState, QueryErrorState } from "@/components/empty-state";
+import { FilterBar } from "@/components/filter-bar";
 import { GroupLabel } from "@/components/group-label";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
@@ -57,6 +58,16 @@ export default function TransactionsPage() {
 
 
   const groups = groupByJakartaDay(rows);
+  const filtersActive =
+    debouncedQuery !== "" || direction !== "" || sourceFilter !== "" || statusFilter !== "";
+
+  function resetFilters() {
+    setQuery("");
+    setDebouncedQuery("");
+    setDirection("");
+    setSourceFilter("");
+    setStatusFilter("");
+  }
 
   return (
     <>
@@ -69,7 +80,7 @@ export default function TransactionsPage() {
         }
       />
 
-      <div className="sticky top-14 z-10 -mx-4 mb-3 grid grid-cols-2 gap-2 border-b border-border bg-canvas/90 px-4 py-2 lg:-mx-6 lg:grid-cols-4 lg:px-6">
+      <FilterBar className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <div className="relative col-span-2 lg:col-span-1">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ash" />
           <Input
@@ -124,7 +135,7 @@ export default function TransactionsPage() {
             <SelectItem value="needs_review">Perlu review</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
       {pages.isPending ? (
         <div>
@@ -133,15 +144,30 @@ export default function TransactionsPage() {
           ))}
         </div>
       ) : pages.isError ? (
-        <p className="py-10 text-center text-[13px] text-over-text">Gagal memuat transaksi.</p>
+        <QueryErrorState message="Transaksi gagal dimuat." onRetry={() => pages.refetch()} />
       ) : rows.length === 0 ? (
         <EmptyState
           icon={Inbox}
           heading="Tidak ada transaksi"
-          caption="Coba ubah filter, atau catat transaksi baru."
+          caption={
+            filtersActive
+              ? "Tidak ada yang cocok dengan filter ini."
+              : "Catat lewat WhatsApp atau tambah manual dari sini."
+          }
+          action={
+            filtersActive ? (
+              <Button variant="ghost" onClick={resetFilters}>
+                Hapus filter
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
-        <div className="pb-4">
+        <div
+          className={`pb-4 ${
+            pages.isFetching && !pages.isFetchingNextPage ? "opacity-60 transition-opacity" : ""
+          }`}
+        >
           {groups.map((group) => (
             <section key={group.day}>
               <GroupLabel sticky className="top-[calc(56px+var(--toolbar-h,0px))]">
@@ -160,7 +186,11 @@ export default function TransactionsPage() {
 
           {pages.hasNextPage ? (
             <div className="flex justify-center pt-4">
-              <Button variant="secondary" disabled={pages.isFetching} onClick={() => pages.fetchNextPage()}>
+              <Button
+                variant="secondary"
+                disabled={pages.isFetchingNextPage}
+                onClick={() => pages.fetchNextPage()}
+              >
                 Muat lebih banyak
               </Button>
             </div>

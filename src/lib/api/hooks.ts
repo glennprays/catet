@@ -149,6 +149,9 @@ export function useTransactionsInfinite(filters: TransactionFilters) {
     queryFn: ({ pageParam }) =>
       apiFetchEnvelope<TransactionListEnvelope>(transactionsPath({ ...filters, cursor: pageParam })),
     initialPageParam: "",
+    // Filtering must not blank the list: keep the previous page while
+    // the new query resolves.
+    placeholderData: keepPreviousData,
     getNextPageParam: (lastPage) => {
       const next = lastPage.page?.next_cursor;
       return next !== undefined && next !== "" ? next : undefined;
