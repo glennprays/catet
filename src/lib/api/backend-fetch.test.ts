@@ -128,6 +128,23 @@ describe("backendFetch", () => {
     }
   });
 
+  test("forwards the client IP so the Go API can throttle per address", async () => {
+    const server = await withServer((req, res) => {
+      expect(req.headers["x-forwarded-for"]).toBe("203.0.113.7");
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ data: { ok: true }, trace_id: "t" }));
+    });
+    process.env.CATET_BACKEND_URL = server.baseUrl;
+
+    try {
+      await expect(
+        backendFetch("/api/v1/auth/login", { method: "POST", clientIP: "203.0.113.7" }),
+      ).resolves.toEqual({ data: { ok: true }, trace_id: "t" });
+    } finally {
+      await server.close();
+    }
+  });
+
   test("requires CATET_BACKEND_URL in production", async () => {
     vi.stubEnv("NODE_ENV", "production");
 

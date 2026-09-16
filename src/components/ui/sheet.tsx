@@ -35,7 +35,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-[rgba(28,25,19,0.32)] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-50 bg-[rgba(5,15,26,0.40)] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-sheet shadow-[0_12px_32px_rgba(28,25,19,0.14),0_2px_8px_rgba(28,25,19,0.06)] transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
+          "fixed z-50 flex flex-col gap-4 bg-surface shadow-float transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
           side === "right" &&
             "inset-y-0 right-0 h-full w-3/4 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
           side === "left" &&
@@ -74,7 +74,7 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-sm opacity-70 transition-opacity hover:bg-surface-200 hover:opacity-100 focus-visible:ring-[3px] focus-visible:ring-safe-wash focus:outline-hidden disabled:pointer-events-none">
+          <SheetPrimitive.Close className="absolute top-1.5 right-1.5 flex size-11 items-center justify-center rounded-md opacity-70 transition-opacity hover:bg-surface-200 hover:opacity-100 focus-visible:ring-[4px] focus-visible:ring-primary/10 focus:outline-hidden disabled:pointer-events-none sm:top-3 sm:right-3 sm:size-8">
             <XIcon className="size-4" strokeWidth={1.75} />
             <span className="sr-only">Tutup</span>
           </SheetPrimitive.Close>
@@ -111,7 +111,7 @@ function SheetTitle({
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn("text-[20px] font-medium leading-[1.2] tracking-[-0.01em] text-ink", className)}
+      className={cn("text-figure-lg font-semibold text-ink", className)}
       {...props}
     />
   )
@@ -124,7 +124,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-[13px] text-muted-foreground", className)}
+      className={cn("text-body text-muted-foreground", className)}
       {...props}
     />
   )

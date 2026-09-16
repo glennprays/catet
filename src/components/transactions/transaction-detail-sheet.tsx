@@ -75,7 +75,7 @@ export function TransactionDetailSheet({
         skeleton={
           <div className="grid gap-3">
             {Array.from({ length: 6 }, (_, index) => (
-              <Skeleton key={index} className="h-8 w-full rounded-sm" />
+              <Skeleton key={index} className="h-8 w-full rounded-md" />
             ))}
           </div>
         }
@@ -130,17 +130,17 @@ function DetailBody({
           strike={transaction.voided}
           tone={transaction.voided ? "muted" : "auto"}
         />
-        <p className="text-[15px] text-ink">{title}</p>
-        <p className="text-xs text-muted-foreground">{dateTimeLabel(transaction.occurred_at)}</p>
+        <p className="text-amount text-ink">{title}</p>
+        <p className="text-meta text-muted-foreground">{dateTimeLabel(transaction.occurred_at)}</p>
       </div>
 
       {transaction.voided ? (
-        <p role="status" className="rounded-sm bg-over-wash px-3 py-2 text-[13px] text-over-text">
+        <p role="status" className="rounded-md bg-over-wash px-3 py-2 text-body text-over-text">
           Transaksi ini sudah di-void: tidak dihitung di mana pun.
         </p>
       ) : null}
 
-      <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2 text-[13px]">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2 text-body">
         <dt className="text-muted-foreground">Jenis</dt>
         <dd className="text-ink">{TYPE_LABEL[transaction.type]}</dd>
 
@@ -187,6 +187,18 @@ function DetailBody({
 
         <dt className="text-muted-foreground">Asal</dt>
         <dd className="text-ink">{ORIGIN_LABEL[transaction.origin]}</dd>
+
+        {transaction.bill_id === null || transaction.bill_id === undefined ? null : (
+          <>
+            <dt className="text-muted-foreground">Tagihan</dt>
+            <dd className="text-ink">
+              {transaction.bill_name}
+              <span className="block text-meta text-ash">
+                Menghapus transaksi ini mengembalikan jadwal tagihan.
+              </span>
+            </dd>
+          </>
+        )}
       </dl>
 
       <div>
@@ -195,7 +207,7 @@ function DetailBody({
           {transaction.legs.map((leg) => (
             <li
               key={leg.id}
-              className="flex min-h-9 items-center justify-between gap-3 border-b border-border text-[13px]"
+              className="flex min-h-9 items-center justify-between gap-3 border-b border-border text-body"
             >
               <span className="min-w-0 truncate text-ink">
                 {leg.source_name ?? leg.category_name ?? "—"}
@@ -221,11 +233,11 @@ function DetailBody({
       <div>
         <SectionHeader title="Riwayat ubahan" as="h3" />
         {transaction.edit_history.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Belum pernah diubah.</p>
+          <p className="text-meta text-muted-foreground">Belum pernah diubah.</p>
         ) : (
           <ul className="grid gap-1.5">
             {transaction.edit_history.map((entry, index) => (
-              <li key={entry.edited_at ?? index} className="text-xs text-muted-foreground">
+              <li key={entry.edited_at ?? index} className="text-meta text-muted-foreground">
                 <span className="text-ink-soft">
                   {entry.edited_at === undefined ? "—" : shortDateLabel(entry.edited_at)}
                 </span>

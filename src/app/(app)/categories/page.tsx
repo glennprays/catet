@@ -5,13 +5,14 @@ import { Tags } from "lucide-react";
 import { toast } from "sonner";
 
 import { toastError } from "@/lib/toast";
+import { CategoryTile } from "@/components/category-tile";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FormField } from "@/components/form-field";
 import { ListRow } from "@/components/list-row";
+import { Panel } from "@/components/panel";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
-import { RowActions } from "@/components/row-actions";
+import { RowMenu } from "@/components/row-menu";
 import { SwitchRow } from "@/components/switch-row";
-
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 
@@ -101,13 +101,13 @@ export default function CategoriesPage() {
         }
       />
 
-      <div className="py-4">
+      <div className="py-2.5">
         {categories.isPending ? (
-          <div className="grid gap-2">
-            {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-9 w-full rounded-sm" />
+          <Panel density="list">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="catet-shimmer m-2 h-9 rounded-md" />
             ))}
-          </div>
+          </Panel>
         ) : categories.isError ? (
           <QueryErrorState message="Kategori gagal dimuat." onRetry={() => categories.refetch()} />
         ) : list.length === 0 ? (
@@ -122,18 +122,25 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <ul aria-label="Kategori" className="rounded-md border border-border bg-surface">
-            {tree.map((node) => (
-              <CategoryBranch
-                key={node.category.id}
-                node={node}
-                depth={0}
-                onAddChild={openAddChild}
-                onEdit={openEdit}
-                onArchive={setArchiveTarget}
-              />
-            ))}
-          </ul>
+          <Panel density="list" title="Kategori" caption={`${list.length} aktif`}>
+            <div className="hidden h-8 grid-cols-[minmax(0,1fr)_96px_40px] items-center border-b border-border px-4 text-label font-medium uppercase text-ash md:grid">
+              <span>Nama</span>
+              <span>Kebutuhan</span>
+              <span />
+            </div>
+            <ul aria-label="Kategori">
+              {tree.map((node) => (
+                <CategoryBranch
+                  key={node.category.id}
+                  node={node}
+                  depth={0}
+                  onAddChild={openAddChild}
+                  onEdit={openEdit}
+                  onArchive={setArchiveTarget}
+                />
+              ))}
+            </ul>
+          </Panel>
         )}
       </div>
 
@@ -190,14 +197,13 @@ function CategoryBranch({
     <li>
       <ListRow
         indent={depth}
+        leading={<CategoryTile category={node.category} />}
         title={node.category.name}
         trailing={
-          <span className="flex items-center gap-2">
-            <label htmlFor={switchId} className="text-xs text-muted-foreground">
-              Kebutuhan
-            </label>
+          <div className="grid grid-cols-[96px_40px] items-center">
             <Switch
               id={switchId}
+              aria-label={`Kebutuhan: ${node.category.name}`}
               checked={node.category.essential}
               disabled={update.isPending}
               onCheckedChange={(essential) =>
@@ -211,16 +217,15 @@ function CategoryBranch({
                 )
               }
             />
-          </span>
-        }
-        actions={
-          <RowActions
-            actions={[
-              { label: "Sub", onClick: () => onAddChild(node.category) },
-              { label: "Ubah", onClick: () => onEdit(node.category) },
-              { label: "Arsipkan", tone: "danger", onClick: () => onArchive(node.category) },
-            ]}
-          />
+            <RowMenu
+              label={`Aksi ${node.category.name}`}
+              actions={[
+                { label: "Sub", onClick: () => onAddChild(node.category) },
+                { label: "Ubah", onClick: () => onEdit(node.category) },
+                { label: "Arsipkan", tone: "danger", onClick: () => onArchive(node.category) },
+              ]}
+            />
+          </div>
         }
       />
 

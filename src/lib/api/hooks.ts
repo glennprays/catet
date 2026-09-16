@@ -10,7 +10,7 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { apiFetchEnvelope, apiGet, apiSend } from "./client";
-import type { components } from "./schema";
+import type { components, operations } from "./schema";
 
 type DataOf<E extends { data?: unknown }> = NonNullable<E["data"]>;
 
@@ -22,11 +22,16 @@ export type TransactionListData = NonNullable<TransactionListEnvelope["data"]>;
 export type Transaction = components["schemas"]["Transaction"];
 export type Category = components["schemas"]["Category"];
 export type Bill = components["schemas"]["Bill"];
+export type BillPayment = components["schemas"]["BillPayment"];
+export type BillPaymentResult = DataOf<components["schemas"]["BillPaymentEnvelope"]>;
 export type BudgetRow = components["schemas"]["BudgetRow"];
 export type Overview = components["schemas"]["Overview"];
 export type BadgeCounts = components["schemas"]["BadgeCounts"];
 export type PendingAction = components["schemas"]["PendingAction"];
 export type Settings = components["schemas"]["Settings"];
+export type Me = components["schemas"]["Me"];
+export type User = components["schemas"]["User"];
+export type Invite = components["schemas"]["Invite"];
 export type CategoryBreakdownData = DataOf<components["schemas"]["CategoryBreakdownEnvelope"]>;
 export type IncomeExpenseData = DataOf<components["schemas"]["IncomeExpenseEnvelope"]>;
 export type StsTrendData = DataOf<components["schemas"]["StsTrendEnvelope"]>;
@@ -336,6 +341,43 @@ export function useDeactivateBill() {
   });
 }
 
+export function useReactivateBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiSend<{ active: boolean }>(`/bills/${id}/activate`, "POST"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bills"] });
+      qc.invalidateQueries({ queryKey: ["overview"] });
+    },
+  });
+}
+
+/**
+ * Paying a bill writes a real expense, so it invalidates the money
+ * surfaces as well as the bill list: Safe-to-Spend, balances and the
+ * ledger all moved.
+ */
+export function usePayBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string } & Record<string, unknown>) =>
+      apiSend<BillPaymentResult>(`/bills/${id}/payments`, "POST", body),
+    onSuccess: () => {
+      invalidateLedger(qc, "money");
+      qc.invalidateQueries({ queryKey: ["bills"] });
+      qc.invalidateQueries({ queryKey: ["bill-payments"] });
+    },
+  });
+}
+
+/** Settled occurrences in [from, to) — the calendar's paid markers. */
+export function useBillPayments(from: string, to: string) {
+  return useQuery({
+    queryKey: ["bill-payments", from, to],
+    queryFn: () => apiGet<{ payments: BillPayment[] }>(`/bills/payments?from=${from}&to=${to}`),
+  });
+}
+
 // ------------------------------------------------------------------ budgets
 
 export function useBudgets(period?: string) {
@@ -405,15 +447,33 @@ export function useHoldQueue() {
   });
 }
 
+/** The overrides a confirming capture sheet may send with `confirm`. */
+export type HoldOverrides = NonNullable<
+  operations["resolveHoldQueueItem"]["requestBody"]
+>["content"]["application/json"]["overrides"];
+
 export function useResolveHold() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, action }: { id: string; action: "confirm" | "discard" }) =>
-      apiSend<{ resolved: boolean }>(`/hold-queue/${id}/resolve`, "POST", { action }),
+    mutationFn: ({
+      id,
+      action,
+      overrides,
+    }: {
+      id: string;
+      action: "confirm" | "discard";
+      overrides?: HoldOverrides;
+    }) =>
+      apiSend<{ resolved: boolean; transaction_id?: string }>(
+        `/hold-queue/${id}/resolve`,
+        "POST",
+        { action, overrides },
+      ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["hold-queue"] });
-      qc.invalidateQueries({ queryKey: ["badges"] });
-      qc.invalidateQueries({ queryKey: ["overview"] });
+      // Confirming executes the parked write, so the ledger moved too
+      // (invalidateLedger already covers badges and overview).
+      invalidateLedger(qc, "money");
     },
   });
 }
@@ -430,11 +490,85 @@ export function useSettings() {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { income_horizon_days: number }) =>
-      apiSend<Settings>("/settings", "PUT", body),
+    mutationFn: (body: {
+      income_horizon_days: number;
+      photo_default_source_id: string | null;
+      reminder_hour?: number;
+    }) => apiSend<Settings>("/settings", "PUT", body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["overview"] });
     },
+  });
+}
+
+// ------------------------------------------------------------------ account
+
+/** Identity of the signed-in user — the `/settings` account row reads it. */
+export function useMe() {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: () => apiGet<Me>("/auth/me"),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * A password change bumps the session epoch, so the current cookie dies
+ * with it: the caller sends the user back to /login on success.
+ */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (body: { current_password: string; new_password: string }) =>
+      apiSend<{ ok: boolean }>("/auth/password/change", "POST", body),
+  });
+}
+
+export function useLogoutAll() {
+  return useMutation({
+    mutationFn: () => apiSend<{ ok: boolean }>("/auth/logout-all", "POST"),
+  });
+}
+
+// -------------------------------------------------------------------- users
+
+export function useUsers() {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: () => apiGet<{ users: User[] }>("/users").then((data) => data.users),
+  });
+}
+
+export function useInvites() {
+  return useQuery({
+    queryKey: ["invites"],
+    queryFn: () => apiGet<{ invites: Invite[] }>("/users/invites").then((data) => data.invites),
+  });
+}
+
+/** The token is never returned: the bot delivers the link over WhatsApp. */
+export function useCreateInvite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { phone: string }) => apiSend<Invite>("/users/invites", "POST", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites"] }),
+  });
+}
+
+export function useRevokeInvite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) =>
+      apiSend<{ ok: boolean }>(`/users/invites/${id}`, "DELETE"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["invites"] }),
+  });
+}
+
+export function useSetUserActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      apiSend<User>(`/users/${id}/${active ? "activate" : "deactivate"}`, "POST"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
   });
 }

@@ -15,11 +15,13 @@ export function DatePicker({
   date,
   onChange,
   disableFuture = false,
+  className,
 }: {
   id: string;
   date: Date | undefined;
   onChange: (date: Date | undefined) => void;
   disableFuture?: boolean;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -28,7 +30,11 @@ export function DatePicker({
         <Button
           id={id}
           variant="secondary"
-          className={cn("w-full justify-start font-normal", date === undefined && "text-muted-foreground")}
+          className={cn(
+            "w-full justify-start font-normal",
+            className,
+            date === undefined && "text-muted-foreground",
+          )}
         >
           <CalendarIcon className="size-4 text-ash" strokeWidth={1.75} />
           {date !== undefined ? shortDateLabel(date) : "Pilih tanggal"}

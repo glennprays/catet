@@ -4,32 +4,32 @@ import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
 
 /*
- * Density rule (DESIGN.md §4): compact sizes are genuinely compact.
- * Touch reach is restored with a transparent hit-area expander
- * (`before:inset-[-6px]`) instead of a min-height that would defeat
- * every small size.
+ * Density rule (DESIGN.md §4): controls are 32px at ≥640px and 44px below,
+ * so touch never costs the desktop its density. Compact sizes (`sm`,
+ * `icon-sm`) stay 28px and restore reach with a transparent hit-area
+ * expander (`before:inset-[-8px]` → 44px) instead of a min-height that
+ * would defeat every small size.
  */
 const buttonVariants = cva(
-  "relative inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-[13px] font-medium whitespace-nowrap transition-all outline-none focus-visible:border-border-strong focus-visible:ring-[3px] focus-visible:ring-safe-wash active:scale-[0.98] disabled:pointer-events-none disabled:bg-surface-300 disabled:text-smoke aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "relative inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-control font-medium whitespace-nowrap transition-colors outline-none focus-visible:border-primary focus-visible:ring-[4px] focus-visible:ring-primary/10 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default:
-          "rounded-full bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-white hover:bg-primary-hover",
         destructive:
-          "bg-destructive text-sheet hover:bg-destructive/90 focus-visible:ring-destructive/20",
+          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border border-border-strong bg-surface text-ink hover:bg-surface-100",
         ghost: "text-ink-soft hover:bg-surface-200",
         dangerGhost: "text-over-text hover:bg-over-wash",
       },
       size: {
-        default: "h-11 px-4 has-[>svg]:px-3",
-        sm: "h-8 gap-1.5 px-2.5 text-xs has-[>svg]:px-2 before:absolute before:inset-[-6px] before:content-['']",
-        lg: "h-11 px-6 has-[>svg]:px-4",
-        icon: "size-11",
-        "icon-sm": "size-8 before:absolute before:inset-[-6px] before:content-['']",
-        "icon-lg": "size-11",
+        default: "h-11 px-3 text-control has-[>svg]:px-2.5 sm:h-8",
+        sm: "h-7 gap-1 px-2.5 text-meta has-[>svg]:px-2 before:absolute before:inset-[-8px] before:content-['']",
+        lg: "h-11 px-4 text-control has-[>svg]:px-3.5 sm:h-10",
+        icon: "size-11 sm:size-8",
+        "icon-sm": "size-7 before:absolute before:inset-[-8px] before:content-['']",
+        "icon-lg": "size-11 sm:size-10",
       },
     },
     defaultVariants: {

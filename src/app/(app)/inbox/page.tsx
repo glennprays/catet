@@ -2,17 +2,16 @@
 
 import { useState } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { CircleCheck, Inbox } from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { EmptyState } from "@/components/empty-state";
 import { GroupLabel } from "@/components/group-label";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
 import { PageHeader } from "@/components/page-header";
-import { PendingActionParams } from "@/components/pending-action-params";
+import { FIELD_LABELS, PendingActionParams } from "@/components/pending-action-params";
 import { QueryBoundary } from "@/components/query-boundary";
-import { SectionHeader } from "@/components/section-header";
+import { Panel } from "@/components/panel";
+import { StatusBadge } from "@/components/status-badge";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   useBadges,
   useCategories,
@@ -38,7 +36,7 @@ import {
   type TransactionListEnvelope,
 } from "@/lib/api/hooks";
 import { groupByJakartaDay } from "@/lib/group-by-day";
-import { dateTimeLabel } from "@/lib/time";
+import { dayLabel, timeLabel } from "@/lib/time";
 import { toastError } from "@/lib/toast";
 
 const REVIEW_FILTERS = { review_status: "needs_review", limit: 50 } as const;
@@ -72,76 +70,84 @@ export default function InboxPage() {
     <>
       <PageHeader title="Inbox" />
 
-      <div className="grid gap-6 py-4">
-        <section aria-label="Konfirmasi bot">
-          <SectionHeader
+      <div className="grid gap-2.5 py-2.5 xl:grid-cols-12">
+        <section aria-label="Konfirmasi bot" className="min-w-0 xl:col-span-5">
+          <Panel
             title="Konfirmasi bot"
             caption={
               badges.data === undefined
                 ? undefined
                 : `${badges.data.hold_queue} aksi menunggu konfirmasi`
             }
-          />
-          <QueryBoundary
-            query={holds}
-            isEmpty={(data) => data.items.length === 0}
-            errorMessage="Konfirmasi bot gagal dimuat."
-            skeleton={
-              <div className="grid gap-2">
-                {Array.from({ length: 2 }, (_, index) => (
-                  <Skeleton key={index} className="h-24 w-full rounded-md" />
-                ))}
-              </div>
-            }
-            empty={
-              <EmptyState
-                icon={Inbox}
-                heading="Tidak ada aksi menunggu"
-                caption="Semua pesan bot sudah dikonfirmasi."
-              />
-            }
+            density="list"
           >
-            {(data) => (
-              <ul className="grid gap-2">
-                {data.items.map((item) => (
-                  <HoldRow key={item.id} item={item} />
-                ))}
-              </ul>
-            )}
-          </QueryBoundary>
+            <QueryBoundary
+              query={holds}
+              isEmpty={(data) => data.items.length === 0}
+              errorMessage="Konfirmasi bot gagal dimuat."
+              skeleton={
+                <div>
+                  {Array.from({ length: 2 }, (_, index) => (
+                    <div
+                      key={index}
+                      className="grid h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border px-4 last:border-b-0 md:h-9"
+                    >
+                      <div className="grid gap-1">
+                        <span className="catet-shimmer h-3 w-40 rounded" />
+                        <span className="catet-shimmer h-2.5 w-56 rounded" />
+                      </div>
+                      <span className="catet-shimmer h-7 w-36 rounded-md" />
+                    </div>
+                  ))}
+                </div>
+              }
+              empty={
+                <p className="p-4 text-meta text-ash">
+                  Tidak ada aksi menunggu. Semua pesan bot sudah dikonfirmasi.
+                </p>
+              }
+            >
+              {(data) => (
+                <ul>
+                  {data.items.map((item) => (
+                    <HoldRow key={item.id} item={item} />
+                  ))}
+                </ul>
+              )}
+            </QueryBoundary>
+          </Panel>
         </section>
 
-        <section aria-label="Perbaiki kategori">
-          <SectionHeader
+        <section aria-label="Perbaiki kategori" className="min-w-0 xl:col-span-7">
+          <Panel
             title="Perbaiki kategori"
             caption={
               badges.data === undefined ? undefined : `${badges.data.needs_review} transaksi`
             }
-          />
-          <QueryBoundary
-            query={reviews}
-            isEmpty={() => reviewRows.length === 0}
-            errorMessage="Transaksi perlu review gagal dimuat."
-            skeleton={
-              <div>
-                {Array.from({ length: 4 }, (_, index) => (
-                  <LedgerRowSkeleton key={index} />
-                ))}
-              </div>
-            }
-            empty={
-              <EmptyState
-                icon={CircleCheck}
-                heading="Semua beres"
-                caption="Tidak ada transaksi yang menunggu review kategori."
-              />
-            }
+            density="list"
           >
+            <QueryBoundary
+              query={reviews}
+              isEmpty={() => reviewRows.length === 0}
+              errorMessage="Transaksi perlu review gagal dimuat."
+              skeleton={
+                <div>
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <LedgerRowSkeleton key={index} />
+                  ))}
+                </div>
+              }
+              empty={
+                <p className="p-4 text-meta text-ash">
+                  Semua beres. Tidak ada transaksi yang menunggu review kategori.
+                </p>
+              }
+            >
             {() => (
               <div>
                 {groupByJakartaDay(reviewRows).map((group) => (
                   <section key={group.day}>
-                    <GroupLabel>{group.day}</GroupLabel>
+                    <GroupLabel className="px-4">{group.day}</GroupLabel>
                     {group.items.map((item) => (
                       <ReviewRow
                         key={item.transaction_id}
@@ -154,7 +160,7 @@ export default function InboxPage() {
                   </section>
                 ))}
                 {reviews.hasNextPage ? (
-                  <div className="flex justify-center pt-4">
+                  <div className="flex justify-center p-4">
                     <Button
                       variant="secondary"
                       disabled={reviews.isFetchingNextPage}
@@ -166,7 +172,8 @@ export default function InboxPage() {
                 ) : null}
               </div>
             )}
-          </QueryBoundary>
+            </QueryBoundary>
+          </Panel>
         </section>
       </div>
     </>
@@ -176,6 +183,7 @@ export default function InboxPage() {
 /** Owns its own mutation so one pending row never disables the others. */
 function HoldRow({ item }: { item: PendingAction }) {
   const resolve = useResolveHold();
+  const { openHold } = useCaptureSheet();
   const [confirming, setConfirming] = useState<"confirm" | "discard" | null>(null);
 
   function run(action: "confirm" | "discard") {
@@ -191,14 +199,48 @@ function HoldRow({ item }: { item: PendingAction }) {
     );
   }
 
+  const originalText =
+    typeof item.params.original_text === "string" ? item.params.original_text : "";
+  const missing = Array.isArray(item.params.missing) ? item.params.missing.map(String) : [];
+  // A capture is an unfinished write: confirming it means filling the
+  // gap the bot refused to guess, which is the capture form's job. A
+  // refund is a yes/no on an already-identified target.
+  const isCapture = item.kind === "capture";
+  const isReceipt = item.kind === "receipt";
+  // A receipt is N lines at a printed total — the capture sheet carries
+  // one amount and cannot express it. Until a receipt gets its own
+  // Source picker, a missing Source is only answerable in the chat that
+  // asked ("Bayar dari mana?").
+  const needsSourceInChat = isReceipt && missing.includes("source");
+
   return (
-    <li className="rounded-md border border-border bg-surface p-3">
-      <p className="text-[15px] font-medium text-ink">{item.summary}</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{dateTimeLabel(item.created_at)}</p>
-      <div className="mt-2">
-        <PendingActionParams params={item.params} />
+    <li className="grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border px-4 py-1.5 last:border-b-0 md:min-h-9">
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="truncate text-body font-medium text-ink">{item.summary}</p>
+          {missing.length > 0 ? (
+            <StatusBadge tone="warn">
+              {`Butuh ${missing
+                .map((field) => FIELD_LABELS[field] ?? field)
+                .join(", ")
+                .toLowerCase()}`}
+            </StatusBadge>
+          ) : null}
+        </div>
+        <p className="truncate text-meta text-ash">
+          {originalText === "" ? null : (
+            <>
+              {`\u201c${originalText}\u201d`}
+              <span aria-hidden="true"> · </span>
+            </>
+          )}
+          {dayLabel(item.created_at)} · {timeLabel(item.created_at)}
+        </p>
       </div>
-      <div className="mt-2 flex justify-end gap-1">
+      {/* The params table is not inline: a refund and a receipt preview
+          their numbers inside the confirm dialog, a capture opens the
+          sheet. */}
+      <div className="flex items-center gap-1">
         <Button
           variant="dangerGhost"
           size="sm"
@@ -207,7 +249,13 @@ function HoldRow({ item }: { item: PendingAction }) {
         >
           Buang
         </Button>
-        <Button size="sm" disabled={resolve.isPending} onClick={() => setConfirming("confirm")}>
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={resolve.isPending || needsSourceInChat}
+          title={needsSourceInChat ? "Jawab 'Bayar dari mana?' di WhatsApp" : undefined}
+          onClick={() => (isCapture ? openHold(item) : setConfirming("confirm"))}
+        >
           Konfirmasi
         </Button>
       </div>
@@ -215,7 +263,7 @@ function HoldRow({ item }: { item: PendingAction }) {
       <ConfirmDialog
         open={confirming === "confirm"}
         onOpenChange={(open) => !open && setConfirming(null)}
-        title="Konfirmasi aksi bot?"
+        title={isReceipt ? "Catat semua baris struk?" : "Konfirmasi aksi bot?"}
         description={<PendingActionParams params={item.params} />}
         confirmLabel="Konfirmasi"
         pending={resolve.isPending}
@@ -304,37 +352,38 @@ function ReviewRow({
       onOpen={onOpen}
       flash={flash}
       trailing={
-        <div className="flex w-full flex-col gap-1 sm:w-80">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           {guess === null ? null : (
-            <span className="truncate text-xs text-muted-foreground">Tebakan: {guess}</span>
+            <span className="hidden truncate text-meta whitespace-nowrap text-ash lg:inline">
+              Tebakan: {guess}
+            </span>
           )}
-          <div className="flex items-center gap-2">
-            <Select
-              value={item.category_id ?? ""}
-              disabled={update.isPending}
-              onValueChange={save}
+          <Select value={item.category_id ?? ""} disabled={update.isPending} onValueChange={save}>
+            <SelectTrigger
+              className="w-full sm:w-40"
+              aria-label={`Ganti kategori ${item.merchant ?? item.type}`}
             >
-              <SelectTrigger className="w-full" aria-label={`Ganti kategori ${item.merchant ?? item.type}`}>
-                <SelectValue placeholder="Pilih kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="shrink-0"
-              disabled={update.isPending || item.category_id === null || item.category_id === undefined}
-              onClick={() => save(item.category_id as string)}
-            >
-              Benar
-            </Button>
-          </div>
+              <SelectValue placeholder="Pilih kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="shrink-0"
+            disabled={
+              update.isPending || item.category_id === null || item.category_id === undefined
+            }
+            onClick={() => save(item.category_id as string)}
+          >
+            Benar
+          </Button>
         </div>
       }
     />

@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useState } from "react";
+import { useState } from "react";
 import { Plus, Send, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,11 +8,13 @@ import { AmountInput } from "@/components/amount-input";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { FormField } from "@/components/form-field";
+import { Metric } from "@/components/metric";
 import { MoneyText } from "@/components/money-text";
 import { PageHeader } from "@/components/page-header";
 import { Panel } from "@/components/panel";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
-import { RowActions } from "@/components/row-actions";
+import { RowMenu } from "@/components/row-menu";
+import { SourceCard } from "@/components/source-card";
 import { SwitchRow } from "@/components/switch-row";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
@@ -24,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   useAdjustSource,
   useArchiveSource,
@@ -33,21 +34,29 @@ import {
   useUpdateSource,
   type Source,
 } from "@/lib/api/hooks";
-import { sourceGlyph } from "@/lib/source-glyph";
+import { SOURCE_TYPE_LABEL } from "@/lib/source-glyph";
 import { toastError } from "@/lib/toast";
 
-const SOURCE_TYPES = [
-  { value: "bank", label: "Bank" },
-  { value: "cash", label: "Tunai" },
-  { value: "ewallet", label: "E-Wallet" },
-  { value: "custom", label: "Lainnya" },
-];
+const SOURCE_TYPES = (Object.keys(SOURCE_TYPE_LABEL) as Source["type"][]).map((value) => ({
+  value,
+  label: SOURCE_TYPE_LABEL[value],
+}));
+
+// Neutral ink ramp: the allocation bar is a proportion, not six
+// categories, so it never borrows a semantic colour (DESIGN.md §2).
+const ALLOC = ["#050f1a", "#374151", "#8a919e", "#d1d5db"];
 
 export default function SourcesPage() {
   const sources = useSources();
   const archive = useArchiveSource();
   const { openCreate } = useCaptureSheet();
   const list = sources.data?.sources ?? [];
+  const assets = [...list.filter((source) => !source.is_debt)].sort(
+    (a, b) => b.balance_minor - a.balance_minor,
+  );
+  const debts = list.filter((source) => source.is_debt);
+  const totalAvailable = sources.data?.total_available_minor ?? 0;
+  const totalDebt = sources.data?.total_debt_minor ?? 0;
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Source | null>(null);
@@ -58,6 +67,27 @@ export default function SourcesPage() {
     setEditing(target);
     setFormOpen(true);
   }
+  function menuFor(source: Source) {
+    return (
+      <RowMenu
+        label={`Aksi ${source.name}`}
+        actions={[
+          { label: "Ubah", onClick: () => openForm(source) },
+          { label: "Koreksi saldo", onClick: () => setAdjustTarget(source) },
+          ...(source.archived_at === null
+            ? [
+                {
+                  label: "Arsipkan",
+                  tone: "danger" as const,
+                  onClick: () => setArchiveTarget(source),
+                },
+              ]
+            : []),
+        ]}
+      />
+    );
+  }
+
 
   return (
     <>
@@ -65,8 +95,16 @@ export default function SourcesPage() {
         title="Sources"
         actions={
           <>
-            <Button variant="secondary" onClick={() => openCreate("transfer")}>
-              <Send className="size-4" strokeWidth={1.75} /> Transfer
+            {/* Two labelled actions plus the 18px phone title overflow a
+                360px header; below 640px the glyph carries Transfer. */}
+            <Button
+              variant="secondary"
+              aria-label="Transfer"
+              className="max-sm:w-11 max-sm:px-0"
+              onClick={() => openCreate("transfer")}
+            >
+              <Send className="size-4" strokeWidth={1.75} />
+              <span className="hidden sm:inline">Transfer</span>
             </Button>
             <Button onClick={() => openForm(null)}>
               <Plus className="size-4" strokeWidth={1.75} /> Tambah
@@ -75,13 +113,16 @@ export default function SourcesPage() {
         }
       />
 
-      <div className="py-4">
+      <div className="grid gap-2.5 py-2.5">
         {sources.isPending ? (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-24 w-full rounded-md" />
-            ))}
-          </div>
+          <>
+            <div className="catet-shimmer h-[88px] rounded-md" />
+            <Panel density="list">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} className="catet-shimmer m-2 h-10 rounded-md" />
+              ))}
+            </Panel>
+          </>
         ) : sources.isError ? (
           <QueryErrorState message="Sumber gagal dimuat." onRetry={() => sources.refetch()} />
         ) : list.length === 0 ? (
@@ -96,57 +137,112 @@ export default function SourcesPage() {
             }
           />
         ) : (
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {list.map((source) => (
-              <li key={source.id} id={source.id}>
-                <Panel density="compact">
-                  <div className="flex items-center gap-2.5">
-                    {createElement(sourceGlyph(source.type), {
-                      className: "size-4 shrink-0 text-ash",
-                      strokeWidth: 1.75,
-                    })}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] text-ink">{source.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {SOURCE_TYPES.find((item) => item.value === source.type)?.label ??
-                          source.type}
-                        {source.is_debt ? " · utang" : ""}
-                      </p>
-                    </div>
+          <>
+            <Panel density="compact">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+                <Metric
+                  label="Total aset"
+                  inlineOnPhone
+                  value={
                     <MoneyText
-                      minor={source.balance_minor}
+                      minor={totalAvailable}
                       size="lg"
-                      tone={source.balance_minor < 0 ? "over" : "neutral"}
+                      tone="neutral"
+                      className="font-semibold"
                     />
-                  </div>
-                  <div className="mt-2">
-                    <RowActions
-                      actions={[
-                        { label: "Ubah", onClick: () => openForm(source) },
-                        { label: "Koreksi saldo", onClick: () => setAdjustTarget(source) },
-                        ...(source.archived_at === null
-                          ? [
-                              {
-                                label: "Arsipkan",
-                                tone: "danger" as const,
-                                onClick: () => setArchiveTarget(source),
-                              },
-                            ]
-                          : []),
-                      ]}
+                  }
+                />
+                <Metric
+                  label="Total utang"
+                  inlineOnPhone
+                  value={
+                    <MoneyText
+                      minor={-totalDebt}
+                      size="lg"
+                      tone={totalDebt > 0 ? "over" : "muted"}
+                      className="font-semibold"
                     />
-                  </div>
-                </Panel>
-              </li>
-            ))}
-          </ul>
-        )}
+                  }
+                />
+                <Metric
+                  label="Posisi bersih"
+                  align="right"
+                  inlineOnPhone
+                  value={
+                    <MoneyText
+                      minor={totalAvailable - totalDebt}
+                      size="lg"
+                      tone="neutral"
+                      className="font-semibold"
+                    />
+                  }
+                />
+              </div>
 
-        {sources.data !== undefined && sources.data.total_debt_minor > 0 ? (
-          <p className="mt-4 text-[13px] text-over-text">
-            Total utang {<MoneyText minor={-sources.data.total_debt_minor} size="sm" tone="over" />}
-          </p>
-        ) : null}
+              {assets.length >= 2 && totalAvailable > 0 ? (
+                <>
+                  <div
+                    role="img"
+                    aria-label="Sebaran aset per sumber"
+                    className="mt-3 flex h-1.5 overflow-hidden rounded-full bg-surface-300"
+                  >
+                    {assets.map((source, index) => (
+                      <span
+                        key={source.id}
+                        style={{
+                          width: `${(source.balance_minor / totalAvailable) * 100}%`,
+                          background: ALLOC[index % ALLOC.length],
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-label text-ink-soft">
+                    {assets.map((source, index) => (
+                      <li key={source.id} className="flex items-center gap-1.5">
+                        <span
+                          aria-hidden
+                          className="inline-block size-2 rounded-sm"
+                          style={{ background: ALLOC[index % ALLOC.length] }}
+                        />
+                        {source.name} {Math.round((source.balance_minor / totalAvailable) * 100)}%
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </Panel>
+
+            <Panel density="list" title="Aset" caption={`${assets.length} sumber`}>
+              <div className="grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
+                {assets.map((source) => (
+                  <SourceCard
+                    key={source.id}
+                    source={source}
+                    size="tile"
+                    share={totalAvailable === 0 ? 0 : source.balance_minor / totalAvailable}
+                    trailing={menuFor(source)}
+                  />
+                ))}
+              </div>
+            </Panel>
+
+            {debts.length === 0 ? null : (
+              <Panel density="list" title="Utang" caption={`${debts.length} sumber`}>
+                <div className="grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {debts.map((source) => (
+                    <SourceCard
+                      key={source.id}
+                      source={source}
+                      size="tile"
+                      share={totalDebt === 0 ? 0 : Math.abs(source.balance_minor) / totalDebt}
+                      trailing={menuFor(source)}
+                    />
+                  ))}
+                </div>
+              </Panel>
+            )}
+          </>
+        )}
       </div>
 
       <SourceFormSheet open={formOpen} onOpenChange={setFormOpen} editing={editing} />
@@ -382,7 +478,7 @@ function AdjustSheet({ source, onClose }: { source: Source | null; onClose: () =
           allowNegative
         />
       </FormField>
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-body text-muted-foreground">
         Saldo tercatat{" "}
         <MoneyText minor={source?.balance_minor ?? 0} size="sm" tone="neutral" />
         {delta === null ? null : (

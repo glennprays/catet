@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useMediaQuery } from "@/lib/use-media-query";
+import { useIsPhone } from "@/lib/use-media-query";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,7 +34,7 @@ export function ResponsiveSheet({
   size?: "md" | "lg";
   children: ReactNode;
 }) {
-  const isPhone = useMediaQuery("(max-width: 639px)");
+  const isPhone = useIsPhone();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -52,9 +52,23 @@ export function ResponsiveSheet({
             <SheetDescription>{description}</SheetDescription>
           ) : null}
         </SheetHeader>
-        <div className="grid flex-1 gap-4 overflow-y-auto px-4 py-2">{children}</div>
+        {/* `content-start`: fields hug the top instead of the grid
+            stretching its rows when the form is shorter than the sheet. */}
+        <div
+          className={cn(
+            "grid flex-1 content-start gap-4 overflow-y-auto px-4 py-2",
+            isPhone && "pb-[env(safe-area-inset-bottom)]",
+          )}
+        >
+          {children}
+        </div>
         {footer !== undefined ? (
-          <SheetFooter className="flex-row justify-end gap-2 border-t border-border">
+          <SheetFooter
+            className={cn(
+              "flex-row justify-end gap-2 border-t border-border",
+              isPhone && "pb-[calc(1rem+env(safe-area-inset-bottom))]",
+            )}
+          >
             {footer}
           </SheetFooter>
         ) : null}

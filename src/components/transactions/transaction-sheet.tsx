@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AmountInput } from "@/components/amount-input";
@@ -19,9 +20,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api/client";
-import { useCreateTransaction, useUpdateTransaction } from "@/lib/api/hooks";
-import type { Category, LedgerItem, Source } from "@/lib/api/hooks";
-import { jakartaDateKey } from "@/lib/time";
+import {
+  useCreateTransaction,
+  useResolveHold,
+  useUpdateTransaction,
+  type HoldOverrides,
+} from "@/lib/api/hooks";
+import type { Category, LedgerItem, PendingAction, Source } from "@/lib/api/hooks";
+import { jakartaDateKey, todayJakartaKey } from "@/lib/time";
+import { toastError } from "@/lib/toast";
 
 export type Direction = "expense" | "income" | "transfer";
 
@@ -48,6 +55,13 @@ const DIRECTIONS = [
   { value: "expense", label: "Keluar" },
   { value: "income", label: "Masuk" },
   { value: "transfer", label: "Pindah" },
+];
+
+const DAY_MS = 86_400_000;
+
+const DATE_QUICK = [
+  { value: "today", label: "Hari ini" },
+  { value: "yesterday", label: "Kemarin" },
 ];
 
 export function validateTransactionFields({
@@ -83,6 +97,32 @@ export function validateTransactionFields({
   return errors;
 }
 
+/** The parked capture's params, read defensively: they are bot-authored. */
+function holdSeed(hold: PendingAction): {
+  direction: Direction;
+  amountMinor: number | null;
+  sourceId: string;
+  destinationId: string;
+  categoryId: string;
+  merchant: string;
+  date: Date | undefined;
+} {
+  const params = hold.params as Record<string, unknown>;
+  const text = (key: string): string => (typeof params[key] === "string" ? params[key] : "");
+  const type = text("type");
+  const amount = typeof params.amount_minor === "number" ? Math.abs(params.amount_minor) : null;
+  const occurredAt = text("occurred_at");
+  return {
+    direction: type === "income" || type === "transfer" ? type : "expense",
+    amountMinor: amount === 0 ? null : amount,
+    sourceId: text("source_id"),
+    destinationId: text("destination_source_id"),
+    categoryId: text("category_id"),
+    merchant: text("merchant"),
+    date: occurredAt === "" ? new Date() : new Date(occurredAt),
+  };
+}
+
 /**
  * TransactionSheet: peer capture form (ADR-0004). Manual validation
  * mirrors the backend FieldError rules inline; the backend stays the
@@ -94,6 +134,7 @@ export function TransactionSheet({
   categories,
   sources,
   editing,
+  hold,
   initialDirection,
 }: {
   open: boolean;
@@ -101,6 +142,8 @@ export function TransactionSheet({
   categories: Category[];
   sources: Source[];
   editing?: LedgerItem | null;
+  /** A parked bot capture being confirmed: the form seeds from its params. */
+  hold?: PendingAction | null;
   initialDirection?: Direction;
 }) {
   const [direction, setDirection] = useState<Direction>("expense");
@@ -111,15 +154,17 @@ export function TransactionSheet({
   const [merchant, setMerchant] = useState("");
   const [note, setNote] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [noteOpen, setNoteOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const createTx = useCreateTransaction();
   const updateTx = useUpdateTransaction();
+  const resolveHold = useResolveHold();
 
   // Render-phase re-init (React "adjust state when props change"):
   // the form resets whenever the sheet opens for a different target.
   const [sessionKey, setSessionKey] = useState<string | null>(null);
-  const nextSessionKey = `${open ? "open" : "closed"}-${editing?.transaction_id ?? "new"}-${
+  const nextSessionKey = `${open ? "open" : "closed"}-${editing?.transaction_id ?? hold?.id ?? "new"}-${
     editing === null || editing === undefined ? (initialDirection ?? "expense") : "edit"
   }`;
   if (sessionKey !== nextSessionKey) {
@@ -133,7 +178,21 @@ export function TransactionSheet({
       setCategoryId(editing.category_id ?? "");
       setMerchant(editing.merchant ?? "");
       setNote(editing.note ?? "");
+      setNoteOpen((editing.note ?? "") !== "");
       setDate(new Date(editing.occurred_at));
+    } else if (hold !== null && hold !== undefined) {
+      // A parked bot capture: everything it did resolve is prefilled, so
+      // the user only fills the gap the bot asked about.
+      const seed = holdSeed(hold);
+      setDirection(seed.direction);
+      setAmountMinor(seed.amountMinor);
+      setSourceId(seed.sourceId);
+      setDestinationId(seed.destinationId);
+      setCategoryId(seed.categoryId);
+      setMerchant(seed.merchant);
+      setNote("");
+      setNoteOpen(false);
+      setDate(seed.date);
     } else {
       setDirection(initialDirection ?? "expense");
       setAmountMinor(null);
@@ -150,6 +209,7 @@ export function TransactionSheet({
       setCategoryId("");
       setMerchant("");
       setNote("");
+      setNoteOpen(false);
       setDate(new Date());
     }
   }
@@ -163,8 +223,38 @@ export function TransactionSheet({
     [sources],
   );
   const isEditing = editing !== null && editing !== undefined;
+  const isHold = hold !== null && hold !== undefined;
   const isAdjustment = editing?.type === "adjustment";
-  const pending = createTx.isPending || updateTx.isPending;
+  const pending = createTx.isPending || updateTx.isPending || resolveHold.isPending;
+
+  // The gaps the bot refused to guess, so the form can point at them.
+  const missingParam = hold?.params.missing;
+  const holdMissing: string[] = Array.isArray(missingParam) ? missingParam.map(String) : [];
+  function missingHint(field: string): string | undefined {
+    return holdMissing.includes(field) ? "diminta bot" : undefined;
+  }
+
+  const yesterday = new Date(Date.now() - DAY_MS);
+  const dateQuick =
+    date === undefined
+      ? ""
+      : jakartaDateKey(date) === todayJakartaKey()
+        ? "today"
+        : jakartaDateKey(date) === jakartaDateKey(yesterday)
+          ? "yesterday"
+          : "";
+
+  /** An error stops being true the moment the user answers it. */
+  function clearError(field: string) {
+    setFieldErrors((prev) => {
+      if (!(field in prev)) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -198,6 +288,8 @@ export function TransactionSheet({
           errors[detail.field] ??= detail.message;
         }
         setFieldErrors(errors);
+      } else {
+        toastError(error instanceof Error ? error.message : "Gagal menyimpan transaksi", submit);
       }
     };
 
@@ -238,6 +330,34 @@ export function TransactionSheet({
       return;
     }
 
+    if (hold) {
+      // Confirming runs the backend's executor, so the body is a patch on
+      // the parked draft, not a fresh write.
+      const overrides: HoldOverrides = {
+        amount_minor: minor,
+        source_id: sourceId,
+        merchant: merchant === "" ? undefined : merchant,
+        note: note === "" ? undefined : note,
+        occurred_date: date === undefined ? undefined : jakartaDateKey(date),
+      };
+      if (direction === "transfer") {
+        overrides.destination_source_id = destinationId;
+      } else if (categoryId !== "") {
+        overrides.category_id = categoryId;
+      }
+      resolveHold.mutate(
+        { id: hold.id, action: "confirm", overrides },
+        {
+          onError,
+          onSuccess: () => {
+            toast.success("Draft dikonfirmasi");
+            onOpenChange(false);
+          },
+        },
+      );
+      return;
+    }
+
     const body: Record<string, unknown> = {
       type: direction,
       amount_minor: minor,
@@ -262,119 +382,229 @@ export function TransactionSheet({
     });
   }
 
+  const showDestination = direction === "transfer" && !isEditing;
+  const showCategory = direction !== "transfer" && (!isEditing || !isAdjustment);
+
   return (
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={isEditing ? "Ubah Transaksi" : "Tambah Transaksi"}
-      description="Catat uang keluar, masuk, atau pindah antar sumber."
+      title={isEditing ? "Ubah Transaksi" : isHold ? "Konfirmasi draft" : "Tambah Transaksi"}
+      description={
+        isHold
+          ? "Lengkapi draft dari WhatsApp, lalu simpan ke buku besar."
+          : "Catat uang keluar, masuk, atau pindah antar sumber."
+      }
       footer={
         <>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
-          <Button onClick={submit} disabled={pending} className="min-w-24">
+          <Button type="submit" form="tx-form" disabled={pending} className="min-w-24">
             {isEditing ? "Ubah" : "Simpan"}
           </Button>
         </>
       }
     >
-      {isEditing ? null : (
-        <SegmentedControl
-          aria-label="Arah transaksi"
-          value={direction}
-          onValueChange={(value) => setDirection(value as Direction)}
-          options={DIRECTIONS}
-          className="w-full"
-        />
-      )}
-
-      <FormField label="Nominal" htmlFor="tx-amount" error={fieldErrors.amount_minor}>
-        <AmountInput
-          id="tx-amount"
-          valueMinor={amountMinor}
-          onChangeMinor={setAmountMinor}
-          autoFocus
-          aria-describedby={fieldErrors.amount_minor === undefined ? undefined : "tx-amount-error"}
-        />
-      </FormField>
-
-      <FormField
-        label={direction === "transfer" ? "Dari" : "Sumber"}
-        htmlFor="tx-source"
-        error={fieldErrors.source_id}
-        hint={isEditing ? "tidak bisa diubah — balikkan lalu catat ulang" : undefined}
+      {/* `contents` keeps the sheet's own grid gap applying to the fields. */}
+      <form
+        id="tx-form"
+        className="contents"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
       >
-        <Select value={sourceId} onValueChange={setSourceId} disabled={isEditing}>
-          <SelectTrigger id="tx-source" className="w-full">
-            <SelectValue placeholder="Pilih sumber" />
-          </SelectTrigger>
-          <SelectContent>
-            {activeSources.map((source) => (
-              <SelectItem key={source.id} value={source.id}>
-                {source.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </FormField>
+        {isEditing ? null : (
+          <SegmentedControl
+            aria-label="Arah transaksi"
+            value={direction}
+            onValueChange={(value) => setDirection(value as Direction)}
+            options={DIRECTIONS}
+            stretch
+            className="w-full"
+          />
+        )}
 
-      {direction === "transfer" && !isEditing ? (
-        <FormField label="Ke" htmlFor="tx-destination" error={fieldErrors.destination_source_id}>
-          <Select value={destinationId} onValueChange={setDestinationId}>
-            <SelectTrigger id="tx-destination" className="w-full">
-              <SelectValue placeholder="Pilih tujuan" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeSources
-                .filter((source) => source.id !== sourceId)
-                .map((source) => (
-                  <SelectItem key={source.id} value={source.id}>
-                    {source.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+        <FormField
+          label="Nominal"
+          htmlFor="tx-amount"
+          error={fieldErrors.amount_minor}
+          hint={missingHint("amount")}
+        >
+          <AmountInput
+            id="tx-amount"
+            size="lg"
+            valueMinor={amountMinor}
+            onChangeMinor={(minor) => {
+              setAmountMinor(minor);
+              clearError("amount_minor");
+            }}
+            autoFocus={!isHold || holdMissing.includes("amount")}
+            aria-invalid={fieldErrors.amount_minor !== undefined}
+            aria-describedby={fieldErrors.amount_minor === undefined ? undefined : "tx-amount-error"}
+          />
         </FormField>
-      ) : direction !== "transfer" && (!isEditing || !isAdjustment) ? (
-        <FormField label="Kategori" htmlFor="tx-category" error={fieldErrors.category_id}>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger id="tx-category" className="w-full">
-              <SelectValue placeholder="Pilih kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+        {/* The merchant is the row's title, so it is typed right after the
+            amount — the same order as the bot's `kopi 25k`. */}
+        <FormField label="Merchant" htmlFor="tx-merchant" hint="opsional">
+          <Input
+            id="tx-merchant"
+            value={merchant}
+            onChange={(event) => setMerchant(event.target.value)}
+            placeholder="mis. Kopi Kenangan, Gojek"
+          />
         </FormField>
-      ) : null}
 
-      <FormField label="Tanggal" htmlFor="tx-date">
-        <DatePicker id="tx-date" date={date} onChange={setDate} disableFuture />
-      </FormField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div
+            className={showDestination || showCategory ? "min-w-0" : "min-w-0 sm:col-span-2"}
+          >
+            <FormField
+              label={direction === "transfer" ? "Dari" : "Sumber"}
+              htmlFor="tx-source"
+              error={fieldErrors.source_id}
+              hint={
+                isEditing ? "tidak bisa diubah — balikkan lalu catat ulang" : missingHint("source")
+              }
+            >
+              <Select
+                value={sourceId}
+                onValueChange={(value) => {
+                  setSourceId(value);
+                  clearError("source_id");
+                }}
+                disabled={isEditing}
+              >
+                <SelectTrigger
+                  id="tx-source"
+                  className="w-full"
+                  aria-invalid={fieldErrors.source_id !== undefined}
+                >
+                  <SelectValue placeholder="Pilih sumber" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeSources.map((source) => (
+                    <SelectItem key={source.id} value={source.id}>
+                      {source.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
 
-      <FormField label="Merchant" htmlFor="tx-merchant" hint="opsional">
-        <Input
-          id="tx-merchant"
-          value={merchant}
-          onChange={(event) => setMerchant(event.target.value)}
-          placeholder="mis. Kopi Kenangan"
-        />
-      </FormField>
+          {showDestination ? (
+            <FormField
+              label="Ke"
+              htmlFor="tx-destination"
+              error={fieldErrors.destination_source_id}
+              hint={missingHint("destination")}
+            >
+              <Select
+                value={destinationId}
+                onValueChange={(value) => {
+                  setDestinationId(value);
+                  clearError("destination_source_id");
+                }}
+              >
+                <SelectTrigger
+                  id="tx-destination"
+                  className="w-full"
+                  aria-invalid={fieldErrors.destination_source_id !== undefined}
+                >
+                  <SelectValue placeholder="Pilih tujuan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeSources
+                    .filter((source) => source.id !== sourceId)
+                    .map((source) => (
+                      <SelectItem key={source.id} value={source.id}>
+                        {source.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          ) : showCategory ? (
+            <FormField
+              label="Kategori"
+              htmlFor="tx-category"
+              error={fieldErrors.category_id}
+              hint={missingHint("category")}
+            >
+              <Select
+                value={categoryId}
+                onValueChange={(value) => {
+                  setCategoryId(value);
+                  clearError("category_id");
+                }}
+              >
+                <SelectTrigger
+                  id="tx-category"
+                  className="w-full"
+                  aria-invalid={fieldErrors.category_id !== undefined}
+                >
+                  <SelectValue placeholder="Pilih kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          ) : null}
+        </div>
 
-      <FormField label="Catatan" htmlFor="tx-note" hint="opsional">
-        <Textarea
-          id="tx-note"
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          rows={2}
-          placeholder="detail kecil"
-        />
-      </FormField>
+        <FormField label="Tanggal" htmlFor="tx-date">
+          <div className="flex items-center gap-2">
+            <SegmentedControl
+              aria-label="Tanggal cepat"
+              value={dateQuick}
+              onValueChange={(value) =>
+                setDate(value === "today" ? new Date() : new Date(Date.now() - DAY_MS))
+              }
+              options={DATE_QUICK}
+            />
+            <DatePicker
+              id="tx-date"
+              date={date}
+              onChange={setDate}
+              disableFuture
+              className="min-w-0 flex-1"
+            />
+          </div>
+        </FormField>
+
+        {noteOpen ? (
+          <FormField label="Catatan" htmlFor="tx-note">
+            <Textarea
+              id="tx-note"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={2}
+              placeholder="detail kecil"
+              autoFocus
+            />
+          </FormField>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="justify-self-start"
+            onClick={() => setNoteOpen(true)}
+          >
+            <Plus className="size-3.5" strokeWidth={1.75} />
+            Tambah catatan
+          </Button>
+        )}
+      </form>
     </ResponsiveSheet>
   );
 }

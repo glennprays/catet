@@ -17,6 +17,12 @@ describe("MoneyText tone auto", () => {
   test("zero is muted, never a colour claim", () => {
     expect(renderToStaticMarkup(<MoneyText minor={0} />)).toContain("text-muted-foreground");
   });
+
+  test("inherit applies no colour, so a figure can ride a hue card", () => {
+    const markup = renderToStaticMarkup(<MoneyText minor={-1289000} tone="inherit" />);
+    expect(markup).not.toMatch(/class="[^"]*\btext-(ink|safe-text|warn-text|over-text|muted-foreground)\b/);
+    expect(markup).toContain("tabular-nums");
+  });
 });
 
 describe("MoneyText formatting", () => {

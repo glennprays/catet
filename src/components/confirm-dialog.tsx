@@ -19,7 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useMediaQuery } from "@/lib/use-media-query";
+import { useIsPhone } from "@/lib/use-media-query";
 
 /**
  * The whole destructive ladder lives here (DESIGN.md §8): plain confirm
@@ -49,7 +49,7 @@ export function ConfirmDialog({
 }) {
   const inputId = useId();
   const [typed, setTyped] = useState("");
-  const isPhone = useMediaQuery("(max-width: 639px)");
+  const isPhone = useIsPhone();
   const gated = typedPhrase !== undefined && !matchesPhrase(typed, typedPhrase);
 
   function handleOpenChange(next: boolean) {
@@ -86,7 +86,7 @@ export function ConfirmDialog({
           <SheetHeader>
             <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
-          <div className="grid gap-3 px-4 text-[13px] text-muted-foreground">
+          <div className="grid gap-3 px-4 text-control text-muted-foreground">
             {description}
             {body}
           </div>
@@ -102,7 +102,7 @@ export function ConfirmDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription asChild>
-            <div className="text-[13px] text-muted-foreground">{description}</div>
+            <div className="text-control text-muted-foreground">{description}</div>
           </DialogDescription>
         </DialogHeader>
         {body}

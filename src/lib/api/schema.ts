@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exchange phone + password for a session JWT */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/otp/request": {
         parameters: {
             query?: never;
@@ -47,7 +64,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Request a WhatsApp OTP code */
+        /**
+         * Request a WhatsApp OTP code
+         * @description A code is sent only to a registered active number (password reset)
+         *     or a number holding an open invite (signup). The response is
+         *     `{sent: true}` in every case, including an unknown number, so the
+         *     endpoint cannot be used to discover who has an account.
+         */
         post: operations["requestOtp"];
         delete?: never;
         options?: never;
@@ -55,7 +78,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/otp/verify": {
+    "/api/v1/auth/invites/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve a register link */
+        get: operations["getInvite"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register": {
         parameters: {
             query?: never;
             header?: never;
@@ -64,8 +104,42 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Verify an OTP code and obtain a session JWT */
-        post: operations["verifyOtp"];
+        /** Create the account behind an invite and log it in */
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trade a WhatsApp code for a short-lived reset token */
+        post: operations["verifyPasswordReset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set a new password with a reset token and log in */
+        post: operations["completePasswordReset"];
         delete?: never;
         options?: never;
         head?: never;
@@ -79,10 +153,141 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Current session owner */
+        /** The session's own account */
         get: operations["getMe"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change the password of the calling account
+         * @description Bumps `session_epoch`, so every session — including the one that
+         *     made this call — is invalidated. The client must send the user to
+         *     the login screen.
+         */
+        post: operations["changePassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke every session of the calling account */
+        post: operations["logoutAll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List accounts (admin only) */
+        get: operations["listUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List open invites (admin only) */
+        get: operations["listInvites"];
+        put?: never;
+        /**
+         * Invite a phone number (admin only)
+         * @description The register link is delivered by the bot over WhatsApp; the token
+         *     is never returned here, so possession of the number is part of the
+         *     proof. Inviting a number that already has an open invite replaces
+         *     it.
+         */
+        post: operations["createInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/invites/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke an open invite (admin only) */
+        delete: operations["revokeInvite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable an account and revoke its sessions (admin only) */
+        post: operations["deactivateUser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Re-enable an account (admin only) */
+        post: operations["activateUser"];
         delete?: never;
         options?: never;
         head?: never;
@@ -244,6 +449,60 @@ export interface paths {
         put?: never;
         /** Create a bill */
         post: operations["createBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bill payments settled in a date range */
+        get: operations["listBillPayments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reactivate a deactivated bill */
+        post: operations["activateBill"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark one occurrence of a bill paid
+         * @description Writes an expense from the linked source (or the one named here) and advances the bill to its next occurrence; a one-time bill, or the last unit of a tenor, completes instead. Voiding the returned transaction rewinds the schedule.
+         */
+        post: operations["payBill"];
         delete?: never;
         options?: never;
         head?: never;
@@ -552,18 +811,97 @@ export interface components {
             /** Format: uuid */
             trace_id: string;
         };
-        OtpVerifyEnvelope: {
+        OkEnvelope: {
             data: {
-                token: string;
+                /** @enum {boolean} */
+                ok: true;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Session: {
+            /** @description Session JWT. The BFF stores it in the httpOnly cookie and never forwards it to the browser. */
+            token: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        SessionEnvelope: {
+            data: components["schemas"]["Session"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        InviteInfoEnvelope: {
+            data: {
+                phone: string;
                 /** Format: date-time */
                 expires_at: string;
             };
             /** Format: uuid */
             trace_id: string;
         };
-        MeEnvelope: {
+        ResetTokenEnvelope: {
             data: {
-                phone: string;
+                reset_token: string;
+                /** Format: date-time */
+                expires_at: string;
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Me: {
+            /** Format: uuid */
+            id: string;
+            phone: string;
+            display_name: string;
+            is_admin: boolean;
+        };
+        MeEnvelope: {
+            data: components["schemas"]["Me"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        User: {
+            /** Format: uuid */
+            id: string;
+            phone: string;
+            display_name: string;
+            is_admin: boolean;
+            /** Format: date-time */
+            deactivated_at?: string | null;
+            /** Format: date-time */
+            last_login_at?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        UserEnvelope: {
+            data: components["schemas"]["User"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        UsersEnvelope: {
+            data: {
+                users: components["schemas"]["User"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        Invite: {
+            /** Format: uuid */
+            id: string;
+            phone: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        InviteEnvelope: {
+            data: components["schemas"]["Invite"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        InvitesEnvelope: {
+            data: {
+                invites: components["schemas"]["Invite"][];
             };
             /** Format: uuid */
             trace_id: string;
@@ -704,6 +1042,12 @@ export interface components {
             reverses_transaction_id?: string | null;
             /** @description merchant of the reversed transaction when present */
             reverses_merchant?: string | null;
+            /**
+             * Format: uuid
+             * @description set on the detail read when this transaction settled a bill occurrence
+             */
+            bill_id?: string | null;
+            bill_name?: string | null;
             edit_history: components["schemas"]["EditHistoryEntry"][];
             voided: boolean;
             /** Format: date-time */
@@ -757,13 +1101,17 @@ export interface components {
             /** Format: int64 */
             amount_max_minor: number;
             /** @enum {string} */
-            cadence: "weekly" | "monthly" | "annual";
+            cadence: "once" | "weekly" | "monthly" | "annual";
             /** Format: date */
             next_due_date: string;
             /** Format: uuid */
             linked_source_id?: string | null;
             /** Format: uuid */
             category_id?: string | null;
+            /** @description Optional tenor: payments left before the bill completes. Null is open-ended. Not allowed with cadence=once. */
+            remaining_count?: number | null;
+            /** @description Days before the due date the user opted into for the daily WhatsApp digest (ADR-0006). Empty means no reminders. */
+            reminder_offsets?: (0 | 1 | 3)[];
         };
         Bill: components["schemas"]["BillInput"] & {
             /** Format: uuid */
@@ -775,8 +1123,70 @@ export interface components {
             category_id?: string | null;
             category_name?: string | null;
             active: boolean;
+            /**
+             * Format: date-time
+             * @description set when the last occurrence was paid; a completed bill cannot be reactivated
+             */
+            completed_at?: string | null;
             /** Format: date-time */
             created_at?: string;
+        };
+        BillPaymentInput: {
+            /**
+             * Format: int64
+             * @description what the user actually paid; the band is an estimate, never an authority
+             */
+            amount_minor: number;
+            /**
+             * Format: uuid
+             * @description required when the bill has no linked source
+             */
+            source_id?: string | null;
+            /**
+             * Format: date
+             * @description defaults to today (Asia/Jakarta)
+             */
+            occurred_date?: string | null;
+        };
+        BillPayment: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            bill_id: string;
+            bill_name: string;
+            /** Format: uuid */
+            transaction_id: string;
+            /**
+             * Format: date-time
+             * @description the occurrence this payment settled
+             */
+            due_date: string;
+            /**
+             * Format: date-time
+             * @description where the bill was pushed; null when the payment completed it
+             */
+            advanced_to?: string | null;
+            /** Format: int64 */
+            amount_minor: number;
+            /** @description whether this payment consumed one remaining_count */
+            decremented: boolean;
+            /** Format: date-time */
+            paid_at: string;
+        };
+        BillPaymentEnvelope: {
+            data: {
+                bill: components["schemas"]["Bill"];
+                transaction: components["schemas"]["Transaction"];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        BillPaymentsEnvelope: {
+            data: {
+                payments: components["schemas"]["BillPayment"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
         };
         BillsEnvelope: {
             data: {
@@ -792,8 +1202,7 @@ export interface components {
         };
         BillActiveEnvelope: {
             data: {
-                /** @enum {boolean} */
-                active: false;
+                active: boolean;
             };
             /** Format: uuid */
             trace_id: string;
@@ -864,6 +1273,11 @@ export interface components {
             needs_review: number;
             /** Format: int64 */
             hold_queue: number;
+            /**
+             * Format: int64
+             * @description active bills whose due date has passed
+             */
+            bills_overdue: number;
         };
         BadgesEnvelope: {
             data: components["schemas"]["BadgeCounts"];
@@ -971,7 +1385,29 @@ export interface components {
         PendingAction: {
             /** Format: uuid */
             id: string;
-            kind: string;
+            /**
+             * @description `capture` — a WhatsApp capture the rules refused to finish;
+             *     `refund` — a linked reversal awaiting confirmation;
+             *     `create_transaction` — a parked write from another surface;
+             *     `receipt` — a photographed receipt, one ledger line per item.
+             * @enum {string}
+             */
+            kind: "capture" | "refund" | "create_transaction" | "receipt";
+            /**
+             * @description Kind-specific payload. A `capture` carries `type`,
+             *     `amount_minor`, `merchant`, `source_id`/`source_name`,
+             *     `destination_source_id`, `category_id`, `occurred_at`,
+             *     `message_id`, `original_text` and `missing` (the fields the
+             *     bot could not resolve). A `refund` carries
+             *     `reverses_transaction_id`, `merchant`, `amount_minor`,
+             *     `source_name`, `occurred_at`, `message_id`, `original_text`.
+             *     A `receipt` carries `type`, `document_type`, `merchant`,
+             *     `total_minor`, `items[] {n, name, qty, amount_minor,
+             *     category_id, category_name, category_confidence}`,
+             *     `source_id`/`source_name`, `occurred_at`, `receipt_date`,
+             *     `payment_method`, `message_id`, `original_text`,
+             *     `duplicate_of`, `collapsed`, `missing`.
+             */
             params: {
                 [key: string]: unknown;
             };
@@ -990,13 +1426,28 @@ export interface components {
             data: {
                 /** @enum {boolean} */
                 resolved: true;
+                /**
+                 * Format: uuid
+                 * @description Present when confirming executed a parked draft; the
+                 *     first written transaction for a multi-line receipt.
+                 */
+                transaction_id?: string;
+                /** @description Every transaction the confirmation wrote — one per receipt line. */
+                transaction_ids?: string[];
             };
             /** Format: uuid */
             trace_id: string;
         };
         Settings: {
             income_horizon_days: number;
-            phone: string;
+            /**
+             * Format: uuid
+             * @description Source a photographed receipt falls back to; null means the bot asks
+             */
+            photo_default_source_id?: string | null;
+            photo_default_source_name?: string | null;
+            /** @description Asia/Jakarta hour the daily bill digest is sent (ADR-0006) */
+            reminder_hour: number;
         };
         SettingsEnvelope: {
             data: components["schemas"]["Settings"];
@@ -1055,6 +1506,8 @@ export interface components {
     headers: {
         /** @description Request trace identifier mirrored in the response envelope. */
         TraceId: string;
+        /** @description Fresh session JWT; the BFF re-sets the httpOnly cookie. Sent when the presented token is >=7 days old. */
+        "X-Session-Renew": string;
     };
     pathItems: never;
 }
@@ -1104,7 +1557,7 @@ export interface operations {
             500: components["responses"]["ErrorResponse"];
         };
     };
-    requestOtp: {
+    login: {
         parameters: {
             query?: never;
             header?: never;
@@ -1115,15 +1568,53 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description E.164 owner phone
-                     * @example +628000000000
+                     * @description Phone in any local or international shape; normalised server-side
+                     * @example +628123456789
                      */
+                    phone: string;
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Session token issued */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionEnvelope"];
+                };
+            };
+            /** @description Unknown number or wrong password — deliberately indistinguishable */
+            401: components["responses"]["ErrorResponse"];
+            /**
+             * @description FORBIDDEN with `details[0].field = "account"` and `rule` either
+             *     `locked` (five consecutive failures; 15 minutes) or `deactivated`.
+             */
+            403: components["responses"]["ErrorResponse"];
+            /** @description Too many attempts for this number or from this address */
+            429: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    requestOtp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example +628123456789 */
                     phone: string;
                 };
             };
         };
         responses: {
-            /** @description Code dispatched (log sender in dev) */
+            /** @description Accepted (log sender in dev prints the code) */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1132,14 +1623,77 @@ export interface operations {
                     "application/json": components["schemas"]["OtpRequestEnvelope"];
                 };
             };
-            /** @description Phone is not the configured owner phone */
-            400: components["responses"]["ErrorResponse"];
-            /** @description An unexpired unconsumed code was requested less than 60s ago */
+            /** @description A code was requested for this number less than 60s ago, or too many requests from this address */
             429: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
     };
-    verifyOtp: {
+    getInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The number this invite is bound to */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteInfoEnvelope"];
+                };
+            };
+            /** @description Unknown, spent or expired invite */
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    invite_token: string;
+                    /** @example 123456 */
+                    code: string;
+                    display_name: string;
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Account created, seeded and logged in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionEnvelope"];
+                };
+            };
+            /**
+             * @description Wrong or expired code, or VALIDATION_FAILED on `display_name`
+             *     or `password` (field `password`, rule `min` | `max` | `common`).
+             */
+            400: components["responses"]["ErrorResponse"];
+            /** @description Unknown, spent or expired invite */
+            404: components["responses"]["NotFoundError"];
+            /** @description The number is already registered */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    verifyPasswordReset: {
         parameters: {
             query?: never;
             header?: never;
@@ -1156,18 +1710,53 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Session token issued */
+            /** @description Reset token issued (15 minutes) */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OtpVerifyEnvelope"];
+                    "application/json": components["schemas"]["ResetTokenEnvelope"];
                 };
             };
             /**
-             * @description Wrong/expired code, or `attempts_exceeded` after 5 bad tries
-             *     (the code is invalidated).
+             * @description Wrong or expired code — the same answer an unregistered number
+             *     gets, so the form cannot enumerate accounts.
+             */
+            400: components["responses"]["ErrorResponse"];
+            /** @description Too many requests from this address */
+            429: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    completePasswordReset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reset_token: string;
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password set; session issued at the new epoch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionEnvelope"];
+                };
+            };
+            /**
+             * @description Unknown, spent or expired reset token, or VALIDATION_FAILED on
+             *     `password` (rule `min` | `max` | `common`).
              */
             400: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
@@ -1182,7 +1771,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Session phone */
+            /** @description Account identity */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1192,6 +1781,220 @@ export interface operations {
                 };
             };
             401: components["responses"]["UnauthorizedError"];
+        };
+    };
+    changePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    current_password: string;
+                    new_password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Password changed; all sessions revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkEnvelope"];
+                };
+            };
+            /**
+             * @description The current password is wrong, or VALIDATION_FAILED on
+             *     `new_password` (rule `min` | `max` | `common`).
+             */
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["UnauthorizedError"];
+        };
+    };
+    logoutAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessions revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every account, oldest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsersEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+        };
+    };
+    listInvites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invites still waiting to be accepted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitesEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+        };
+    };
+    createInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example +628999999999 */
+                    phone: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Invite created and sent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteEnvelope"];
+                };
+            };
+            /** @description VALIDATION_FAILED — the phone is not a valid number (field `phone`, rule `format`) */
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            /** @description The number is already registered */
+            409: components["responses"]["ErrorResponse"];
+        };
+    };
+    revokeInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invite revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            404: components["responses"]["NotFoundError"];
+        };
+    };
+    deactivateUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account disabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserEnvelope"];
+                };
+            };
+            /** @description Refused — an admin cannot deactivate themselves */
+            400: components["responses"]["ErrorResponse"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            404: components["responses"]["NotFoundError"];
+        };
+    };
+    activateUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account re-enabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            404: components["responses"]["NotFoundError"];
         };
     };
     listSources: {
@@ -1728,6 +2531,92 @@ export interface operations {
             500: components["responses"]["ErrorResponse"];
         };
     };
+    listBillPayments: {
+        parameters: {
+            query: {
+                from: string;
+                /** @description exclusive */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Payments */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillPaymentsEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    activateBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reactivated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillActiveEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description The bill is completed and cannot be reactivated */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    payBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillPaymentInput"];
+            };
+        };
+        responses: {
+            /** @description The advanced bill and the expense that settled it */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillPaymentEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description The bill is not active, or was modified concurrently */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
     deactivateBill: {
         parameters: {
             query?: never;
@@ -2109,6 +2998,25 @@ export interface operations {
                 "application/json": {
                     /** @enum {string} */
                     action: "confirm" | "discard";
+                    /**
+                     * @description Corrections applied to a parked capture before it is
+                     *     written. Ignored for `discard`. Every field is optional;
+                     *     omitted fields keep whatever the bot stored.
+                     */
+                    overrides?: {
+                        /** Format: int64 */
+                        amount_minor?: number;
+                        /** Format: uuid */
+                        source_id?: string;
+                        /** Format: uuid */
+                        destination_source_id?: string;
+                        /** Format: uuid */
+                        category_id?: string;
+                        merchant?: string;
+                        note?: string;
+                        /** Format: date */
+                        occurred_date?: string;
+                    };
                 };
             };
         };
@@ -2183,6 +3091,16 @@ export interface operations {
             content: {
                 "application/json": {
                     income_horizon_days: number;
+                    /**
+                     * Format: uuid
+                     * @description Source a photographed receipt falls back to when the
+                     *     paper names no payment method and the merchant has
+                     *     never been captured. Null or absent clears it, so
+                     *     the bot asks every time.
+                     */
+                    photo_default_source_id?: string | null;
+                    /** @description Asia/Jakarta hour the daily bill digest is sent. Absent or null leaves the stored hour unchanged. */
+                    reminder_hour?: number | null;
                 };
             };
         };

@@ -69,11 +69,10 @@ The backend remains final authority for ledger invariants, money rules, permissi
 
 ## Auth
 
-- Passkey/WebAuthn login.
-- SimpleWebAuthn is the preferred implementation direction.
-- Session uses server-side state and an httpOnly cookie.
+- Phone + password login (argon2id on the backend); WhatsApp OTP verifies the phone at signup and resets a forgotten password.
+- Session uses an httpOnly cookie carrying the backend's JWT (user id + `session_epoch`); bumping the epoch signs every device out.
 - Browser-visible JWT storage is out of scope.
-- Single-user self-hosted still requires auth.
+- Accounts exist only by admin invite; the dashboard hosts the register and reset flows and the admin users page.
 
 ## Deployment
 
@@ -90,7 +89,6 @@ First real deployment target:
 Use SOPS-managed env files for deployment secrets:
 
 - session secrets
-- WebAuthn config
 - Go-facing service token
 - WhatsApp gateway token
 - LLM/API provider credentials
@@ -101,7 +99,7 @@ Plaintext `.env` files may exist only as local/deploy artifacts and must not be 
 
 - Vitest for pure helpers, typed client glue, and isolated UI behavior where useful.
 - Playwright smoke tests for critical flows:
-  - passkey/session path
+  - login/session path
   - manual dashboard capture
   - transaction/source/category CRUD surfaces
   - overview/dashboard render path

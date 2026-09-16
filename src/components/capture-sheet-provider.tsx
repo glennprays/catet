@@ -8,12 +8,15 @@ import {
   useCategories,
   useSources,
   type LedgerItem,
+  type PendingAction,
   type Transaction,
 } from "@/lib/api/hooks";
 
 type CaptureSheet = {
   openCreate: (direction?: Direction) => void;
   openEdit: (item: LedgerItem) => void;
+  /** Confirming a parked WhatsApp capture reuses the capture form. */
+  openHold: (item: PendingAction) => void;
   openDetail: (id: string) => void;
 };
 
@@ -60,6 +63,7 @@ function ledgerItemOf(transaction: Transaction): LedgerItem {
 export function CaptureSheetProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<LedgerItem | null>(null);
+  const [hold, setHold] = useState<PendingAction | null>(null);
   const [direction, setDirection] = useState<Direction | undefined>(undefined);
   const [detailId, setDetailId] = useState<string | null>(null);
 
@@ -70,11 +74,19 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
     () => ({
       openCreate: (next) => {
         setEditing(null);
+        setHold(null);
         setDirection(next);
         setOpen(true);
       },
       openEdit: (item) => {
         setEditing(item);
+        setHold(null);
+        setDirection(undefined);
+        setOpen(true);
+      },
+      openHold: (item) => {
+        setEditing(null);
+        setHold(item);
         setDirection(undefined);
         setOpen(true);
       },
@@ -92,11 +104,13 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
           setOpen(next);
           if (!next) {
             setEditing(null);
+            setHold(null);
           }
         }}
         categories={categories.data?.categories ?? []}
         sources={sources.data?.sources ?? []}
         editing={editing}
+        hold={hold}
         initialDirection={direction}
       />
       <TransactionDetailSheet

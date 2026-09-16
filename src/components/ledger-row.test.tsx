@@ -2,7 +2,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
-import { LedgerRow } from "./ledger-row";
+import { LedgerHead, LedgerRow } from "./ledger-row";
 import type { LedgerItem } from "@/lib/api/hooks";
 
 const item: LedgerItem = {
@@ -54,5 +54,22 @@ describe("LedgerRow", () => {
   test("a missing category renders nothing, not an em dash pill", () => {
     render(<LedgerRow item={{ ...item, category_name: null }} />);
     expect(screen.queryByText("—")).toBeNull();
+  });
+});
+
+describe("LedgerHead", () => {
+  test("the header names every column", () => {
+    render(<LedgerHead />);
+    for (const label of ["Jam", "Transaksi", "Kategori", "Sumber", "Jumlah"]) {
+      expect(screen.getByText(label)).toBeDefined();
+    }
+  });
+
+  test("without a category column the header drops it", () => {
+    render(<LedgerHead showCategory={false} />);
+    for (const label of ["Jam", "Transaksi", "Sumber", "Jumlah"]) {
+      expect(screen.getByText(label)).toBeDefined();
+    }
+    expect(screen.queryByText("Kategori")).toBeNull();
   });
 });

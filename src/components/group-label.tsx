@@ -2,7 +2,11 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Small uppercase label above a group of rows. Sticky variant is opaque. */
+/**
+ * Small uppercase label above a group of rows (DESIGN.md §3 "Label").
+ * The sticky variant is a 28px canvas-coloured divider so day headers
+ * read as part of the page, not as another card.
+ */
 export function GroupLabel({
   children,
   sticky = false,
@@ -15,8 +19,10 @@ export function GroupLabel({
   return (
     <p
       className={cn(
-        "py-1.5 text-xs font-medium uppercase tracking-[0.05em] text-muted-foreground",
-        sticky && "sticky z-[5] -mx-4 bg-canvas px-4 lg:-mx-6 lg:px-6",
+        "text-label font-medium uppercase text-ash",
+        sticky
+          ? "sticky z-[5] flex h-7 items-center border-b border-border bg-canvas px-4"
+          : "px-4 pt-3 pb-1",
         className,
       )}
     >

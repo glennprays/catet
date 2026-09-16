@@ -12,12 +12,15 @@ export function SegmentedControl({
   options,
   "aria-label": ariaLabel,
   className,
+  stretch = false,
 }: {
   value: string;
   onValueChange: (value: string) => void;
   options: { value: string; label: string }[];
   "aria-label": string;
   className?: string;
+  /** Options share the track width instead of hugging their labels. */
+  stretch?: boolean;
 }) {
   return (
     <div
@@ -38,8 +41,14 @@ export function SegmentedControl({
             aria-checked={selected}
             onClick={() => onValueChange(option.value)}
             className={cn(
-              "h-8 rounded-sm px-3 text-xs font-medium transition-colors focus-visible:ring-[3px] focus-visible:ring-safe-wash focus-visible:outline-none",
-              selected ? "bg-sheet text-ink shadow-sm" : "text-muted-foreground hover:text-ink",
+              "relative h-9 rounded-[6px] px-3 text-meta font-medium transition-colors focus-visible:ring-[4px] focus-visible:ring-primary/10 focus-visible:outline-none sm:h-7",
+              // DESIGN.md §4: the track stays 36px on phone (a 44px slab reads
+              // as a button bar); reach comes from an invisible expander.
+              "max-sm:before:absolute max-sm:before:inset-x-0 max-sm:before:inset-y-[-4px] max-sm:before:content-['']",
+              stretch && "flex-1",
+              selected
+                ? "bg-surface text-ink shadow-[0_1px_2px_rgba(5,15,26,0.08)]"
+                : "text-muted-foreground hover:text-ink",
             )}
           >
             {option.label}

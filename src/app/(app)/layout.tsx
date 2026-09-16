@@ -3,8 +3,10 @@ import type { ReactNode } from "react";
 
 import { AccountsRail } from "@/components/accounts-rail";
 import { CaptureSheetProvider } from "@/components/capture-sheet-provider";
+import { PrivacyProvider } from "@/components/privacy-provider";
 import { LiveRegion } from "@/components/live-region";
 import { BottomNav } from "@/components/bottom-nav";
+import { OfflineBanner } from "@/components/offline-banner";
 import { backendFetch } from "@/lib/api/backend-fetch";
 import type { components } from "@/lib/api/schema";
 import { getSessionToken } from "@/lib/session";
@@ -33,27 +35,30 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <CaptureSheetProvider>
-      <LiveRegion>
-        <a
-          href="#main"
-          className="sr-only rounded-sm bg-ink px-3 py-2 text-[13px] text-canvas focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
-        >
-          Lompat ke konten
-        </a>
-        <div className="flex min-h-full">
-          <AccountsRail initialSources={sources} />
-          <div className="flex min-h-full w-full flex-col lg:pl-60">
-            <main
-              id="main"
-              className="mx-auto w-full max-w-[1160px] flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-0 lg:px-6 lg:pb-10"
-            >
-              {children}
-            </main>
+    <PrivacyProvider>
+      <CaptureSheetProvider>
+        <LiveRegion>
+          <a
+            href="#main"
+            className="sr-only rounded-md bg-primary px-3 py-2 text-body text-white focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50"
+          >
+            Lompat ke konten
+          </a>
+          <div className="flex min-h-full">
+            <AccountsRail initialSources={sources} />
+            <div className="flex min-h-full w-full flex-col lg:pl-56">
+              <main
+                id="main"
+                className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-0 lg:px-5 lg:pb-6"
+              >
+                {children}
+              </main>
+            </div>
+            <BottomNav />
+            <OfflineBanner />
           </div>
-          <BottomNav />
-        </div>
-      </LiveRegion>
-    </CaptureSheetProvider>
+        </LiveRegion>
+      </CaptureSheetProvider>
+    </PrivacyProvider>
   );
 }

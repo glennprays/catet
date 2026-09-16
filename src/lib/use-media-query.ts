@@ -23,3 +23,13 @@ export function useMediaQuery(query: string): boolean {
     () => false,
   );
 }
+
+/** The one phone breakpoint (DESIGN.md §8): Tailwind's `sm` boundary. */
+export function useIsPhone(): boolean {
+  return useMediaQuery("(max-width: 639px)");
+}
+
+/** True inside the installed app (home-screen launch), false in a tab. */
+export function useIsStandalone(): boolean {
+  return useMediaQuery("(display-mode: standalone)");
+}

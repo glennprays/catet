@@ -9,15 +9,17 @@ import { toastError } from "@/lib/toast";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { AmountInput } from "@/components/amount-input";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { FilterBar } from "@/components/filter-bar";
 import { FormField } from "@/components/form-field";
-import { ListRow } from "@/components/list-row";
-import { ProgressBar } from "@/components/progress-bar";
+import { BudgetProgressRow } from "@/components/budget-progress-row";
+import { Metric } from "@/components/metric";
+import { MoneyText } from "@/components/money-text";
+import { Panel } from "@/components/panel";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
-import { StatusBadge } from "@/components/status-badge";
+import { RowMenu } from "@/components/row-menu";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -33,50 +35,83 @@ import {
   useUpdateBudget,
   type BudgetRow,
 } from "@/lib/api/hooks";
-import { formatIDR } from "@/lib/money";
+import { formatJakartaDate } from "@/lib/time";
+import { useIsPhone } from "@/lib/use-media-query";
 
 export default function BudgetsPage() {
   const [period, setPeriod] = useState(() => new Date().toISOString().slice(0, 7));
+  const isPhone = useIsPhone();
   const budgets = useBudgets(period);
   const categories = useCategories();
+  const remove = useDeleteBudget();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<BudgetRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BudgetRow | null>(null);
 
   const rows = budgets.data?.budgets ?? [];
+  const totals = rows.reduce(
+    (acc, row) => ({
+      amount: acc.amount + row.amount_minor,
+      spent: acc.spent + row.spent_minor,
+    }),
+    { amount: 0, spent: 0 },
+  );
+  const remaining = totals.amount - totals.spent;
+  const monthLabel = formatJakartaDate(`${period}-01T00:00:00+07:00`, {
+    month: "long",
+    year: "numeric",
+  });
+
+  function openForm(target: BudgetRow | null) {
+    setEditing(target);
+    setFormOpen(true);
+  }
 
   return (
     <>
       <PageHeader
         title="Budgets"
         actions={
-          <div className="flex items-center gap-2">
-            <Input
-              type="month"
-              value={period}
-              onChange={(event) => setPeriod(event.target.value)}
-              className="w-40 tabular-nums"
-              aria-label="Periode anggaran"
-            />
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
+          <>
+            {/* The picker needs ~200px at the 16px phone control size, which
+                a 360px header cannot spare beside Tambah — below 640px it
+                moves into the toolbar and takes the full width. */}
+            {isPhone ? null : (
+              <Input
+                type="month"
+                value={period}
+                onChange={(event) => setPeriod(event.target.value)}
+                className="w-[168px] tabular-nums"
+                aria-label="Periode anggaran"
+              />
+            )}
+            <Button onClick={() => openForm(null)}>
               <PiggyBank className="size-4" strokeWidth={1.75} /> Tambah
             </Button>
-          </div>
+          </>
         }
       />
 
-      <div className="py-4">
+      {isPhone ? (
+        <FilterBar>
+          <Input
+            type="month"
+            value={period}
+            onChange={(event) => setPeriod(event.target.value)}
+            className="w-full tabular-nums"
+            aria-label="Periode anggaran"
+          />
+        </FilterBar>
+      ) : null}
+
+      <div className="py-2.5">
         {budgets.isPending ? (
-          <div className="grid gap-2">
-            {Array.from({ length: 4 }, (_, index) => (
-              <Skeleton key={index} className="h-12 w-full rounded-md" />
+          <Panel density="list">
+            {Array.from({ length: 5 }, (_, index) => (
+              <div key={index} className="catet-shimmer m-2 h-9 rounded-md" />
             ))}
-          </div>
+          </Panel>
         ) : budgets.isError ? (
           <QueryErrorState message="Anggaran gagal dimuat." onRetry={() => budgets.refetch()} />
         ) : rows.length === 0 ? (
@@ -85,69 +120,93 @@ export default function BudgetsPage() {
             heading="Belum ada anggaran"
             caption="Pasang batas per kategori untuk bulan ini."
             action={
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setEditing(null);
-                  setFormOpen(true);
-                }}
-              >
+              <Button variant="secondary" onClick={() => openForm(null)}>
                 Buat anggaran
               </Button>
             }
           />
         ) : (
-          <ul>
-            {rows.map((row) => {
-              const ratio = row.amount_minor === 0 ? 0 : row.spent_minor / row.amount_minor;
-              const tone = ratio >= 1 ? "over" : ratio >= 0.8 ? "warn" : "safe";
-              return (
-                <li key={row.id}>
-                  <ListRow
-                    title={row.category_name}
-                    caption={
-                      <>
-                        {formatIDR(row.spent_minor)} dari {formatIDR(row.amount_minor)}
-                      </>
-                    }
-                    trailing={
-                      <span className="flex w-40 items-center gap-2 sm:w-56">
-                        <ProgressBar
-                          ratio={ratio}
-                          tone={tone}
-                          label={`Terpakai ${Math.round(ratio * 100)}% dari anggaran ${row.category_name}`}
-                        />
-                        {tone === "safe" ? (
-                          <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">
-                            {Math.round(ratio * 100)}%
-                          </span>
-                        ) : (
-                          <StatusBadge tone={tone}>{Math.round(ratio * 100)}%</StatusBadge>
-                        )}
-                      </span>
-                    }
-                    actions={
-                      <span className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditing(row);
-                            setFormOpen(true);
-                          }}
-                        >
-                          Ubah
-                        </Button>
-                        <DeleteButton row={row} />
-                      </span>
-                    }
+          <Panel density="list" title="Anggaran" caption={monthLabel}>
+            <div className="grid grid-cols-1 gap-2 border-b border-border px-4 py-3 sm:grid-cols-3 sm:gap-3">
+              <Metric
+                label="Total anggaran"
+                inlineOnPhone
+                value={
+                  <MoneyText
+                    minor={totals.amount}
+                    size="lg"
+                    tone="neutral"
+                    className="font-semibold"
                   />
-                </li>
-              );
-            })}
-          </ul>
+                }
+              />
+              <Metric
+                label="Terpakai"
+                inlineOnPhone
+                value={
+                  <MoneyText
+                    minor={totals.spent}
+                    size="lg"
+                    tone={totals.spent > totals.amount ? "over" : "neutral"}
+                    className="font-semibold"
+                  />
+                }
+              />
+              <Metric
+                label="Sisa"
+                align="right"
+                inlineOnPhone
+                value={
+                  <MoneyText
+                    minor={remaining}
+                    size="lg"
+                    tone={remaining < 0 ? "over" : "neutral"}
+                    className="font-semibold"
+                  />
+                }
+              />
+            </div>
+
+            {rows.map((row) => (
+              <BudgetProgressRow
+                key={row.id}
+                row={row}
+                actions={
+                  <RowMenu
+                    label={`Aksi ${row.category_name}`}
+                    actions={[
+                      { label: "Ubah", onClick: () => openForm(row) },
+                      { label: "Hapus", tone: "danger", onClick: () => setDeleteTarget(row) },
+                    ]}
+                  />
+                }
+              />
+            ))}
+          </Panel>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`Hapus anggaran ${deleteTarget?.category_name ?? ""}?`}
+        description="Riwayat pengeluaran tetap ada; hanya batas anggaran yang dihapus."
+        confirmLabel="Hapus"
+        tone="danger"
+        pending={remove.isPending}
+        onConfirm={() => {
+          if (deleteTarget === null) {
+            return;
+          }
+          remove.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              toast.success("Anggaran dihapus");
+              setDeleteTarget(null);
+            },
+            onError: (error) => toastError(error.message),
+          });
+        }}
+      />
 
       <BudgetFormSheet
         open={formOpen}
@@ -156,36 +215,6 @@ export default function BudgetsPage() {
         period={period}
         categories={categories.data?.categories ?? []}
         existing={rows}
-      />
-    </>
-  );
-}
-
-function DeleteButton({ row }: { row: BudgetRow }) {
-  const remove = useDeleteBudget();
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Button variant="dangerGhost" size="sm" disabled={remove.isPending} onClick={() => setOpen(true)}>
-        Hapus
-      </Button>
-      <ConfirmDialog
-        open={open}
-        onOpenChange={setOpen}
-        title={`Hapus anggaran ${row.category_name}?`}
-        description="Riwayat pengeluaran tetap ada; hanya batas anggaran yang dihapus."
-        confirmLabel="Hapus"
-        tone="danger"
-        pending={remove.isPending}
-        onConfirm={() =>
-          remove.mutate(row.id, {
-            onSuccess: () => {
-              toast.success("Anggaran dihapus");
-              setOpen(false);
-            },
-            onError: (error) => toastError(error.message),
-          })
-        }
       />
     </>
   );

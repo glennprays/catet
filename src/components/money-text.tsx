@@ -1,13 +1,16 @@
-import { formatIDR, formatSignedIDR } from "@/lib/money";
+"use client";
+
+import { useFormatIDR } from "@/components/privacy-provider";
 import { cn } from "@/lib/utils";
 
-type Tone = "auto" | "neutral" | "safe" | "warn" | "over" | "muted";
+type Tone = "auto" | "neutral" | "safe" | "warn" | "over" | "muted" | "inherit";
 
 const SIZE_CLASS = {
-  xl: "text-[28px] leading-[1.05] tracking-[-0.01em] sm:text-[32px] lg:text-[40px]",
-  lg: "text-[20px] leading-[1.2]",
-  md: "text-[15px]",
-  sm: "text-[13px]",
+  xl: "text-hero",
+  lg: "text-figure-lg",
+  md: "text-figure-md",
+  sm: "text-body leading-tight",
+  xs: "text-meta leading-tight",
 } as const;
 
 const TONE_CLASS = {
@@ -16,12 +19,17 @@ const TONE_CLASS = {
   warn: "text-warn-text",
   over: "text-over-text",
   muted: "text-muted-foreground",
+  // `inherit` applies no colour at all: the figure takes its parent's colour,
+  // which is how white figures ride a solid hue card (DESIGN.md §4 Source Card).
+  inherit: "",
 } as const;
 
 /**
  * Every rupiah figure on screen. Tone `auto` reads the sign: money out
  * is ink, money in is teal, zero is muted — colour carries meaning, not
- * decoration (DESIGN.md §2).
+ * decoration (DESIGN.md §2). Privacy mode swaps the digits for `Rp••••••`
+ * and keeps everything else — size, weight and tone still say what kind of
+ * figure this is (DESIGN.md §4 Privacy mode).
  */
 export function MoneyText({
   minor,
@@ -38,6 +46,7 @@ export function MoneyText({
   strike?: boolean;
   className?: string;
 }) {
+  const format = useFormatIDR();
   const resolved =
     tone !== "auto" ? tone : minor > 0 ? "safe" : minor === 0 ? "muted" : "neutral";
   return (
@@ -50,7 +59,7 @@ export function MoneyText({
         className,
       )}
     >
-      {signed ? formatSignedIDR(minor) : formatIDR(minor)}
+      {format(minor, signed)}
     </span>
   );
 }

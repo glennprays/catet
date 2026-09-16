@@ -3,12 +3,13 @@
 import { useCallback, useMemo, useState } from "react";
 import type { EChartsOption } from "echarts";
 
-import { CHART_COLORS, chartBase, jutaLabel } from "@/components/charts/echart";
+import { CHART_COLORS, chartBase, jutaLabel, tokenPx } from "@/components/charts/echart";
 import { ChartFrame } from "@/components/chart-frame";
+import { FilterBar } from "@/components/filter-bar";
 import { PageHeader } from "@/components/page-header";
 import { SegmentedControl } from "@/components/segmented-control";
 import { Button } from "@/components/ui/button";
-import { useMediaQuery } from "@/lib/use-media-query";
+import { useIsPhone, useMediaQuery } from "@/lib/use-media-query";
 import {
   useAnalytics,
   type CategoryBreakdownData,
@@ -26,7 +27,7 @@ const RANGES = [
   { value: "90", label: "90 hari" },
 ];
 
-const { INK, MUTED, BORDER, SAFE, WARN, OVER, SHEET, CANVAS, SURFACE_300 } = CHART_COLORS;
+const { INK, MUTED, BORDER, SAFE, WARN, OVER, SURFACE, CANVAS, SURFACE_300 } = CHART_COLORS;
 
 export function runwayChartValue(runwayDays: number): number {
   return runwayDays === 0 ? 90 : runwayDays;
@@ -35,7 +36,12 @@ export function runwayChartValue(runwayDays: number): number {
 export default function AnalyticsPage() {
   const [rangeDays, setRangeDays] = useState<"7" | "30" | "90">("30");
   const [drilled, setDrilled] = useState<string | null>(null);
-  const isPhone = useMediaQuery("(max-width: 767px)");
+  // Column width, not the phone breakpoint: charts need ~768px to keep
+  // their labels readable (DESIGN.md §8).
+  const narrow = useMediaQuery("(max-width: 767px)");
+  // The range control fills the toolbar on a phone; at ≥640px it hugs its
+  // labels as before — stretching an auto-width track wraps them.
+  const isPhone = useIsPhone();
 
   // Trailing-N-day window ending today, Asia/Jakarta.
   const range = useMemo(() => {
@@ -56,29 +62,34 @@ export default function AnalyticsPage() {
   const essential = useAnalytics<EssentialLifestyleData>("essential-lifestyle", queryParams);
 
   const donutOption = useCallback(
-    (data: CategoryBreakdownData) => categoryDonutOption(data, drilled, !isPhone),
-    [drilled, isPhone],
+    (data: CategoryBreakdownData) => categoryDonutOption(data, drilled, !narrow),
+    [drilled, narrow],
   );
   const heatmapWindow = useCallback(
-    (data: HeatmapData) => heatmapOption(data, isPhone),
-    [isPhone],
+    (data: HeatmapData) => heatmapOption(data, narrow),
+    [narrow],
+  );
+  const essentialPie = useCallback(
+    (data: EssentialLifestyleData) => essentialOption(data, narrow),
+    [narrow],
   );
 
   return (
     <>
-      <PageHeader
-        title="Analytics"
-        actions={
-          <SegmentedControl
-            aria-label="Rentang waktu"
-            value={rangeDays}
-            onValueChange={(value) => setRangeDays(value as "7" | "30" | "90")}
-            options={RANGES}
-          />
-        }
-      />
+      <PageHeader title="Analytics" />
 
-      <div className="grid gap-4 py-4 lg:grid-cols-2">
+      <FilterBar>
+        <SegmentedControl
+          aria-label="Rentang waktu"
+          value={rangeDays}
+          onValueChange={(value) => setRangeDays(value as "7" | "30" | "90")}
+          options={RANGES}
+          stretch={isPhone}
+          className="w-full sm:w-auto"
+        />
+      </FilterBar>
+
+      <div className="grid gap-2.5 py-2.5 md:grid-cols-2 xl:grid-cols-3">
         <ChartFrame
           title="Kategori"
           caption={drilled === null ? "klik irisan untuk detail" : undefined}
@@ -135,7 +146,7 @@ export default function AnalyticsPage() {
             `Pengeluaran harian, ${data.days.filter((day) => day.anomaly).length} hari anomali`
           }
           option={heatmapWindow}
-          height={isPhone ? 140 : 256}
+          height={narrow ? 140 : 256}
         />
 
         <ChartFrame
@@ -161,7 +172,7 @@ export default function AnalyticsPage() {
               data.lifestyle_minor,
             )}`
           }
-          option={essentialOption}
+          option={essentialPie}
         />
       </div>
     </>
@@ -198,8 +209,8 @@ function categoryDonutOption(
         type: "pie",
         radius: ["55%", "82%"],
         center: ["50%", "52%"],
-        itemStyle: { borderRadius: 4, borderColor: SHEET, borderWidth: 2 },
-        label: { show: inlineLabels, color: MUTED, fontSize: 11 },
+        itemStyle: { borderRadius: 4, borderColor: SURFACE, borderWidth: 2 },
+        label: { show: inlineLabels, color: MUTED, fontSize: tokenPx("--text-label", 11) },
         labelLine: { show: inlineLabels, lineStyle: { color: BORDER } },
         data: items.map((node, index) => ({
           name: node.name,
@@ -224,10 +235,10 @@ function CategoryLegend({
       {items.map((node, index) => (
         <li
           key={node.name}
-          className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+          className="flex min-w-0 items-center gap-1 text-meta text-muted-foreground"
         >
           <span
-            className="size-2 shrink-0 rounded-sm"
+            className="size-2 shrink-0 rounded-md"
             style={{ backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length] }}
             aria-hidden="true"
           />
@@ -246,7 +257,7 @@ function incomeExpenseOption(data: IncomeExpenseData): EChartsOption {
     legend: {
       data: ["Masuk", "Keluar"],
       icon: "none",
-      textStyle: { color: MUTED, fontSize: 11 },
+      textStyle: { color: MUTED, fontSize: tokenPx("--text-label", 11) },
       top: 0,
     },
 
@@ -282,7 +293,7 @@ function stsOption(data: StsTrendData): EChartsOption {
     legend: {
       data: ["STS", "Runway (hari)"],
       icon: "none",
-      textStyle: { color: MUTED, fontSize: 11 },
+      textStyle: { color: MUTED, fontSize: tokenPx("--text-label", 11) },
       top: 0,
     },
 
@@ -316,7 +327,7 @@ function stsOption(data: StsTrendData): EChartsOption {
         type: "value",
         axisLine: { show: false },
         splitLine: { lineStyle: { color: BORDER, type: "dashed" } },
-        axisLabel: { color: MUTED, fontSize: 11 },
+        axisLabel: { color: MUTED, fontSize: tokenPx("--text-label", 11) },
       },
       {
         type: "value",
@@ -325,7 +336,7 @@ function stsOption(data: StsTrendData): EChartsOption {
         splitLine: { show: false },
         axisLabel: {
           color: MUTED,
-          fontSize: 11,
+          fontSize: tokenPx("--text-label", 11),
           formatter: (value: number) => (value >= 90 ? "≥90" : `${value} hari`),
         },
       },
@@ -350,7 +361,7 @@ function stsOption(data: StsTrendData): EChartsOption {
   };
 }
 
-function heatmapOption(data: HeatmapData, isPhone: boolean): EChartsOption {
+function heatmapOption(data: HeatmapData, narrow: boolean): EChartsOption {
   const points: [string, number][] = data.days.map((day) => [day.date, day.outflow_minor]);
   const anomalies = data.days.filter((day) => day.anomaly).map((day) => [day.date, day.outflow_minor]);
   return {
@@ -371,12 +382,17 @@ function heatmapOption(data: HeatmapData, isPhone: boolean): EChartsOption {
     calendar: {
       // Below md the month grid is unreadable: show a trailing strip instead.
       range: [data.days[0]?.date ?? "1970-01-01", data.days[data.days.length - 1]?.date ?? "1970-01-01"],
-      orient: isPhone ? "horizontal" : "horizontal",
-      cellSize: isPhone ? ["auto", 14] : ["auto", 18],
-      dayLabel: { show: !isPhone, color: MUTED, fontSize: 10 },
+      orient: "horizontal",
+      // Phone: the strip has to fit a 304×140 canvas, so the day column
+      // goes and the gutters shrink to what the month label needs. The
+      // defaults (80px sides, 60px top) push the last weeks and the
+      // bottom row outside the frame (DESIGN.md §8).
+      ...(narrow ? { left: 28, right: 8, top: 26 } : {}),
+      cellSize: narrow ? ["auto", 14] : ["auto", 18],
+      dayLabel: { show: !narrow, color: MUTED, fontSize: 10 },
       itemStyle: { color: CANVAS, borderColor: BORDER, borderWidth: 3 },
       splitLine: { show: false },
-      monthLabel: { color: MUTED, fontSize: 11 },
+      monthLabel: { color: MUTED, fontSize: tokenPx("--text-label", 11) },
       yearLabel: { show: false },
     },
     series: [
@@ -411,7 +427,7 @@ function merchantsOption(data: TopMerchantsData): EChartsOption {
       splitLine: { lineStyle: { color: BORDER, type: "dashed" } },
       axisLabel: {
         color: MUTED,
-        fontSize: 11,
+        fontSize: tokenPx("--text-label", 11),
         formatter: (value: number) => jutaLabel(value),
       },
     },
@@ -419,7 +435,7 @@ function merchantsOption(data: TopMerchantsData): EChartsOption {
       type: "category",
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: MUTED, fontSize: 11 },
+      axisLabel: { color: MUTED, fontSize: tokenPx("--text-label", 11) },
       data: sorted.map((merchant) => merchant.name),
     },
     series: [
@@ -433,7 +449,7 @@ function merchantsOption(data: TopMerchantsData): EChartsOption {
   };
 }
 
-function essentialOption(data: EssentialLifestyleData): EChartsOption {
+function essentialOption(data: EssentialLifestyleData, narrow: boolean): EChartsOption {
   return {
     ...chartBase(),
     tooltip: {
@@ -441,12 +457,17 @@ function essentialOption(data: EssentialLifestyleData): EChartsOption {
       trigger: "item",
       valueFormatter: (value) => formatIDR(Number(value)),
     },
+    // Narrow: "Kebutuhan"/"Gaya hidup" do not fit beside a 328px pie, so
+    // they move under it as a legend instead of clipping to "Keb…".
+    legend: narrow
+      ? { show: true, bottom: 0, icon: "circle", textStyle: { color: MUTED, fontSize: tokenPx("--text-meta", 12) } }
+      : { show: false },
     series: [
       {
         type: "pie",
         radius: ["0%", "70%"],
-        center: ["50%", "52%"],
-        label: { color: MUTED, fontSize: 11 },
+        center: narrow ? ["50%", "44%"] : ["50%", "52%"],
+        label: { show: !narrow, color: MUTED, fontSize: tokenPx("--text-label", 11) },
         data: [
           { name: "Kebutuhan", value: data.essential_minor, itemStyle: { color: SAFE } },
           { name: "Gaya hidup", value: data.lifestyle_minor, itemStyle: { color: WARN } },

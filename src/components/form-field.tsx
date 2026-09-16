@@ -24,12 +24,12 @@ export function FormField({
       <Label htmlFor={htmlFor} className="flex items-baseline justify-between gap-2">
         <span>{label}</span>
         {hint !== undefined ? (
-          <span className="text-xs font-normal text-muted-foreground">{hint}</span>
+          <span className="text-meta font-normal text-muted-foreground">{hint}</span>
         ) : null}
       </Label>
       {children}
       {error !== undefined ? (
-        <p id={`${htmlFor}-error`} role="alert" className="text-xs text-over-text">
+        <p id={`${htmlFor}-error`} role="alert" className="text-meta text-over-text">
           {error}
         </p>
       ) : null}

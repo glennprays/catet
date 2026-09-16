@@ -1,0 +1,15 @@
+# Build inputs only: everything below is either regenerated in the image
+# or has no business in it.
+node_modules
+.next
+test-results
+playwright-report
+e2e
+scripts
+design
+.stitch
+.opencode
+.superpowers
+.git
+*.md
+.env*

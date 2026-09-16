@@ -1,63 +1,95 @@
 @import "tailwindcss";
 
 /*
- * catet — "Paper Ledger" design foundation (light only).
+ * catet — "Ledger Blue" design foundation (light only).
  * Source of truth: DESIGN.md §2 (palette), §2 border system, §11 (shadcn mapping).
  */
 
 :root {
-  /* DESIGN.md §2 — Paper Ledger palette (light only) */
-  --canvas: #f2f1ee;
-  --surface: #faf9f6;
-  --surface-100: #f7f5f1;
-  --surface-200: #efece7;
-  --surface-300: #e7e3dc;
-  --sheet: #fffefc;
-  --ink: #26231d;
-  --ink-soft: #454139;
-  --ash: #9b968e;
-  --smoke: #c3bdb4;
-  --safe: #178269;
-  --safe-wash: rgba(23,130,105,0.10);
-  --safe-text: #136b57;
-  --warn: #c47a12;
-  --warn-wash: rgba(196,122,18,0.12);
-  --warn-text: #8a5107;
-  --over: #cf3f52;
-  --over-wash: rgba(207,63,82,0.10);
-  --over-text: #b12e42;
+  /* DESIGN.md §2 — Ledger Blue palette (light only) */
+  /* v5: the canvas steps one notch cooler/darker so borderless white cards
+     separate by shadow alone (DESIGN.md §1 law 4, §6). */
+  --canvas: #f2f4f7;
+  --surface: #ffffff;
+  --surface-100: #f5f7fa;
+  --surface-200: #eef0f3;
+  --surface-300: #e2e5ea;
+  --ink: #050f1a;
+  --ink-soft: #374151;
+  /* v4: --ash carries meta text and micro-labels, so it must clear
+     4.5:1 on canvas (4.87) and white (5.36). v5 re-darkened it for the
+     cooler canvas; 4.70 on --surface-200 is the floor. */
+  --ash: #646b78;
+  --smoke: #d1d5db;
+  --safe: #05b169;
+  --safe-wash: #e6f7f0;
+  --safe-text: #047a49;
+  --warn: #f0ad4e;
+  --warn-wash: #fdf5ea;
+  --warn-text: #9a5b00;
+  --over: #df2935;
+  --over-wash: #fceaeb;
+  --over-text: #b71f2a;
 
-  /* DESIGN.md §2 — border system (alpha ink) */
-  --border: rgba(38,35,29,0.10);
-  --border-strong: rgba(38,35,29,0.22);
-  --border-solid: rgba(38,35,29,0.55);
+  /* Brand — interactive only (never charts, never figures) */
+  --primary: #0052ff;
+  --primary-hover: #003ecb;
+  --primary-wash: #ebf1ff;
+
+  /* DESIGN.md §2 — two-tier border system */
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  /* DESIGN.md §6 — elevation tokens live in the non-inline @theme below so
+     --shadow-card/-pop/-float are emitted once (a self-referencing copy
+     here would be invalid at computed-value time). */
+
+  /* DESIGN.md §2 — hue palette: identity, never status.
+     White on each solid ≥5.0:1; each solid on its own wash ≥4.8:1. */
+  --hue-blue: #0052ff;
+  --hue-blue-wash: #ebf1ff;
+  --hue-indigo: #4f46e5;
+  --hue-indigo-wash: #eef0fe;
+  --hue-violet: #7c3aed;
+  --hue-violet-wash: #f3eefe;
+  --hue-teal: #0f766e;
+  --hue-teal-wash: #e6f5f3;
+  --hue-green: #047857;
+  --hue-green-wash: #e6f4ee;
+  --hue-amber: #a84b06;
+  --hue-amber-wash: #fdf3e8;
+  --hue-rose: #be123c;
+  --hue-rose-wash: #fdeaee;
+  --hue-sky: #0369a1;
+  --hue-sky-wash: #e6f2fa;
+  /* debt cards and the brand tile; white on it is 17.7:1 */
+  --hue-ink: #111827;
 
   /* shadcn/ui slot mapping — DESIGN.md §11 */
   --background: var(--canvas);
   --foreground: var(--ink);
   --card: var(--surface);
   --card-foreground: var(--ink);
-  --popover: var(--sheet);
+  --popover: var(--surface);
   --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--canvas);
+  --primary-foreground: #ffffff;
   --secondary: var(--surface-200);
   --secondary-foreground: var(--ink-soft);
   /* Naming-collision rule: --muted is the shadcn fill; DESIGN's tertiary
-     "muted" text lives at --muted-foreground (#6f6a62). */
+     "muted" text lives at --muted-foreground (#5b616e). */
   --muted: var(--surface-200);
-  --muted-foreground: #6f6a62;
+  --muted-foreground: #5b616e;
   --accent: var(--surface-100);
   --accent-foreground: var(--ink-soft);
   --destructive: var(--over);
-  --destructive-foreground: var(--sheet);
-  --input: var(--surface-200);
-  --ring: var(--safe);
-  --chart-1: #454139;
-  --chart-2: #6f6a62;
-  --chart-3: #9b968e;
-  --chart-4: #178269;
-  --chart-5: #c47a12;
+  --destructive-foreground: #ffffff;
+  --input: var(--border-strong);
+  --ring: var(--primary);
+  --chart-1: #374151;
+  --chart-2: #5b616e;
+  --chart-3: #8a919e;
+  --chart-4: #05b169;
+  --chart-5: #f0ad4e;
 }
 
 @theme inline {
@@ -70,6 +102,8 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-wash: var(--primary-wash);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -88,7 +122,6 @@
   --color-surface-100: var(--surface-100);
   --color-surface-200: var(--surface-200);
   --color-surface-300: var(--surface-300);
-  --color-sheet: var(--sheet);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ash: var(--ash);
@@ -103,21 +136,114 @@
   --color-over-wash: var(--over-wash);
   --color-over-text: var(--over-text);
   --color-border-strong: var(--border-strong);
-  --color-border-solid: var(--border-solid);
+
+  /* DESIGN.md §2 — hue palette (identity) */
+  --color-hue-blue: var(--hue-blue);
+  --color-hue-blue-wash: var(--hue-blue-wash);
+  --color-hue-indigo: var(--hue-indigo);
+  --color-hue-indigo-wash: var(--hue-indigo-wash);
+  --color-hue-violet: var(--hue-violet);
+  --color-hue-violet-wash: var(--hue-violet-wash);
+  --color-hue-teal: var(--hue-teal);
+  --color-hue-teal-wash: var(--hue-teal-wash);
+  --color-hue-green: var(--hue-green);
+  --color-hue-green-wash: var(--hue-green-wash);
+  --color-hue-amber: var(--hue-amber);
+  --color-hue-amber-wash: var(--hue-amber-wash);
+  --color-hue-rose: var(--hue-rose);
+  --color-hue-rose-wash: var(--hue-rose-wash);
+  --color-hue-sky: var(--hue-sky);
+  --color-hue-sky-wash: var(--hue-sky-wash);
+  --color-hue-ink: var(--hue-ink);
+
+  /* elevation: see the non-inline @theme after this block */
 
   /* typography */
-  --font-sans: var(--font-hanken);
+  --font-sans: var(--font-inter);
+  --font-brand: var(--font-brand);
 
-  /* radii — DESIGN.md 8/12/16 + 24 (xxl, popovers) */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* radii — DESIGN.md §5: 6px chips/badges, 8px controls, 12px cards */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/*
+ * DESIGN.md §6 — elevation. Non-inline so Tailwind emits the literals as
+ * --shadow-card / --shadow-pop / --shadow-float on :root (hand-written CSS
+ * and the utilities shadow-card / shadow-pop / shadow-float share them).
+ */
+@theme {
+  --shadow-card:
+    0 1px 2px rgba(5, 15, 26, 0.04), 0 4px 12px rgba(5, 15, 26, 0.04);
+  --shadow-pop: 0 4px 12px rgba(5, 15, 26, 0.08);
+  --shadow-float: 0 12px 24px rgba(5, 15, 26, 0.12);
+}
+
+/*
+ * DESIGN.md §3 — type scale as tokens. Non-inline on purpose: Tailwind emits
+ * `font-size: var(--text-*)`, so the phone override below re-points the same
+ * utilities. `@theme inline` would bake the literals in and defeat it.
+ */
+@theme {
+  --text-hero: 32px;
+  --text-hero--line-height: 1;
+  --text-hero--letter-spacing: -0.02em;
+  --text-figure-lg: 18px;
+  --text-figure-lg--line-height: 1;
+  --text-figure-lg--letter-spacing: -0.01em;
+  --text-title: 16px;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.01em;
+  --text-figure-md: 14px;
+  --text-figure-md--line-height: 1.25;
+  --text-body: 13px;
+  --text-body--line-height: 1.35;
+  --text-meta: 12px;
+  --text-meta--line-height: 1.35;
+  --text-label: 11px;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.06em;
+  --text-control: 13px;
+  --text-control--line-height: 1.25;
+  --text-amount: 15px;
+  --text-amount--line-height: 1.2;
+  --text-amount-lg: 20px;
+  --text-amount-lg--line-height: 1.2;
+}
+
+/*
+ * Phone (<640px): the scale steps up ~2 notches. Desktop values are untouched.
+ * --text-control lands at 16px so iOS never zooms on focus (which is why the
+ * viewport must NOT set maximumScale).
+ */
+@media (max-width: 639px) {
+  :root {
+    --text-figure-lg: 20px;
+    --text-title: 18px;
+    --text-figure-md: 16px;
+    --text-body: 15px;
+    --text-meta: 13px;
+    --text-label: 12px;
+    --text-control: 16px;
+    --text-amount: 17px;
+    --text-amount-lg: 24px;
+  }
+}
+
+/*
+ * Installed-app behaviour: no pull-to-refresh / rubber-band chaining (the app
+ * shell owns its own scroll), and no grey flash on tap.
+ */
+html,
+body {
+  overscroll-behavior-y: none;
 }
 
 body {
   background: var(--canvas);
   color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes catet-shimmer {

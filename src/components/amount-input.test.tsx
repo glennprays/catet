@@ -60,4 +60,14 @@ describe("AmountInput", () => {
     expect(onChange).toHaveBeenLastCalledWith(null);
     expect((input as HTMLInputElement).value).toBe("");
   });
+
+  test("marks the field invalid and keeps the prefix a sibling of the input", () => {
+    render(<AmountInput id="a" valueMinor={null} onChangeMinor={() => {}} aria-invalid />);
+    const input = screen.getByRole("textbox");
+    const prefix = screen.getByText("Rp");
+
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    // One flex line box: the prefix and the digits share a baseline.
+    expect(input.parentElement).toBe(prefix.parentElement);
+  });
 });

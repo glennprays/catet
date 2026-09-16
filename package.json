@@ -9,7 +9,9 @@
     "generate": "openapi-typescript ../catet-backend/api/openapi.yaml -o src/lib/api/schema.ts",
     "test": "vitest run",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "icons": "node scripts/icons.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",

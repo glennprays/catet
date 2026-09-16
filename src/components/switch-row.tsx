@@ -21,9 +21,9 @@ export function SwitchRow({
   return (
     <label htmlFor={id} className="flex min-h-11 items-center justify-between gap-3">
       <span className="min-w-0">
-        <span className="block text-[13px] text-ink">{label}</span>
+        <span className="block text-body text-ink">{label}</span>
         {caption !== undefined ? (
-          <span className="block text-xs text-muted-foreground">{caption}</span>
+          <span className="block text-meta text-muted-foreground">{caption}</span>
         ) : null}
       </span>
       <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />

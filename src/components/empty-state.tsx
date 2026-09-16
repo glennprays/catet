@@ -21,8 +21,8 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
       <Icon className="size-8 text-ash" strokeWidth={1.5} />
-      <p className="text-[20px] font-medium leading-[1.2] tracking-[-0.01em]">{heading}</p>
-      <p className="text-[13px] text-muted-foreground">{caption}</p>
+      <p className="text-amount-lg font-medium tracking-[-0.01em]">{heading}</p>
+      <p className="text-body text-muted-foreground">{caption}</p>
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );
@@ -38,7 +38,7 @@ export function QueryErrorState({
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
       <AlertCircle className="size-8 text-over-text" strokeWidth={1.5} />
-      <p className="text-[15px] font-medium text-ink">{message}</p>
+      <p className="text-amount font-medium text-ink">{message}</p>
       <Button variant="secondary" onClick={onRetry}>
         Coba lagi
       </Button>

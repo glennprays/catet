@@ -8,6 +8,13 @@ export type BackendFetchOptions = {
   headers?: HeadersInit;
   /** Go session JWT attached as Authorization: Bearer when present. */
   token?: string;
+  /**
+   * Address of the browser that reached the BFF, relayed as
+   * x-forwarded-for: the Go API throttles login, OTP requests and
+   * password resets per client IP and would otherwise see only this
+   * process.
+   */
+  clientIP?: string;
 };
 
 type ErrorEnvelope = components["schemas"]["ErrorEnvelope"];
@@ -21,6 +28,12 @@ export type BackendEnvelope = {
 export type BackendResult = {
   status: number;
   envelope: BackendEnvelope;
+  /**
+   * Fresh session JWT the Go API hands back (X-Session-Renew) once the
+   * presented token is at least seven days old. The route layer re-sets
+   * the httpOnly cookie with it so an active device never expires.
+   */
+  renewedToken?: string;
 };
 
 function backendBaseUrl() {
@@ -61,12 +74,17 @@ export async function backendRequest(
     headers.set("authorization", `Bearer ${options.token}`);
   }
 
+  if (options.clientIP !== undefined && options.clientIP !== "") {
+    headers.set("x-forwarded-for", options.clientIP);
+  }
+
   if (options.body !== undefined) {
     headers.set("content-type", "application/json");
     init.body = JSON.stringify(options.body);
   }
 
   const response = await fetch(backendUrl(path), init);
+  const renewedToken = response.headers.get("x-session-renew") ?? undefined;
 
   if (!response.ok) {
     // Read the body once: derive the message and the structured
@@ -88,11 +106,12 @@ export async function backendRequest(
     return {
       status: response.status,
       envelope: { error, trace_id: "" },
+      renewedToken,
     };
   }
 
   const envelope = (await response.json()) as BackendEnvelope;
-  return { status: response.status, envelope };
+  return { status: response.status, envelope, renewedToken };
 }
 
 export async function backendFetch<T>(

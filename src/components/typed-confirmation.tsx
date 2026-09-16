@@ -17,7 +17,7 @@ export function TypedConfirmation({
 }) {
   return (
     <div className="grid gap-1.5">
-      <Label htmlFor={id} className="text-xs">
+      <Label htmlFor={id} className="text-meta">
         Ketik {phrase} untuk melanjutkan
       </Label>
       <Input
