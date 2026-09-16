@@ -1,5 +1,7 @@
 import { expect, test } from "playwright/test";
 
+import { hasCredentials, login } from "./helpers";
+
 /*
  * The installability contract (ADR-0007), all of it reachable anonymously:
  * manifest, icons, worker, offline page, and the head tags Android and iOS
@@ -118,5 +120,50 @@ test.describe("installable app", () => {
     for (const size of sizes) {
       expect(size).toBeGreaterThanOrEqual(16);
     }
+  });
+});
+
+/*
+ * The cached app shell: `(app)` HTML carries no user data (every page is
+ * client-rendered), so the worker may keep it and paint it before any
+ * network. Signing out must take it away again.
+ */
+test.describe("app shell cache", () => {
+  test.skip(!hasCredentials(), "set E2E_PHONE+E2E_PASSWORD or E2E_SESSION");
+
+  test("the shell is cached while signed in and dropped on sign-out", async ({ page }) => {
+    await login(page);
+    await page.goto("/");
+    await page.waitForFunction(() =>
+      navigator.serviceWorker.ready.then(() => navigator.serviceWorker.controller !== null),
+    );
+    // The first load was not controlled by the worker; this one is, and
+    // it is the one that fills the cache.
+    await page.reload({ waitUntil: "networkidle" });
+
+    const shellName = await page.waitForFunction(async () => {
+      const names = await caches.keys();
+      const shell = names.find((name) => name.startsWith("catet-shell-"));
+      if (shell === undefined) {
+        return null;
+      }
+      const cache = await caches.open(shell);
+      return (await cache.match("/")) === undefined ? null : shell;
+    });
+    expect(await shellName.jsonValue()).toContain("catet-shell-");
+
+    await page.evaluate(() =>
+      navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_SHELL" }),
+    );
+
+    await page.waitForFunction(async () => {
+      const names = await caches.keys();
+      const shell = names.find((name) => name.startsWith("catet-shell-"));
+      if (shell === undefined) {
+        return true;
+      }
+      const cache = await caches.open(shell);
+      return (await cache.match("/")) === undefined;
+    });
   });
 });

@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
   env: { NEXT_PUBLIC_BUILD_ID: buildId },
   generateBuildId: () => buildId,
 
+  // Client router cache: a tab the user just left repaints from memory
+  // instead of round-tripping for its RSC payload. Live numbers still
+  // arrive from TanStack Query on focus.
+  experimental: { staleTimes: { dynamic: 60, static: 300 } },
+
   // Needs-Review and Hold Queue merged into Inbox; keep old links alive.
   async redirects() {
     return [

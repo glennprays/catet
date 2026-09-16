@@ -54,6 +54,7 @@ export const DEMO_SOURCES: Source[] = [
     is_debt: false,
     currency: "IDR",
     balance_minor: 17_340_000,
+    has_transactions: true,
   },
   {
     id: "demo-gopay",
@@ -62,6 +63,7 @@ export const DEMO_SOURCES: Source[] = [
     is_debt: false,
     currency: "IDR",
     balance_minor: 493_000,
+    has_transactions: true,
   },
   {
     id: "demo-spaylater",
@@ -70,6 +72,7 @@ export const DEMO_SOURCES: Source[] = [
     is_debt: true,
     currency: "IDR",
     balance_minor: -1_289_000,
+    has_transactions: true,
   },
 ];
 

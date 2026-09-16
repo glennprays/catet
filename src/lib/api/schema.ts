@@ -326,8 +326,42 @@ export interface paths {
         delete: operations["archiveSource"];
         options?: never;
         head?: never;
-        /** Rename a source or toggle its debt flag */
+        /** Rename a source, change its type, or toggle its debt flag */
         patch: operations["updateSource"];
+        trace?: never;
+    };
+    "/api/v1/sources/{id}/permanent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Permanently delete a source that has no transactions */
+        delete: operations["deleteSourcePermanently"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Lift the archive flag from a source */
+        post: operations["restoreSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/sources/{id}/adjustments": {
@@ -751,6 +785,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * AI provider configuration (admin only)
+         * @description The provider the bot uses right now. `source` says where it came
+         *     from: `dashboard` once an admin has saved one, `env` while the
+         *     server's LLM_* variables are still authoritative. The API key is
+         *     write-only — only `api_key_set` and `api_key_last4` are returned.
+         */
+        get: operations["getLlmProvider"];
+        /**
+         * Save the AI provider (admin only)
+         * @description Takes effect on the next bot request, without a restart. `api_key`
+         *     is tri-state: absent or null keeps the stored key, `""` clears it
+         *     (AI off), any other value replaces it. A first save that names no
+         *     key inherits the environment's, so the model can be changed
+         *     without re-typing the secret.
+         */
+        put: operations["updateLlmProvider"];
+        post?: never;
+        /**
+         * Drop the dashboard override (admin only)
+         * @description Deletes the saved configuration; the instance falls back to its LLM_* environment variables. The answer is the provider now in effect, so `source` is `env`.
+         */
+        delete: operations["resetLlmProvider"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/llm/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List the models a provider serves (admin only)
+         * @description Proxies GET {base_url}/models so the dashboard can offer a picker before anything is saved. A POST because it carries the draft key, which does not belong in a query string. An absent `api_key` falls back to the stored key, then to the environment's.
+         */
+        post: operations["listLlmModels"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/llm/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test a provider (admin only)
+         * @description Sends one minimal completion to the draft provider and reports the round trip. Any 2xx is a pass; a provider error is returned verbatim as UPSTREAM_ERROR so the admin sees its own words.
+         */
+        post: operations["testLlmProvider"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -919,6 +1028,8 @@ export interface components {
              * @description Σ non-voided legs
              */
             balance_minor: number;
+            /** @description at least one leg ever referenced this source (voided included) */
+            has_transactions: boolean;
             /** Format: date-time */
             archived_at?: string | null;
             /** Format: date-time */
@@ -1451,6 +1562,70 @@ export interface components {
         };
         SettingsEnvelope: {
             data: components["schemas"]["Settings"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        LLMProvider: {
+            /**
+             * @description Where the configuration in effect came from.
+             * @enum {string}
+             */
+            source: "dashboard" | "env";
+            /**
+             * Format: uri
+             * @example https://api.openai.com/v1
+             */
+            base_url: string;
+            /** @example gpt-4o-mini */
+            model: string;
+            /** @description Model for receipt photos; empty reuses `model`. */
+            vision_model: string;
+            timeout_seconds: number;
+            vision_timeout_seconds: number;
+            /** @description A key is installed. The key itself is never returned. */
+            api_key_set: boolean;
+            /** @description Last four characters of the installed key; empty when none. */
+            api_key_last4: string;
+            /** @description The bot will call the provider (a key is installed). */
+            enabled: boolean;
+        };
+        LLMProviderUpdate: {
+            /**
+             * Format: uri
+             * @example https://api.openai.com/v1
+             */
+            base_url: string;
+            /** @description Absent or null keeps the stored key; "" clears it and turns AI off; any other value replaces it. */
+            api_key?: string | null;
+            /** @example gpt-4o-mini */
+            model: string;
+            /** @description Empty reuses `model` for receipt photos. */
+            vision_model?: string;
+            timeout_seconds: number;
+            vision_timeout_seconds: number;
+        };
+        LLMModels: {
+            models: string[];
+        };
+        LLMTest: {
+            /** @enum {boolean} */
+            ok: true;
+            /** Format: int64 */
+            latency_ms: number;
+            model: string;
+        };
+        LLMProviderEnvelope: {
+            data: components["schemas"]["LLMProvider"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        LLMModelsEnvelope: {
+            data: components["schemas"]["LLMModels"];
+            /** Format: uuid */
+            trace_id: string;
+        };
+        LLMTestEnvelope: {
+            data: components["schemas"]["LLMTest"];
             /** Format: uuid */
             trace_id: string;
         };
@@ -2078,7 +2253,7 @@ export interface operations {
             };
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
-            /** @description Referenced by open (active) bills */
+            /** @description Referenced by open (active) bills, or the source still holds a balance */
             409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
@@ -2096,6 +2271,8 @@ export interface operations {
             content: {
                 "application/json": {
                     name?: string;
+                    /** @enum {string} */
+                    type?: "cash" | "bank" | "ewallet" | "custom";
                     is_debt?: boolean;
                 };
             };
@@ -2113,6 +2290,60 @@ export interface operations {
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    deleteSourcePermanently: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted; bills linking the source were unlinked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Source has transactions; archive it instead */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    restoreSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restored source */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description Source is not archived */
+            409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
     };
@@ -3117,6 +3348,151 @@ export interface operations {
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["ErrorResponse"];
+        };
+    };
+    getLlmProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current provider */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProviderEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    updateLlmProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMProviderUpdate"];
+            };
+        };
+        responses: {
+            /** @description Saved provider */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProviderEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    resetLlmProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Provider after the reset */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMProviderEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listLlmModels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: uri
+                     * @example https://api.openai.com/v1
+                     */
+                    base_url: string;
+                    /** @description Draft key; absent or empty uses the stored or environment key. */
+                    api_key?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Model ids, sorted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMModelsEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            /** @description UPSTREAM_ERROR — the provider refused or did not answer with a model list */
+            502: components["responses"]["ErrorResponse"];
+        };
+    };
+    testLlmProvider: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LLMProviderUpdate"];
+            };
+        };
+        responses: {
+            /** @description The provider answered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LLMTestEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            /** @description FORBIDDEN — the caller is not the admin */
+            403: components["responses"]["ErrorResponse"];
+            /** @description UPSTREAM_ERROR — the provider refused; the message is its own */
+            502: components["responses"]["ErrorResponse"];
         };
     };
 }

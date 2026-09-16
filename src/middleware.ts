@@ -33,7 +33,13 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname === "/") {
-    return NextResponse.rewrite(new URL("/welcome", request.url));
+    // The landing HTML lives at the same URL Overview does, so it must
+    // never be reused for a cookie-bearing request by any HTTP cache
+    // (browser, service worker, or proxy).
+    const response = NextResponse.rewrite(new URL("/welcome", request.url));
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("Vary", "Cookie");
+    return response;
   }
 
   const loginUrl = new URL("/login", request.url);

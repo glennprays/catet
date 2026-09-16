@@ -30,10 +30,13 @@ import {
   useAdjustSource,
   useArchiveSource,
   useCreateSource,
+  useDeleteSource,
+  useRestoreSource,
   useSources,
   useUpdateSource,
   type Source,
 } from "@/lib/api/hooks";
+import { formatIDR } from "@/lib/money";
 import { SOURCE_TYPE_LABEL } from "@/lib/source-glyph";
 import { toastError } from "@/lib/toast";
 
@@ -47,10 +50,16 @@ const SOURCE_TYPES = (Object.keys(SOURCE_TYPE_LABEL) as Source["type"][]).map((v
 const ALLOC = ["#050f1a", "#374151", "#8a919e", "#d1d5db"];
 
 export default function SourcesPage() {
-  const sources = useSources();
+  // Archived sources come down with the list so the Arsip section can
+  // exist at all; the active grid filters them back out.
+  const sources = useSources(true);
   const archive = useArchiveSource();
+  const restore = useRestoreSource();
+  const remove = useDeleteSource();
   const { openCreate } = useCaptureSheet();
-  const list = sources.data?.sources ?? [];
+  const all = sources.data?.sources ?? [];
+  const list = all.filter((source) => source.archived_at === null);
+  const archived = all.filter((source) => source.archived_at !== null);
   const assets = [...list.filter((source) => !source.is_debt)].sort(
     (a, b) => b.balance_minor - a.balance_minor,
   );
@@ -62,32 +71,73 @@ export default function SourcesPage() {
   const [editing, setEditing] = useState<Source | null>(null);
   const [adjustTarget, setAdjustTarget] = useState<Source | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Source | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Source | null>(null);
+  const [showArchive, setShowArchive] = useState(false);
 
   function openForm(target: Source | null) {
     setEditing(target);
     setFormOpen(true);
   }
+
+  /**
+   * Archiving a source that still holds money would strand the balance,
+   * so the server refuses it. Say so before the round trip and hand the
+   * user the tool that fixes it.
+   */
+  function requestArchive(source: Source) {
+    if (source.balance_minor !== 0) {
+      toastError(
+        `Saldo masih ${formatIDR(source.balance_minor)} — kosongkan dulu lewat Transfer atau Koreksi saldo`,
+      );
+      setAdjustTarget(source);
+      return;
+    }
+    setArchiveTarget(source);
+  }
+
+  function deleteAction(source: Source) {
+    // Permanent delete is only ever legal for a source the ledger
+    // never touched.
+    return source.has_transactions
+      ? []
+      : [{ label: "Hapus", tone: "danger" as const, onClick: () => setDeleteTarget(source) }];
+  }
+
   function menuFor(source: Source) {
     return (
       <RowMenu
         label={`Aksi ${source.name}`}
+        tone="onColor"
         actions={[
           { label: "Ubah", onClick: () => openForm(source) },
           { label: "Koreksi saldo", onClick: () => setAdjustTarget(source) },
-          ...(source.archived_at === null
-            ? [
-                {
-                  label: "Arsipkan",
-                  tone: "danger" as const,
-                  onClick: () => setArchiveTarget(source),
-                },
-              ]
-            : []),
+          { label: "Arsipkan", tone: "danger" as const, onClick: () => requestArchive(source) },
+          ...deleteAction(source),
         ]}
       />
     );
   }
 
+  function archivedMenuFor(source: Source) {
+    return (
+      <RowMenu
+        label={`Aksi ${source.name}`}
+        tone="onColor"
+        actions={[
+          {
+            label: "Pulihkan",
+            pending: restore.isPending,
+            onClick: () =>
+              restore.mutate(source.id, {
+                onSuccess: () => toast.success("Sumber dipulihkan"),
+                onError: (error) => toastError(error.message),
+              }),
+          },
+          ...deleteAction(source),
+        ]}
+      />
+    );
+  }
 
   return (
     <>
@@ -125,7 +175,7 @@ export default function SourcesPage() {
           </>
         ) : sources.isError ? (
           <QueryErrorState message="Sumber gagal dimuat." onRetry={() => sources.refetch()} />
-        ) : list.length === 0 ? (
+        ) : all.length === 0 ? (
           <EmptyState
             icon={Wallet}
             heading="Belum ada sumber dana"
@@ -212,19 +262,33 @@ export default function SourcesPage() {
               ) : null}
             </Panel>
 
-            <Panel density="list" title="Aset" caption={`${assets.length} sumber`}>
-              <div className="grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
-                {assets.map((source) => (
-                  <SourceCard
-                    key={source.id}
-                    source={source}
-                    size="tile"
-                    share={totalAvailable === 0 ? 0 : source.balance_minor / totalAvailable}
-                    trailing={menuFor(source)}
-                  />
-                ))}
-              </div>
-            </Panel>
+            {list.length === 0 ? (
+              <EmptyState
+                icon={Wallet}
+                heading="Semua sumber diarsipkan"
+                caption="Pulihkan salah satu dari Arsip, atau tambah yang baru."
+                action={
+                  <Button variant="secondary" onClick={() => openForm(null)}>
+                    Tambah sumber
+                  </Button>
+                }
+              />
+            ) : (
+              <Panel density="list" title="Aset" caption={`${assets.length} sumber`}>
+                <div className="grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {assets.map((source) => (
+                    <SourceCard
+                      key={source.id}
+                      source={source}
+                      size="tile"
+                      share={totalAvailable === 0 ? 0 : source.balance_minor / totalAvailable}
+                      trailing={menuFor(source)}
+                      onSelect={() => openForm(source)}
+                    />
+                  ))}
+                </div>
+              </Panel>
+            )}
 
             {debts.length === 0 ? null : (
               <Panel density="list" title="Utang" caption={`${debts.length} sumber`}>
@@ -236,9 +300,41 @@ export default function SourcesPage() {
                       size="tile"
                       share={totalDebt === 0 ? 0 : Math.abs(source.balance_minor) / totalDebt}
                       trailing={menuFor(source)}
+                      onSelect={() => openForm(source)}
                     />
                   ))}
                 </div>
+              </Panel>
+            )}
+
+            {archived.length === 0 ? null : (
+              <Panel
+                density="list"
+                title="Arsip"
+                caption={`${archived.length} sumber`}
+                action={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowArchive((shown) => !shown)}
+                  >
+                    {showArchive ? "Sembunyikan" : "Tampilkan arsip"}
+                  </Button>
+                }
+              >
+                {showArchive ? (
+                  <div className="grid gap-2 p-3">
+                    {archived.map((source) => (
+                      <SourceCard
+                        key={source.id}
+                        source={source}
+                        size="row"
+                        share={0}
+                        trailing={archivedMenuFor(source)}
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </Panel>
             )}
           </>
@@ -269,14 +365,39 @@ export default function SourcesPage() {
           });
         }}
       />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={`Hapus ${deleteTarget?.name ?? "sumber"}?`}
+        description="Sumber ini belum punya transaksi, jadi bisa dihapus permanen. Tagihan yang menautkannya akan dilepas."
+        confirmLabel="Hapus permanen"
+        tone="danger"
+        typedPhrase="HAPUS"
+        pending={remove.isPending}
+        onConfirm={() => {
+          if (deleteTarget === null) {
+            return;
+          }
+          remove.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              toast.success("Sumber dihapus");
+              setDeleteTarget(null);
+            },
+            onError: (error) => toastError(error.message),
+          });
+        }}
+      />
     </>
   );
 }
 
 /**
- * Create writes the opening balance as an adjustment right after the
- * source exists: a new source that starts at Rp0 corrupts Safe-to-Spend
- * until someone notices.
+ * One sheet for both directions. Create writes the opening balance as
+ * an adjustment right after the source exists: a new source that starts
+ * at Rp0 corrupts Safe-to-Spend until someone notices. Editing does the
+ * same trick in reverse — a corrected balance is an Adjustment Entry,
+ * never an edit of the ledger (CONTEXT.md).
  */
 function SourceFormSheet({
   open,
@@ -292,42 +413,71 @@ function SourceFormSheet({
   const adjust = useAdjustSource();
 
   const [name, setName] = useState("");
-  const [type, setType] = useState("bank");
+  const [type, setType] = useState<Source["type"]>("bank");
   const [isDebt, setIsDebt] = useState(false);
-  const [openingMinor, setOpeningMinor] = useState<number | null>(null);
+  const [balanceMinor, setBalanceMinor] = useState<number | null>(null);
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
-  const sessionKey = `${open ? "open" : "closed"}-${editing?.id ?? "new"}`;
+  // Re-initialise on every open, and forget the session on close — a
+  // sheet that keeps the last source's debt switch lies about the next
+  // one.
+  const sessionKey = editing?.id ?? "new";
   if (open && initializedFor !== sessionKey) {
     setInitializedFor(sessionKey);
     setName(editing?.name ?? "");
     setType(editing?.type ?? "bank");
     setIsDebt(editing?.is_debt ?? false);
-    setOpeningMinor(null);
+    setBalanceMinor(editing?.balance_minor ?? null);
+  }
+  if (!open && initializedFor !== null) {
+    setInitializedFor(null);
   }
 
   const pending = create.isPending || update.isPending || adjust.isPending;
 
   async function submit() {
     if (editing !== null) {
-      const body: { name?: string; is_debt?: boolean } = {};
+      const body: { name?: string; type?: Source["type"]; is_debt?: boolean } = {};
       if (name.trim() !== "" && name !== editing.name) {
         body.name = name.trim();
+      }
+      if (type !== editing.type) {
+        body.type = type;
       }
       if (isDebt !== editing.is_debt) {
         body.is_debt = isDebt;
       }
-      if (Object.keys(body).length === 0) {
+      const correction =
+        balanceMinor !== null && balanceMinor !== editing.balance_minor
+          ? balanceMinor - editing.balance_minor
+          : 0;
+      if (Object.keys(body).length === 0 && correction === 0) {
         onOpenChange(false);
         return;
       }
-      try {
-        await update.mutateAsync({ id: editing.id, ...body });
-        toast.success("Sumber diubah");
-        onOpenChange(false);
-      } catch (error) {
-        toastError(error instanceof Error ? error.message : "Gagal menyimpan");
+      if (Object.keys(body).length > 0) {
+        try {
+          await update.mutateAsync({ id: editing.id, ...body });
+        } catch (error) {
+          toastError(error instanceof Error ? error.message : "Gagal menyimpan");
+          return;
+        }
       }
+      if (correction !== 0) {
+        try {
+          await adjust.mutateAsync({
+            id: editing.id,
+            amount_minor: correction,
+            note: "Koreksi saldo",
+          });
+        } catch {
+          toastError("Perubahan tersimpan, koreksi saldo gagal — pakai Koreksi saldo");
+          onOpenChange(false);
+          return;
+        }
+      }
+      toast.success("Sumber diubah");
+      onOpenChange(false);
       return;
     }
 
@@ -339,11 +489,11 @@ function SourceFormSheet({
       return;
     }
 
-    if (openingMinor !== null && openingMinor !== 0) {
+    if (balanceMinor !== null && balanceMinor !== 0) {
       try {
         await adjust.mutateAsync({
           id: created.id,
-          amount_minor: openingMinor,
+          amount_minor: balanceMinor,
           note: "Saldo awal",
         });
       } catch {
@@ -382,22 +532,20 @@ function SourceFormSheet({
         />
       </FormField>
 
-      {editing === null ? (
-        <FormField label="Jenis" htmlFor="source-type">
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger id="source-type" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SOURCE_TYPES.map((sourceType) => (
-                <SelectItem key={sourceType.value} value={sourceType.value}>
-                  {sourceType.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
-      ) : null}
+      <FormField label="Jenis" htmlFor="source-type">
+        <Select value={type} onValueChange={(next) => setType(next as Source["type"])}>
+          <SelectTrigger id="source-type" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SOURCE_TYPES.map((sourceType) => (
+              <SelectItem key={sourceType.value} value={sourceType.value}>
+                {sourceType.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
 
       <SwitchRow
         id="source-debt"
@@ -407,16 +555,27 @@ function SourceFormSheet({
         onCheckedChange={setIsDebt}
       />
 
-      {editing === null ? (
-        <FormField label="Saldo saat ini" htmlFor="opening-balance" hint="opsional">
-          <AmountInput
-            id="opening-balance"
-            valueMinor={openingMinor}
-            onChangeMinor={setOpeningMinor}
-            allowNegative={isDebt}
-          />
-        </FormField>
+      {/* Flipping the flag moves where the balance is counted; the
+          ledger itself is untouched. Warn, never block. */}
+      {editing !== null && isDebt !== editing.is_debt && editing.has_transactions ? (
+        <p className="text-meta text-over-text">
+          Saldo <MoneyText minor={editing.balance_minor} size="sm" tone="inherit" /> pindah dari{" "}
+          {isDebt ? "Aset ke Utang" : "Utang ke Aset"}. Riwayat transaksi tidak berubah.
+        </p>
       ) : null}
+
+      <FormField
+        label={editing === null ? "Saldo saat ini" : "Saldo sebenarnya sekarang"}
+        htmlFor="opening-balance"
+        hint="opsional"
+      >
+        <AmountInput
+          id="opening-balance"
+          valueMinor={balanceMinor}
+          onChangeMinor={setBalanceMinor}
+          allowNegative={isDebt}
+        />
+      </FormField>
     </ResponsiveSheet>
   );
 }

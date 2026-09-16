@@ -7,31 +7,18 @@ import { PrivacyProvider } from "@/components/privacy-provider";
 import { LiveRegion } from "@/components/live-region";
 import { BottomNav } from "@/components/bottom-nav";
 import { OfflineBanner } from "@/components/offline-banner";
-import { backendFetch } from "@/lib/api/backend-fetch";
-import type { components } from "@/lib/api/schema";
 import { getSessionToken } from "@/lib/session";
 
-type SourcesEnvelope = components["schemas"]["SourcesEnvelope"];
-
 /**
- * App shell (server): the sources fetch seeds the rail's client cache
- * so the first paint has balances. A failed fetch seeds nothing — the
- * rail retries client-side and reports failure rather than zeros.
+ * App shell (server): nothing but the session guard. The rail fetches
+ * its own sources client-side, so this HTML carries no balances — which
+ * is what lets the service worker cache it as a plain shell and paint
+ * it before any network (ADR-0007).
  */
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const token = await getSessionToken();
   if (!token) {
     redirect("/login");
-  }
-
-  let sources: SourcesEnvelope["data"] | undefined;
-  try {
-    // backendFetch returns the full envelope; unwrap data here.
-    const sourcesEnv = await backendFetch<SourcesEnvelope>("/api/v1/sources", { token });
-    sources = sourcesEnv.data;
-  } catch {
-    // A dead backend still renders the shell; the rail owns the retry.
-    sources = undefined;
   }
 
   return (
@@ -45,7 +32,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             Lompat ke konten
           </a>
           <div className="flex min-h-full">
-            <AccountsRail initialSources={sources} />
+            <AccountsRail />
             <div className="flex min-h-full w-full flex-col lg:pl-56">
               <main
                 id="main"

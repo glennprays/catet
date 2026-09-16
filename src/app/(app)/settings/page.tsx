@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { KeyRound, LogOut, Users } from "lucide-react";
+import { KeyRound, LogOut, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/components/form-field";
 import { InstallAppRow } from "@/components/install-app-row";
 import { PageHeader } from "@/components/page-header";
 import { Panel } from "@/components/panel";
+import { clearShellCache } from "@/components/pwa-bridge";
 import { QueryBoundary } from "@/components/query-boundary";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,6 @@ export default function SettingsPage() {
   const update = useUpdateSettings();
   const me = useMe();
   const logoutAll = useLogoutAll();
-  const router = useRouter();
 
   // Draft values: null means "still mirroring the server value".
   const [draftDays, setDraftDays] = useState<string | null>(null);
@@ -92,11 +91,21 @@ export default function SettingsPage() {
     );
   }
 
+  /**
+   * Sign-out navigates with a full document load and drops the cached
+   * shell: a soft push would leave the signed-in router cache (and the
+   * worker's shell) alive behind the login screen.
+   */
+  function leaveForLogin() {
+    clearShellCache();
+    window.location.assign(new URL("/login", window.location.origin));
+  }
+
   async function logout() {
     setLoggingOut(true);
     try {
       await apiFetch("/auth/logout", { method: "POST" });
-      router.replace("/login");
+      leaveForLogin();
     } catch (error) {
       setLoggingOut(false);
       toastError(error instanceof ApiError ? error.message : "Gagal logout");
@@ -107,7 +116,7 @@ export default function SettingsPage() {
     logoutAll.mutate(undefined, {
       onSuccess: () => {
         toast.success("Semua sesi dicabut");
-        router.replace("/login");
+        leaveForLogin();
       },
       onError: (error) => toastError(error.message),
     });
@@ -266,6 +275,22 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ) : null}
+
+                  {account.is_admin ? (
+                    <div className="grid gap-2 p-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+                      <div>
+                        <h3 className="text-body font-medium text-ink">Penyedia AI</h3>
+                        <p className="text-meta text-ash">Model, kunci API, dan alamat penyedia</p>
+                      </div>
+                      <div>
+                        <Button variant="secondary" asChild>
+                          <Link href="/settings/ai">
+                            <Sparkles className="size-4" strokeWidth={1.75} /> Atur penyedia
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </>
               )}
             </QueryBoundary>
@@ -311,7 +336,6 @@ function ChangePasswordSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const change = useChangePassword();
-  const router = useRouter();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [repeat, setRepeat] = useState("");
@@ -343,7 +367,8 @@ function ChangePasswordSheet({
           // The epoch bump already killed this browser's cookie, so
           // staying here would only earn a 401 on the next request.
           toast.success("Kata sandi diubah, masuk lagi ya");
-          router.replace("/login");
+          clearShellCache();
+          window.location.assign(new URL("/login", window.location.origin));
         },
         onError: (error) => {
           if (error instanceof ApiError) {

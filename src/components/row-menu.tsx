@@ -17,15 +17,35 @@ import {
  * actions live behind one `⋯`, never as three equal-weight text buttons
  * that outshout the row's own content. Destructive items sit last,
  * below a rule, in `--over-text`.
+ *
+ * `tone="onColor"` is for triggers sitting on a solid hue (Source
+ * cards): the ghost button's ink foreground is invisible there, so the
+ * glyph goes white with a white wash on hover.
  */
-export function RowMenu({ label, actions }: { label: string; actions: RowAction[] }) {
+export function RowMenu({
+  label,
+  actions,
+  tone = "default",
+}: {
+  label: string;
+  actions: RowAction[];
+  tone?: "default" | "onColor";
+}) {
   const safe = actions.filter((action) => action.tone !== "danger");
   const danger = actions.filter((action) => action.tone === "danger");
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon-sm" aria-label={label}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          className={
+            tone === "onColor" ? "text-white hover:bg-white/15 hover:text-white" : undefined
+          }
+        >
           <MoreHorizontal className="size-4" strokeWidth={1.75} />
         </Button>
       </DropdownMenuTrigger>

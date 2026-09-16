@@ -14,6 +14,7 @@ const bca: Source = {
   currency: "IDR",
   archived_at: null,
   balance_minor: 0,
+  has_transactions: false,
 };
 const gopay: Source = { ...bca, id: "22222222-2222-4222-8222-222222222222", name: "GoPay", type: "ewallet" };
 const sources = [bca, gopay];

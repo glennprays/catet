@@ -47,7 +47,7 @@ export function Providers({ children }: { children: ReactNode }) {
         mutationCache: new MutationCache({ onError: reportWhenOffline }),
         defaultOptions: {
           queries: {
-            staleTime: 30_000,
+            staleTime: 60_000,
             retry: 1,
             // The bot writes while the tab is hidden; a focus is the
             // cheapest signal that the view may be stale.

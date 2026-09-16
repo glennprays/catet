@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { Brand } from "@/components/brand";
@@ -28,7 +28,7 @@ export default function ResetPage() {
 }
 
 function ResetForm() {
-  const router = useRouter();
+  // No router: signing in navigates with a full document load.
   /** The operator CLI prints `/reset?token=…` when the WhatsApp gateway is down. */
   const linkToken = useSearchParams().get("token") ?? "";
   const [step, setStep] = useState<Step>(linkToken === "" ? "phone" : "password");
@@ -103,7 +103,9 @@ function ResetForm() {
         method: "POST",
         body: { reset_token: resetToken, password },
       });
-      router.replace("/");
+      // Full load — the anonymous router cache holds the landing
+      // payload for `/` (see login/page.tsx).
+      window.location.assign(new URL("/", window.location.origin));
     } catch (caught) {
       setPending(false);
       setError(caught instanceof ApiError ? caught.message : "Gagal menyimpan kata sandi");
@@ -115,7 +117,7 @@ function ResetForm() {
       <div className="w-full max-w-sm rounded-lg bg-surface p-5 shadow-card">
         <h1>
           <Link
-            href="/"
+            href="/welcome"
             className="inline-flex rounded-md focus-visible:ring-[4px] focus-visible:ring-primary/10 focus-visible:outline-none"
           >
             <Brand size="login" />

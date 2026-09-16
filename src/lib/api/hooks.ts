@@ -45,8 +45,6 @@ export function useOverview() {
   return useQuery({
     queryKey: ["overview"],
     queryFn: () => apiGet<Overview>("/overview"),
-    // The WhatsApp bot writes while the dashboard is open.
-    refetchInterval: 60_000,
   });
 }
 
@@ -54,18 +52,15 @@ export function useBadges() {
   return useQuery({
     queryKey: ["badges"],
     queryFn: () => apiGet<BadgeCounts>("/badges"),
-    refetchInterval: 60_000,
   });
 }
 
 // ------------------------------------------------------------------ sources
 
-/** `initialData` lets the server-rendered shell seed the rail's cache. */
-export function useSources(includeArchived = false, initialData?: SourcesData) {
+export function useSources(includeArchived = false) {
   return useQuery({
     queryKey: ["sources", includeArchived],
     queryFn: () => apiGet<SourcesData>(`/sources${includeArchived ? "?include_archived=true" : ""}`),
-    initialData,
   });
 }
 
@@ -93,8 +88,15 @@ export function useCreateSource() {
 export function useUpdateSource() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...body }: { id: string; name?: string; is_debt?: boolean }) =>
-      apiSend<Source>(`/sources/${id}`, "PATCH", body),
+    mutationFn: ({
+      id,
+      ...body
+    }: {
+      id: string;
+      name?: string;
+      type?: Source["type"];
+      is_debt?: boolean;
+    }) => apiSend<Source>(`/sources/${id}`, "PATCH", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sources"] }),
   });
 }
@@ -104,6 +106,34 @@ export function useArchiveSource() {
   return useMutation({
     mutationFn: (id: string) => apiSend<{ archived: boolean }>(`/sources/${id}`, "DELETE"),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sources"] }),
+  });
+}
+
+export function useRestoreSource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiSend<Source>(`/sources/${id}/restore`, "POST"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sources"] });
+      qc.invalidateQueries({ queryKey: ["overview"] });
+    },
+  });
+}
+
+/**
+ * Permanent delete, only ever offered for a source the ledger never
+ * touched. Bills that linked it are unlinked server-side, so their
+ * cache goes too.
+ */
+export function useDeleteSource() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiSend<{ deleted: boolean }>(`/sources/${id}/permanent`, "DELETE"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sources"] });
+      qc.invalidateQueries({ queryKey: ["overview"] });
+      qc.invalidateQueries({ queryKey: ["bills"] });
+    },
   });
 }
 
@@ -570,5 +600,53 @@ export function useSetUserActive() {
     mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       apiSend<User>(`/users/${id}/${active ? "activate" : "deactivate"}`, "POST"),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  });
+}
+
+// ------------------------------------------------------------- admin · AI
+
+export type LlmProvider = components["schemas"]["LLMProvider"];
+export type LlmProviderUpdate = components["schemas"]["LLMProviderUpdate"];
+export type LlmModels = components["schemas"]["LLMModels"];
+export type LlmTest = components["schemas"]["LLMTest"];
+
+export function useLlmProvider() {
+  return useQuery({
+    queryKey: ["admin", "llm"],
+    queryFn: () => apiGet<LlmProvider>("/admin/llm"),
+  });
+}
+
+export function useUpdateLlmProvider() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: LlmProviderUpdate) => apiSend<LlmProvider>("/admin/llm", "PUT", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "llm"] }),
+  });
+}
+
+/** Back to the environment variables the server booted with. */
+export function useResetLlmProvider() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiSend<LlmProvider>("/admin/llm", "DELETE"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "llm"] }),
+  });
+}
+
+/**
+ * Both of these run against the *draft* form values, before anything is
+ * saved, so they are mutations rather than queries.
+ */
+export function useLlmModels() {
+  return useMutation({
+    mutationFn: (body: { base_url: string; api_key?: string | null }) =>
+      apiSend<LlmModels>("/admin/llm/models", "POST", body),
+  });
+}
+
+export function useTestLlmProvider() {
+  return useMutation({
+    mutationFn: (body: LlmProviderUpdate) => apiSend<LlmTest>("/admin/llm/test", "POST", body),
   });
 }

@@ -33,6 +33,9 @@ const CARD_BG: Record<Hue | "ink", string> = {
  * claims a share of cash. The balance rides the card in white (`tone="inherit"`);
  * status colour would fight the identity hue, and the hue already says "debt"
  * by being ink.
+ *
+ * `onSelect` makes the whole card the primary tap target (Sources opens
+ * "Ubah"); the `⋯` menu stops propagation so it never triggers it.
  */
 export function SourceCard({
   source,
@@ -40,12 +43,14 @@ export function SourceCard({
   size = "row",
   href,
   trailing,
+  onSelect,
 }: {
   source: Source;
   share: number;
   size?: "row" | "tile";
   href?: string;
   trailing?: ReactNode;
+  onSelect?: () => void;
 }) {
   const tile = size === "tile";
   const clamped = Number.isFinite(share) ? Math.min(Math.max(share, 0), 1) : 0;
@@ -80,7 +85,14 @@ export function SourceCard({
 
   const menu =
     trailing === undefined ? null : (
-      <span className="-mt-1 -mr-1 shrink-0 text-white">{trailing}</span>
+      <span
+        className="-mt-1 -mr-1 shrink-0 text-white"
+        onClick={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
+        {trailing}
+      </span>
     );
 
   const bar = (
@@ -127,20 +139,35 @@ export function SourceCard({
     CARD_BG[sourceHue(source)],
     tile ? "h-28 px-3.5 py-3" : "h-14 px-3 py-2",
   );
+  const interactive =
+    "transition-opacity hover:opacity-95 focus-visible:ring-[4px] focus-visible:ring-white/40 focus-visible:outline-none";
 
-  if (href === undefined) {
-    return <div className={className}>{body}</div>;
+  if (href !== undefined) {
+    return (
+      <Link href={href} className={cn(className, interactive)}>
+        {body}
+      </Link>
+    );
   }
 
-  return (
-    <Link
-      href={href}
-      className={cn(
-        className,
-        "transition-opacity hover:opacity-95 focus-visible:ring-[4px] focus-visible:ring-white/40 focus-visible:outline-none",
-      )}
-    >
-      {body}
-    </Link>
-  );
+  if (onSelect !== undefined) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        className={cn(className, interactive, "cursor-pointer")}
+        onClick={onSelect}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelect();
+          }
+        }}
+      >
+        {body}
+      </div>
+    );
+  }
+
+  return <div className={className}>{body}</div>;
 }

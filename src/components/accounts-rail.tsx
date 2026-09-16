@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { sourceGlyph } from "@/lib/source-glyph";
 import { sourceHue } from "@/lib/hue";
-import { useBadges, useSources, type Source, type SourcesData } from "@/lib/api/hooks";
+import { useBadges, useSources, type Source } from "@/lib/api/hooks";
 
 type NavLink = { href: string; label: string; icon: LucideIcon; badge?: "inbox" | "bills" };
 
@@ -44,14 +44,15 @@ const FOOTER_NAV: NavLink[] = [{ href: "/settings", label: "Settings", icon: Set
 /**
  * The rail is navigation first, balances second: the nine-link "Kelola"
  * block used to sit below the money, so the primary control of the app
- * was the last thing on the page. Balances live in the client cache
- * seeded by the server render, so bot writes and local mutations both
- * refresh them. A failed fetch says so instead of rendering Rp0, which
- * would read as "you are broke" (truthfulness law, DESIGN.md §4).
+ * was the last thing on the page. Balances are fetched client-side so
+ * the shell HTML stays cacheable and paints instantly; bot writes and
+ * local mutations both refresh them. A failed fetch says so instead of
+ * rendering Rp0, which would read as "you are broke" (truthfulness law,
+ * DESIGN.md §4).
  */
-export function AccountsRail({ initialSources }: { initialSources: SourcesData | undefined }) {
+export function AccountsRail() {
   const pathname = usePathname();
-  const query = useSources(false, initialSources);
+  const query = useSources();
   const badges = useBadges().data;
   const data = query.data;
   const assets = data?.sources.filter((source) => !source.is_debt) ?? [];

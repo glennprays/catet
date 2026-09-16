@@ -5,6 +5,18 @@ import { toast } from "sonner";
 
 import { setDeferredPrompt, type InstallPromptEvent } from "@/lib/install-prompt";
 
+/**
+ * Drops the cached app shell. Called on every sign-out path: the shell
+ * carries no user data, but a signed-out device should not paint the
+ * app frame either.
+ */
+export function clearShellCache() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return;
+  }
+  navigator.serviceWorker.controller?.postMessage({ type: "CLEAR_SHELL" });
+}
+
 /*
  * Service-worker registration and the install-prompt capture (ADR-0007).
  * Mounted at the root so it also runs on /login — Chromium only treats the

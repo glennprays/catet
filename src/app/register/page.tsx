@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { Brand } from "@/components/brand";
@@ -26,7 +26,7 @@ export default function RegisterPage() {
 }
 
 function RegisterForm() {
-  const router = useRouter();
+  // No router: signing in navigates with a full document load.
   const inviteToken = useSearchParams().get("invite") ?? "";
   const [invitePhone, setInvitePhone] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -97,7 +97,9 @@ function RegisterForm() {
           password,
         },
       });
-      router.replace("/");
+      // Full load — the anonymous router cache holds the landing
+      // payload for `/` (see login/page.tsx).
+      window.location.assign(new URL("/", window.location.origin));
     } catch (caught) {
       setPending(false);
       setError(caught instanceof ApiError ? caught.message : "Gagal mendaftar");
@@ -231,7 +233,7 @@ function AuthCard({ children }: { children: ReactNode }) {
       <div className="w-full max-w-sm rounded-lg bg-surface p-5 shadow-card">
         <h1>
           <Link
-            href="/"
+            href="/welcome"
             className="inline-flex rounded-md focus-visible:ring-[4px] focus-visible:ring-primary/10 focus-visible:outline-none"
           >
             <Brand size="login" />
