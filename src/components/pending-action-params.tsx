@@ -31,7 +31,7 @@ const LABELS: Record<string, string> = {
   payment_method: "Pembayaran",
   content_hash: "Sidik jari",
   duplicate_of: "Mungkin duplikat dari",
-  collapsed: "Rincian diringkas",
+  inconsistent: "Rincian tidak konsisten",
   // `payment_method` is already "Pembayaran" (what the paper printed);
   // a split says which Sources actually paid it.
   payments: "Dibayar dari",
@@ -54,7 +54,7 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
  * How the bot decided which Source paid. Showing the basis is what makes
  * a remembered guess distinguishable from a fact printed on the paper.
  */
-const SOURCE_BASIS_LABELS: Record<string, string> = {
+export const SOURCE_BASIS_LABELS: Record<string, string> = {
   printed: "Tertulis di struk",
   hint: "Caption",
   memory: "Kebiasaan merchant",

@@ -477,10 +477,15 @@ export function useHoldQueue() {
   });
 }
 
-/** The overrides a confirming capture sheet may send with `confirm`. */
+/** The overrides a confirming capture or receipt sheet may send with `confirm`. */
 export type HoldOverrides = NonNullable<
   operations["resolveHoldQueueItem"]["requestBody"]
 >["content"]["application/json"]["overrides"];
+
+/** One parked receipt line's correction, keyed by the line's `n`. */
+export type HoldItemOverride = NonNullable<
+  NonNullable<HoldOverrides>["items"]
+>[number];
 
 export function useResolveHold() {
   const qc = useQueryClient();
@@ -494,7 +499,11 @@ export function useResolveHold() {
       action: "confirm" | "discard";
       overrides?: HoldOverrides;
     }) =>
-      apiSend<{ resolved: boolean; transaction_id?: string }>(
+      apiSend<{
+        resolved: boolean;
+        transaction_id?: string;
+        transaction_ids?: string[];
+      }>(
         `/hold-queue/${id}/resolve`,
         "POST",
         { action, overrides },

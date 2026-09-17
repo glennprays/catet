@@ -1517,7 +1517,10 @@ export interface components {
              *     category_id, category_name, category_confidence}`,
              *     `source_id`/`source_name`, `occurred_at`, `receipt_date`,
              *     `payment_method`, `message_id`, `original_text`,
-             *     `duplicate_of`, `collapsed`, `missing`.
+             *     `duplicate_of`, `inconsistent`, `missing`. `inconsistent` —
+             *     the printed lines did not add up to the printed total; each
+             *     line's `amount_minor` is a proportional share of
+             *     `total_minor`.
              */
             params: {
                 [key: string]: unknown;
@@ -3230,9 +3233,14 @@ export interface operations {
                     /** @enum {string} */
                     action: "confirm" | "discard";
                     /**
-                     * @description Corrections applied to a parked capture before it is
-                     *     written. Ignored for `discard`. Every field is optional;
-                     *     omitted fields keep whatever the bot stored.
+                     * @description Corrections applied to a parked capture or receipt
+                     *     before it is written. Ignored for `discard`. Every
+                     *     field is optional; omitted fields keep whatever the
+                     *     bot stored. For a receipt, `amount_minor` is rejected
+                     *     (the printed total is immutable); `items[]` sets a
+                     *     category per line by `n`; `collapse: true` writes one
+                     *     line at the printed total instead (mutually exclusive
+                     *     with `items`).
                      */
                     overrides?: {
                         /** Format: int64 */
@@ -3247,6 +3255,12 @@ export interface operations {
                         note?: string;
                         /** Format: date */
                         occurred_date?: string;
+                        collapse?: boolean;
+                        items?: {
+                            n: number;
+                            /** Format: uuid */
+                            category_id?: string;
+                        }[];
                     };
                 };
             };

@@ -183,7 +183,7 @@ export default function InboxPage() {
 /** Owns its own mutation so one pending row never disables the others. */
 function HoldRow({ item }: { item: PendingAction }) {
   const resolve = useResolveHold();
-  const { openHold } = useCaptureSheet();
+  const { openHold, openReceipt } = useCaptureSheet();
   const [confirming, setConfirming] = useState<"confirm" | "discard" | null>(null);
 
   function run(action: "confirm" | "discard") {
@@ -204,22 +204,40 @@ function HoldRow({ item }: { item: PendingAction }) {
   const missing = Array.isArray(item.params.missing) ? item.params.missing.map(String) : [];
   // A capture is an unfinished write: confirming it means filling the
   // gap the bot refused to guess, which is the capture form's job. A
+  // receipt is N lines at a printed total, so it has its own sheet. A
   // refund is a yes/no on an already-identified target.
   const isCapture = item.kind === "capture";
   const isReceipt = item.kind === "receipt";
-  // A receipt is N lines at a printed total — the capture sheet carries
-  // one amount and cannot express it. Until a receipt gets its own
-  // Source picker, a missing Source is only answerable in the chat that
-  // asked ("Bayar dari mana?").
-  const needsSourceInChat = isReceipt && missing.includes("source");
+
+  /** The row's one action, shared by the row body and Konfirmasi. */
+  function primary() {
+    if (isCapture) {
+      openHold(item);
+    } else if (isReceipt) {
+      openReceipt(item);
+    } else {
+      setConfirming("confirm");
+    }
+  }
 
   return (
-    <li className="grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-border px-4 py-1.5 last:border-b-0 md:min-h-9">
-      <div className="min-w-0">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="truncate text-body font-medium text-ink">{item.summary}</p>
+    // On a phone the summary needs the full width — two lines of a
+    // 160px column hide the amount — so the actions drop to their own
+    // row and the grid is one column until md.
+    <li className="relative grid min-h-11 gap-y-1.5 border-b border-border px-4 py-1.5 last:border-b-0 md:min-h-9 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-x-3 md:gap-y-0">
+      {/* The whole row is the target: a phone summary is too long to read
+          from a 2px-tall button. `-bottom-px` reaches over the hairline. */}
+      <button
+        type="button"
+        onClick={primary}
+        aria-label={item.summary}
+        className="absolute inset-0 -bottom-px hover:bg-surface-100 focus-visible:ring-[4px] focus-visible:ring-primary/10 focus-visible:outline-none"
+      />
+      <div className="pointer-events-none relative min-w-0">
+        <div className="flex min-w-0 flex-col gap-1 md:flex-row md:items-center md:gap-2">
+          <p className="line-clamp-2 text-body font-medium text-ink md:truncate">{item.summary}</p>
           {missing.length > 0 ? (
-            <StatusBadge tone="warn">
+            <StatusBadge tone="warn" className="self-start">
               {`Butuh ${missing
                 .map((field) => FIELD_LABELS[field] ?? field)
                 .join(", ")
@@ -237,10 +255,10 @@ function HoldRow({ item }: { item: PendingAction }) {
           {dayLabel(item.created_at)} · {timeLabel(item.created_at)}
         </p>
       </div>
-      {/* The params table is not inline: a refund and a receipt preview
-          their numbers inside the confirm dialog, a capture opens the
-          sheet. */}
-      <div className="flex items-center gap-1">
+      {/* The params table is not inline: a refund previews its numbers
+          inside the confirm dialog, a capture and a receipt open their
+          own sheet. */}
+      <div className="relative z-10 flex items-center justify-end gap-1">
         <Button
           variant="dangerGhost"
           size="sm"
@@ -252,9 +270,8 @@ function HoldRow({ item }: { item: PendingAction }) {
         <Button
           variant="secondary"
           size="sm"
-          disabled={resolve.isPending || needsSourceInChat}
-          title={needsSourceInChat ? "Jawab 'Bayar dari mana?' di WhatsApp" : undefined}
-          onClick={() => (isCapture ? openHold(item) : setConfirming("confirm"))}
+          disabled={resolve.isPending}
+          onClick={primary}
         >
           Konfirmasi
         </Button>
@@ -263,7 +280,7 @@ function HoldRow({ item }: { item: PendingAction }) {
       <ConfirmDialog
         open={confirming === "confirm"}
         onOpenChange={(open) => !open && setConfirming(null)}
-        title={isReceipt ? "Catat semua baris struk?" : "Konfirmasi aksi bot?"}
+        title="Konfirmasi aksi bot?"
         description={<PendingActionParams params={item.params} />}
         confirmLabel="Konfirmasi"
         pending={resolve.isPending}

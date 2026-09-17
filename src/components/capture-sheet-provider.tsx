@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
+import { ReceiptHoldSheet } from "@/components/receipt-hold-sheet";
 import { TransactionDetailSheet } from "@/components/transactions/transaction-detail-sheet";
 import { TransactionSheet, type Direction } from "@/components/transactions/transaction-sheet";
 import {
@@ -17,6 +18,11 @@ type CaptureSheet = {
   openEdit: (item: LedgerItem) => void;
   /** Confirming a parked WhatsApp capture reuses the capture form. */
   openHold: (item: PendingAction) => void;
+  /**
+   * Confirming a parked receipt opens the receipt sheet: N lines at a
+   * printed total, which the capture form cannot express.
+   */
+  openReceipt: (item: PendingAction) => void;
   openDetail: (id: string) => void;
 };
 
@@ -66,6 +72,7 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
   const [hold, setHold] = useState<PendingAction | null>(null);
   const [direction, setDirection] = useState<Direction | undefined>(undefined);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<PendingAction | null>(null);
 
   const categories = useCategories();
   const sources = useSources();
@@ -90,6 +97,7 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
         setDirection(undefined);
         setOpen(true);
       },
+      openReceipt: (item) => setReceipt(item),
       openDetail: (id) => setDetailId(id),
     }),
     [],
@@ -125,6 +133,16 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
           value.openEdit(ledgerItemOf(transaction));
         }}
         onOpenDetail={setDetailId}
+      />
+      <ReceiptHoldSheet
+        item={receipt}
+        onOpenChange={(next) => {
+          if (!next) {
+            setReceipt(null);
+          }
+        }}
+        sources={sources.data?.sources ?? []}
+        categories={categories.data?.categories ?? []}
       />
     </CaptureSheetContext.Provider>
   );
