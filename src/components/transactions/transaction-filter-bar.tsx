@@ -74,7 +74,9 @@ export function TransactionFilterBar({
   const isPhone = useIsPhone();
 
   const sources = useSources();
-  const categories = useCategories();
+  // Include archived: a deep-linked category_id (analytics legend →
+  // transactions) must still label its chip after the category is gone.
+  const categories = useCategories(true);
   const merchantNames = useMerchantNameMap();
 
   const selected = [direction, sourceId, status, categoryId, merchantId];

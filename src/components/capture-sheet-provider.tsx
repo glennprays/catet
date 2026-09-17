@@ -74,7 +74,9 @@ export function CaptureSheetProvider({ children }: { children: ReactNode }) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<PendingAction | null>(null);
 
-  const categories = useCategories();
+  // Include archived so an edited row whose category was archived can
+  // still show that category's name; the pickers filter it back out.
+  const categories = useCategories(true);
   const sources = useSources();
 
   const value = useMemo<CaptureSheet>(

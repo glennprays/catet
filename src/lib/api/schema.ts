@@ -517,7 +517,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Soft-archive a category */
+        /** Archive a category and its whole subtree */
         delete: operations["archiveCategory"];
         options?: never;
         head?: never;
@@ -2585,7 +2585,7 @@ export interface operations {
                     "application/json": components["schemas"]["TransactionEnvelope"];
                 };
             };
-            /** @description VALIDATION_FAILED with FieldError[] on rule violations */
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations, including category_id rule "archived" when the category is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["ErrorResponse"];
@@ -2674,6 +2674,7 @@ export interface operations {
                     "application/json": components["schemas"]["TransactionEnvelope"];
                 };
             };
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations, including category_id rule "archived" when the category is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
@@ -2857,6 +2858,7 @@ export interface operations {
                     "application/json": components["schemas"]["CategoryEnvelope"];
                 };
             };
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations, including parent_id rule "archived" when the parent is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["ErrorResponse"];
@@ -2884,7 +2886,7 @@ export interface operations {
             };
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
-            /** @description Used by a budget in the current period */
+            /** @description Used by a budget in the current period (the category or any sub-category) */
             409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
@@ -2919,9 +2921,12 @@ export interface operations {
                     "application/json": components["schemas"]["CategoryEnvelope"];
                 };
             };
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations, including parent_id rule "archived" when the parent is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
+            /** @description Archived categories cannot be edited */
+            409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
     };
@@ -3168,6 +3173,7 @@ export interface operations {
                     "application/json": components["schemas"]["BudgetEnvelope"];
                 };
             };
+            /** @description VALIDATION_FAILED with FieldError[] on rule violations, including category_id rule "archived" when the category is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             /** @description Budget already exists for (category, period) */

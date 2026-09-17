@@ -239,6 +239,22 @@ export function TransactionSheet({
     () => categories.filter((category) => category.archived_at === null),
     [categories],
   );
+  // Editing a row whose category has since been archived: keep that one
+  // option so the field shows what the row has instead of a blank.
+  const pickableCategories = useMemo(() => {
+    const current = editing?.category_id;
+    if (
+      current === undefined ||
+      current === null ||
+      activeCategories.some((category) => category.id === current)
+    ) {
+      return activeCategories;
+    }
+    const archived = categories.find((category) => category.id === current);
+    return archived === undefined
+      ? activeCategories
+      : [...activeCategories, { ...archived, name: `${archived.name} (arsip)` }];
+  }, [activeCategories, categories, editing]);
   const activeSources = useMemo(
     () => sources.filter((source) => source.archived_at === null),
     [sources],
@@ -584,7 +600,7 @@ export function TransactionSheet({
                   <SelectValue placeholder="Pilih kategori" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activeCategories.map((category) => (
+                  {pickableCategories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>

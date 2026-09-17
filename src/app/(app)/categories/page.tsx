@@ -56,9 +56,48 @@ export function buildTree(categories: Category[]): CategoryNode[] {
       roots.push(node);
       continue;
     }
-    nodes.get(category.parent_id)?.children.push(node);
+    const parent = nodes.get(category.parent_id);
+    if (parent === undefined) {
+      // The parent is not in this list (archived, or filtered out): keep
+      // the row visible as a root instead of dropping it silently — the
+      // counter above the list counts every row the server sent.
+      roots.push(node);
+      continue;
+    }
+    parent.children.push(node);
   }
   return roots;
+}
+
+/** Ids of every category below `id` in `categories` (not `id` itself). */
+export function descendantIds(categories: Category[], id: string): Set<string> {
+  const childrenOf = new Map<string, string[]>();
+  for (const category of categories) {
+    const parentId = category.parent_id;
+    if (parentId === null || parentId === undefined) {
+      continue;
+    }
+    const siblings = childrenOf.get(parentId);
+    if (siblings === undefined) {
+      childrenOf.set(parentId, [category.id]);
+    } else {
+      siblings.push(category.id);
+    }
+  }
+
+  const out = new Set<string>();
+  const queue = [id];
+  while (queue.length > 0) {
+    const current = queue.pop() as string;
+    for (const child of childrenOf.get(current) ?? []) {
+      if (out.has(child)) {
+        continue;
+      }
+      out.add(child);
+      queue.push(child);
+    }
+  }
+  return out;
 }
 
 export default function CategoriesPage() {
@@ -89,6 +128,8 @@ export default function CategoriesPage() {
     setEditing(category);
     setFormOpen(true);
   }
+
+  const affected = archiveTarget === null ? 0 : descendantIds(list, archiveTarget.id).size;
 
   return (
     <>
@@ -156,7 +197,11 @@ export default function CategoriesPage() {
         open={archiveTarget !== null}
         onOpenChange={(open) => !open && setArchiveTarget(null)}
         title={`Arsipkan ${archiveTarget?.name ?? "kategori"}?`}
-        description="Kategori diarsipkan; transaksi lama tetap memakainya."
+        description={
+          affected === 0
+            ? "Kategori diarsipkan; transaksi lama tetap memakainya."
+            : `Kategori dan ${affected} sub-kategori diarsipkan; transaksi lama tetap memakainya.`
+        }
         confirmLabel="Arsipkan"
         tone="danger"
         pending={archive.isPending}
@@ -277,6 +322,13 @@ function CategoryFormSheet({
 
   const pending = create.isPending || update.isPending;
 
+  // Re-parenting a category under itself or its own descendant is a
+  // cycle the API refuses; do not offer the choice.
+  const blocked =
+    editing === null
+      ? new Set<string>()
+      : new Set([editing.id, ...descendantIds(categories, editing.id)]);
+
   function submit() {
     if (editing !== null) {
       const body: { name?: string; parent_id?: string | null; essential?: boolean } = {};
@@ -361,7 +413,7 @@ function CategoryFormSheet({
           <SelectContent>
             <SelectItem value="root">Tanpa induk</SelectItem>
             {categories
-              .filter((category) => category.id !== editing?.id)
+              .filter((category) => !blocked.has(category.id))
               .map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
