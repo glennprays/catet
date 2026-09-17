@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/api/client";
 import {
   useCreateTransaction,
+  useMerchants,
   useResolveHold,
   useUpdateTransaction,
   type HoldOverrides,
@@ -58,6 +59,15 @@ const DIRECTIONS = [
 ];
 
 const DAY_MS = 86_400_000;
+
+/**
+ * The backend's alias key: trimmed, single-spaced, lower-case. A typed name
+ * that matches a canonical merchant this way travels as `merchant_id`, so
+ * the write skips resolution instead of risking a second spelling.
+ */
+function merchantKey(text: string): string {
+  return text.trim().replace(/\s+/g, " ").toLowerCase();
+}
 
 const DATE_QUICK = [
   { value: "today", label: "Hari ini" },
@@ -160,6 +170,17 @@ export function TransactionSheet({
   const createTx = useCreateTransaction();
   const updateTx = useUpdateTransaction();
   const resolveHold = useResolveHold();
+  const merchants = useMerchants();
+  // The canonical names, by alias key: the datalist's suggestions and the
+  // lookup that turns a typed name back into its merchant id.
+  const merchantNames = useMemo(
+    () => merchants.data?.merchants ?? [],
+    [merchants.data],
+  );
+  const merchantIdByKey = useMemo(
+    () => new Map(merchantNames.map((item) => [merchantKey(item.name), item.id])),
+    [merchantNames],
+  );
 
   // Render-phase re-init (React "adjust state when props change"):
   // the form resets whenever the sheet opens for a different target.
@@ -358,11 +379,16 @@ export function TransactionSheet({
       return;
     }
 
+    // A name the user picked out of the datalist is already canonical, so
+    // it travels as an id: the backend then skips resolution entirely and
+    // no second spelling can be created.
+    const knownMerchantId = merchantIdByKey.get(merchantKey(merchant));
     const body: Record<string, unknown> = {
       type: direction,
       amount_minor: minor,
       source_id: sourceId,
-      merchant: merchant === "" ? undefined : merchant,
+      merchant_id: knownMerchantId,
+      merchant: merchant === "" || knownMerchantId !== undefined ? undefined : merchant,
       note: note === "" ? undefined : note,
       occurred_date: date === undefined ? undefined : jakartaDateKey(date),
     };
@@ -452,10 +478,18 @@ export function TransactionSheet({
         <FormField label="Merchant" htmlFor="tx-merchant" hint="opsional">
           <Input
             id="tx-merchant"
+            list="merchant-options"
             value={merchant}
             onChange={(event) => setMerchant(event.target.value)}
             placeholder="mis. Kopi Kenangan, Gojek"
           />
+          {/* Suggestions only: the field stays free text, and a name that
+              matches one of these is sent as its id on save. */}
+          <datalist id="merchant-options">
+            {merchantNames.map((item) => (
+              <option key={item.id} value={item.name} />
+            ))}
+          </datalist>
         </FormField>
 
         <div className="grid gap-4 sm:grid-cols-2">

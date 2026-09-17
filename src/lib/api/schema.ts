@@ -435,6 +435,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/merchants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List canonical merchants with their live expense volume */
+        get: operations["listMerchants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/merchants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Rename a merchant (rewrites the display text on its rows) */
+        patch: operations["renameMerchant"];
+        trace?: never;
+    };
+    "/api/v1/merchants/{id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Merge this merchant into another one
+         * @description Rows, aliases and the old name follow the survivor; the path merchant is deleted.
+         */
+        post: operations["mergeMerchant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/categories": {
         parameters: {
             query?: never;
@@ -1072,7 +1126,10 @@ export interface components {
             occurred_at: string;
             /** @enum {string} */
             type: "expense" | "income" | "transfer" | "adjustment";
+            /** @description display copy of the canonical merchant name */
             merchant?: string | null;
+            /** Format: uuid */
+            merchant_id?: string | null;
             note?: string | null;
             /**
              * Format: int64
@@ -1133,7 +1190,10 @@ export interface components {
             origin: "whatsapp_text" | "whatsapp_photo" | "dashboard_manual" | "import";
             /** @enum {string} */
             type: "expense" | "income" | "transfer" | "adjustment";
+            /** @description display copy of the canonical merchant name */
             merchant?: string | null;
+            /** Format: uuid */
+            merchant_id?: string | null;
             note?: string | null;
             /**
              * Format: int64
@@ -1192,6 +1252,55 @@ export interface components {
             archived_at?: string | null;
             /** Format: date-time */
             created_at?: string;
+        };
+        Merchant: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+        };
+        MerchantSummary: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * Format: int64
+             * @description live expense rows pointing at this merchant
+             */
+            tx_count: number;
+            /**
+             * Format: int64
+             * @description live expense outflow
+             */
+            total_minor: number;
+            /** Format: date-time */
+            last_used_at?: string | null;
+        };
+        MerchantListEnvelope: {
+            data: {
+                merchants: components["schemas"]["MerchantSummary"][];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        MerchantEnvelope: {
+            data: {
+                merchant: components["schemas"]["Merchant"];
+            };
+            /** Format: uuid */
+            trace_id: string;
+        };
+        MergedMerchantEnvelope: {
+            data: {
+                merged: boolean;
+                /** Format: uuid */
+                into_merchant_id: string;
+            };
+            /** Format: uuid */
+            trace_id: string;
         };
         CategoriesEnvelope: {
             data: {
@@ -1470,6 +1579,8 @@ export interface components {
             trace_id: string;
         };
         TopMerchant: {
+            /** Format: uuid */
+            merchant_id: string;
             name: string;
             /** Format: int64 */
             amount_minor: number;
@@ -2392,7 +2503,11 @@ export interface operations {
             query?: {
                 source_id?: string;
                 category_id?: string;
+                /** @description `needs_review` also hides originals that have a live reversal. */
                 review_status?: "clean" | "needs_review";
+                /** @description Soft-deleted rows; `exclude` (default) hides them, `only` is the Di-void bin. */
+                voided?: "exclude" | "include" | "only";
+                merchant_id?: string;
                 q?: string;
                 from?: string;
                 to?: string;
@@ -2452,6 +2567,11 @@ export interface operations {
                     category_id?: string;
                     note?: string;
                     merchant?: string;
+                    /**
+                     * Format: uuid
+                     * @description canonical merchant; when present the merchant text is ignored
+                     */
+                    merchant_id?: string;
                 };
             };
         };
@@ -2592,6 +2712,95 @@ export interface operations {
             404: components["responses"]["NotFoundError"];
             /** @description Already voided or already reversed */
             409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    listMerchants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Merchants, biggest spend first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantListEnvelope"];
+                };
+            };
+            401: components["responses"]["UnauthorizedError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    renameMerchant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Renamed merchant */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            /** @description CONFLICT — a merchant of that name already exists; merge instead */
+            409: components["responses"]["ErrorResponse"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    mergeMerchant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    into_merchant_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Merged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MergedMerchantEnvelope"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
             500: components["responses"]["ErrorResponse"];
         };
     };
@@ -3099,7 +3308,8 @@ export interface operations {
     getStsTrend: {
         parameters: {
             query?: {
-                days?: number;
+                from?: components["parameters"]["From"];
+                to?: components["parameters"]["To"];
             };
             header?: never;
             path?: never;
@@ -3107,7 +3317,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Trend points */
+            /** @description Trend points, one per day in range (max span 366 days) */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3116,6 +3326,7 @@ export interface operations {
                     "application/json": components["schemas"]["StsTrendEnvelope"];
                 };
             };
+            400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             500: components["responses"]["ErrorResponse"];
         };

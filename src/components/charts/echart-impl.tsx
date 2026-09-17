@@ -78,7 +78,7 @@ export default function EChartImpl({
   style,
 }: {
   option: EChartsOption;
-  onSelect?: (name: string) => void;
+  onSelect?: (name: string, item?: unknown) => void;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -100,8 +100,10 @@ export default function EChartImpl({
     const chart = init(container, undefined, { renderer: "svg" });
     chartRef.current = chart;
 
+    // The clicked data item rides along so a caller can act on what the
+    // option put there (an id, say) instead of re-deriving it from the label.
     chart.on("click", (params) => {
-      selectRef.current?.(String(params.name ?? ""));
+      selectRef.current?.(String(params.name ?? ""), params.data);
     });
 
     const observer = new ResizeObserver(() => chart.resize());

@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import type { EChartsOption } from "echarts";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 
 import { CHART_COLORS, chartBase, jutaLabel, tokenPx } from "@/components/charts/echart";
 import { ChartFrame } from "@/components/chart-frame";
 import { FilterBar } from "@/components/filter-bar";
 import { PageHeader } from "@/components/page-header";
-import { SegmentedControl } from "@/components/segmented-control";
+import { PeriodPicker } from "@/components/period-picker";
 import { Button } from "@/components/ui/button";
+import { useFilterParams } from "@/hooks/use-filter-params";
 import { useIsPhone, useMediaQuery } from "@/lib/use-media-query";
 import {
   useAnalytics,
@@ -20,12 +24,14 @@ import {
   type TopMerchantsData,
 } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
+import { parsePeriod, resolvePeriod, type Period, type PeriodPreset } from "@/lib/period";
 
-const RANGES = [
-  { value: "7", label: "7 hari" },
-  { value: "30", label: "30 hari" },
-  { value: "90", label: "90 hari" },
-];
+/**
+ * A chart always plots a window, so "Semua" is not on offer here. The cap on
+ * a custom range is the API's: `sts-trend` rejects a span over 366 days.
+ */
+const ANALYTICS_PRESETS: PeriodPreset[] = ["7d", "30d", "month", "last_month", "90d", "custom"];
+const MAX_CUSTOM_DAYS = 366;
 
 const { INK, MUTED, BORDER, SAFE, WARN, OVER, SURFACE, CANVAS, SURFACE_300 } = CHART_COLORS;
 
@@ -33,8 +39,18 @@ export function runwayChartValue(runwayDays: number): number {
   return runwayDays === 0 ? 90 : runwayDays;
 }
 
+/** `useFilterParams` reads the URL, so the page body needs a suspense boundary. */
 export default function AnalyticsPage() {
-  const [rangeDays, setRangeDays] = useState<"7" | "30" | "90">("30");
+  return (
+    <Suspense fallback={null}>
+      <AnalyticsView />
+    </Suspense>
+  );
+}
+
+function AnalyticsView() {
+  const filters = useFilterParams();
+  const router = useRouter();
   const [drilled, setDrilled] = useState<string | null>(null);
   // Column width, not the phone breakpoint: charts need ~768px to keep
   // their labels readable (DESIGN.md §8).
@@ -43,20 +59,64 @@ export default function AnalyticsPage() {
   // labels as before — stretching an auto-width track wraps them.
   const isPhone = useIsPhone();
 
-  // Trailing-N-day window ending today, Asia/Jakarta.
-  const range = useMemo(() => {
-    const today = new Date();
-    const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" });
-    const to = fmt.format(today);
-    const from = fmt.format(new Date(today.getTime() - (Number(rangeDays) - 1) * 86_400_000));
-    return { from, to };
-  }, [rangeDays]);
+  // The window lives in the URL: a period a user arrived at is linkable, and
+  // a click-through to Transactions can carry it along unchanged.
+  const presetParam = filters.get("period");
+  const fromParam = filters.get("from");
+  const toParam = filters.get("to");
+  const period = useMemo(
+    () => parsePeriod(presetParam, fromParam, toParam),
+    [presetParam, fromParam, toParam],
+  );
+  const queryParams = useMemo(() => resolvePeriod(period), [period]);
 
-  const queryParams = { from: range.from, to: range.to };
+  const setPeriod = useCallback(
+    (next: Period) => {
+      // Only a custom window owns dates; a named preset resolves itself, so
+      // leaving stale `from`/`to` in the URL would only mislead.
+      const custom = next.preset === "custom";
+      filters.set({
+        period: next.preset,
+        from: custom ? next.from ?? null : null,
+        to: custom ? next.to ?? null : null,
+      });
+    },
+    [filters],
+  );
+
+  /** Transactions, filtered by what was clicked, over the window on screen. */
+  const transactionsHref = useCallback(
+    (key: "merchant_id" | "category_id", id: string) => {
+      const params = new URLSearchParams({ period: period.preset });
+      if (period.preset === "custom") {
+        if (period.from !== undefined) params.set("from", period.from);
+        if (period.to !== undefined) params.set("to", period.to);
+      }
+      params.set(key, id);
+      return `/transactions?${params.toString()}`;
+    },
+    [period],
+  );
+
+  const openMerchant = useCallback(
+    (_name: string, item?: unknown) => {
+      // `merchantsOption` hangs the merchant id on every bar and ECharts hands
+      // the clicked item back untouched, so the route needs no name lookup —
+      // which would be a guess anyway, a label is not an identity.
+      if (typeof item !== "object" || item === null || !("id" in item)) {
+        return;
+      }
+      if (typeof item.id !== "string") {
+        return;
+      }
+      router.push(transactionsHref("merchant_id", item.id));
+    },
+    [router, transactionsHref],
+  );
 
   const breakdown = useAnalytics<CategoryBreakdownData>("category-breakdown", queryParams);
   const incomeExpense = useAnalytics<IncomeExpenseData>("income-expense", queryParams);
-  const stsTrend = useAnalytics<StsTrendData>("sts-trend", { days: Number(rangeDays) });
+  const stsTrend = useAnalytics<StsTrendData>("sts-trend", queryParams);
   const heatmap = useAnalytics<HeatmapData>("heatmap", queryParams);
   const merchants = useAnalytics<TopMerchantsData>("top-merchants", { ...queryParams, limit: 8 });
   const essential = useAnalytics<EssentialLifestyleData>("essential-lifestyle", queryParams);
@@ -79,13 +139,12 @@ export default function AnalyticsPage() {
       <PageHeader title="Analytics" />
 
       <FilterBar>
-        <SegmentedControl
-          aria-label="Rentang waktu"
-          value={rangeDays}
-          onValueChange={(value) => setRangeDays(value as "7" | "30" | "90")}
-          options={RANGES}
-          stretch={isPhone}
-          className="w-full sm:w-auto"
+        <PeriodPicker
+          value={period}
+          onChange={setPeriod}
+          presets={ANALYTICS_PRESETS}
+          maxCustomDays={MAX_CUSTOM_DAYS}
+          inline={!isPhone}
         />
       </FilterBar>
 
@@ -110,7 +169,13 @@ export default function AnalyticsPage() {
           option={donutOption}
           onSelect={(name) => setDrilled((current) => (current === null ? name : null))}
         >
-          {(data) => <CategoryLegend data={data} drilled={drilled} />}
+          {(data) => (
+            <CategoryLegend
+              data={data}
+              drilled={drilled}
+              href={(categoryId) => transactionsHref("category_id", categoryId)}
+            />
+          )}
         </ChartFrame>
 
         <ChartFrame
@@ -151,7 +216,7 @@ export default function AnalyticsPage() {
 
         <ChartFrame
           title="Merchant teratas"
-          caption="berdasarkan pengeluaran"
+          caption="berdasarkan pengeluaran, klik untuk lihat transaksi"
           query={merchants}
           isEmpty={(data) => data.merchants.length === 0}
           ariaSummary={(data) =>
@@ -160,6 +225,7 @@ export default function AnalyticsPage() {
             )}`
           }
           option={merchantsOption}
+          onSelect={openMerchant}
         />
 
         <ChartFrame
@@ -222,27 +288,38 @@ function categoryDonutOption(
   };
 }
 
+/**
+ * The chart's text alternative, and the only place a category leads
+ * somewhere: the slice itself is spoken for by the drill-down, so the
+ * legend row is what opens that category's transactions.
+ */
 function CategoryLegend({
   data,
   drilled,
+  href,
 }: {
   data: CategoryBreakdownData;
   drilled: string | null;
+  href: (categoryId: string) => string;
 }) {
   const items = drilledView(data, drilled);
   return (
     <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 lg:hidden" aria-label="Kategori">
       {items.map((node, index) => (
-        <li
-          key={node.name}
-          className="flex min-w-0 items-center gap-1 text-meta text-muted-foreground"
-        >
-          <span
-            className="size-2 shrink-0 rounded-md"
-            style={{ backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length] }}
-            aria-hidden="true"
-          />
-          <span className="truncate">{node.name}</span>
+        <li key={node.category_id} className="min-w-0">
+          <Link
+            href={href(node.category_id)}
+            aria-label={`Lihat transaksi ${node.name}`}
+            className="flex min-w-0 items-center gap-1 text-meta text-muted-foreground hover:text-ink"
+          >
+            <span
+              className="size-2 shrink-0 rounded-md"
+              style={{ backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length] }}
+              aria-hidden="true"
+            />
+            <span className="truncate">{node.name}</span>
+            <ArrowUpRight className="size-3 shrink-0 text-ash" aria-hidden="true" />
+          </Link>
         </li>
       ))}
     </ul>
@@ -441,7 +518,13 @@ function merchantsOption(data: TopMerchantsData): EChartsOption {
     series: [
       {
         type: "bar",
-        data: sorted.map((merchant) => merchant.amount_minor),
+        // Each bar carries its merchant id so a click can route to that
+        // merchant's transactions without matching on the label.
+        data: sorted.map((merchant) => ({
+          id: merchant.merchant_id,
+          name: merchant.name,
+          value: merchant.amount_minor,
+        })),
         itemStyle: { color: INK, borderRadius: [0, 4, 4, 0] },
         barWidth: "55%",
       },

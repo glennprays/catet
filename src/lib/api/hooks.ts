@@ -37,6 +37,10 @@ export type IncomeExpenseData = DataOf<components["schemas"]["IncomeExpenseEnvel
 export type StsTrendData = DataOf<components["schemas"]["StsTrendEnvelope"]>;
 export type HeatmapData = DataOf<components["schemas"]["HeatmapEnvelope"]>;
 export type TopMerchantsData = DataOf<components["schemas"]["TopMerchantsEnvelope"]>;
+export type MerchantListData = DataOf<components["schemas"]["MerchantListEnvelope"]>;
+export type MerchantSummary = components["schemas"]["MerchantSummary"];
+export type Merchant = components["schemas"]["Merchant"];
+export type TopMerchant = components["schemas"]["TopMerchant"];
 export type EssentialLifestyleData = DataOf<components["schemas"]["EssentialLifestyleEnvelope"]>;
 
 // ------------------------------------------------------------------ overview
@@ -157,7 +161,10 @@ export function useAdjustSource() {
 export type TransactionFilters = {
   source_id?: string;
   category_id?: string;
+  merchant_id?: string;
   review_status?: string;
+  /** Soft-deleted rows: "exclude" (default), "include", or the "only" bin. */
+  voided?: "exclude" | "include" | "only";
   q?: string;
   from?: string;
   to?: string;
@@ -288,6 +295,51 @@ export function useReverseTransaction() {
     onSuccess: (_data, variables) => {
       invalidateLedger(qc, "money");
       qc.invalidateQueries({ queryKey: ["transaction", variables.id] });
+    },
+  });
+}
+
+// ---------------------------------------------------------------- merchants
+
+export function useMerchants() {
+  return useQuery({
+    queryKey: ["merchants"],
+    queryFn: () => apiGet<MerchantListData>("/merchants"),
+  });
+}
+
+/** Name → merchant lookup for chips, datalists and deep links. */
+export function useMerchantNameMap(): Map<string, string> {
+  const merchants = useMerchants();
+  return useMemo(
+    () => new Map((merchants.data?.merchants ?? []).map((m) => [m.id, m.name])),
+    [merchants.data],
+  );
+}
+
+export function useRenameMerchant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      apiSend<{ merchant: Merchant }>(`/merchants/${id}`, "PATCH", { name }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["merchants"] });
+      // Every row carries the merchant name as display text.
+      invalidateLedger(qc, "label");
+    },
+  });
+}
+
+export function useMergeMerchant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, intoMerchantId }: { id: string; intoMerchantId: string }) =>
+      apiSend<{ merged: boolean; into_merchant_id: string }>(`/merchants/${id}/merge`, "POST", {
+        into_merchant_id: intoMerchantId,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["merchants"] });
+      invalidateLedger(qc, "label");
     },
   });
 }

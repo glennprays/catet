@@ -38,7 +38,7 @@ export function ChartFrame<T>({
   ariaSummary: (data: T) => string;
   option: (data: T) => EChartsOption;
   height?: number;
-  onSelect?: (name: string) => void;
+  onSelect?: (name: string, item?: unknown) => void;
   children?: (data: T) => ReactNode;
 }) {
   // Panel's header is one line and truncates, which eats chart captions at
@@ -101,7 +101,7 @@ function ChartBody<T>({
   option: (data: T) => EChartsOption;
   ariaSummary: (data: T) => string;
   height: number;
-  onSelect?: (name: string) => void;
+  onSelect?: (name: string, item?: unknown) => void;
 }) {
   const resolved = useMemo(() => option(data), [data, option]);
   return (

@@ -79,9 +79,11 @@ describe("TransactionSheet in hold mode", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Simpan" }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe(`/api/hold-queue/${hold.id}/resolve`);
+    // The sheet also loads the merchant suggestions, so the resolve call is
+    // found by URL rather than by being the first request.
+    const resolveUrl = `/api/hold-queue/${hold.id}/resolve`;
+    await waitFor(() => expect(fetchMock.mock.calls.map(([url]) => url)).toContain(resolveUrl));
+    const [, init] = fetchMock.mock.calls.filter(([url]) => url === resolveUrl)[0];
     expect(init.method).toBe("POST");
     const body = JSON.parse(String(init.body)) as {
       action: string;

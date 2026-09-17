@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { KeyRound, LogOut, Sparkles, Users } from "lucide-react";
+import { KeyRound, LogOut, Sparkles, Store, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormField } from "@/components/form-field";
@@ -291,6 +291,23 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ) : null}
+
+                  <div className="grid gap-2 p-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+                    <div>
+                      <h3 className="text-body font-medium text-ink">Merchant</h3>
+                      <p className="text-meta text-ash">
+                        Nama kanonis yang dipakai bot dan dashboard — ubah nama atau gabungkan yang
+                        kembar
+                      </p>
+                    </div>
+                    <div>
+                      <Button variant="secondary" asChild>
+                        <Link href="/settings/merchants">
+                          <Store className="size-4" strokeWidth={1.75} /> Kelola merchant
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
                 </>
               )}
             </QueryBoundary>
