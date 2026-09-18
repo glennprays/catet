@@ -29,11 +29,13 @@ import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import {
   useArchiveCategory,
+  useBudgets,
   useCategories,
   useCreateCategory,
   useUpdateCategory,
   type Category,
 } from "@/lib/api/hooks";
+import { todayJakartaKey } from "@/lib/time";
 
 type CategoryNode = {
   category: Category;
@@ -103,6 +105,9 @@ export function descendantIds(categories: Category[], id: string): Set<string> {
 export default function CategoriesPage() {
   const categories = useCategories();
   const archive = useArchiveCategory();
+  // Archiving stops every budget in the subtree from the current month;
+  // the dialog says how many before the user commits.
+  const budgets = useBudgets(todayJakartaKey().slice(0, 7));
   const list = categories.data?.categories ?? [];
   const tree = buildTree(list);
 
@@ -130,6 +135,15 @@ export default function CategoriesPage() {
   }
 
   const affected = archiveTarget === null ? 0 : descendantIds(list, archiveTarget.id).size;
+  const stopped =
+    archiveTarget === null
+      ? 0
+      : (() => {
+          const subtree = descendantIds(list, archiveTarget.id);
+          return (budgets.data?.budgets ?? []).filter(
+            (row) => row.category_id === archiveTarget.id || subtree.has(row.category_id),
+          ).length;
+        })();
 
   return (
     <>
@@ -198,9 +212,10 @@ export default function CategoriesPage() {
         onOpenChange={(open) => !open && setArchiveTarget(null)}
         title={`Arsipkan ${archiveTarget?.name ?? "kategori"}?`}
         description={
-          affected === 0
+          (affected === 0
             ? "Kategori diarsipkan; transaksi lama tetap memakainya."
-            : `Kategori dan ${affected} sub-kategori diarsipkan; transaksi lama tetap memakainya.`
+            : `Kategori dan ${affected} sub-kategori diarsipkan; transaksi lama tetap memakainya.`) +
+          (stopped > 0 ? ` ${stopped} anggaran dihentikan mulai bulan ini.` : "")
         }
         confirmLabel="Arsipkan"
         tone="danger"

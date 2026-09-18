@@ -470,24 +470,50 @@ export function useBudgets(period?: string) {
   });
 }
 
+/** Recurring is the default: a rule runs from `period` until stopped. */
 export function useCreateBudget() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { category_id: string; period: string; amount_minor: number }) =>
-      apiSend<BudgetRow>("/budgets", "POST", body),
+    mutationFn: (body: {
+      category_id: string;
+      period: string;
+      amount_minor: number;
+      recurring: boolean;
+    }) => apiSend<BudgetRow>("/budgets", "POST", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["budgets"] }),
   });
 }
 
+/** Scope decides whether the new nominal starts a run or carves out one month. */
 export function useUpdateBudget() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, amount_minor }: { id: string; amount_minor: number }) =>
-      apiSend<BudgetRow>(`/budgets/${id}`, "PATCH", { amount_minor }),
+    mutationFn: ({
+      id,
+      amount_minor,
+      period,
+      scope,
+    }: {
+      id: string;
+      amount_minor: number;
+      period: string;
+      scope: "from_month" | "only_month";
+    }) => apiSend<BudgetRow>(`/budgets/${id}`, "PATCH", { amount_minor, period, scope }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["budgets"] }),
   });
 }
 
+/** Ends the rule from `period` on; earlier months stay as history. */
+export function useStopBudget() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, period }: { id: string; period: string }) =>
+      apiSend<{ deleted: boolean }>(`/budgets/${id}/stop`, "POST", { period }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["budgets"] }),
+  });
+}
+
+/** Deletes the rule and its whole history. */
 export function useDeleteBudget() {
   const qc = useQueryClient();
   return useMutation({

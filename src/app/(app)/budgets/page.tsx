@@ -32,31 +32,79 @@ import {
   useCategories,
   useCreateBudget,
   useDeleteBudget,
+  useStopBudget,
   useUpdateBudget,
   type BudgetRow,
 } from "@/lib/api/hooks";
-import { formatJakartaDate } from "@/lib/time";
+import { formatIDR } from "@/lib/money";
+import { formatJakartaDate, todayJakartaKey } from "@/lib/time";
 import { useIsPhone } from "@/lib/use-media-query";
+import { SegmentedControl } from "@/components/segmented-control";
+import { SwitchRow } from "@/components/switch-row";
+
+/** "Sep 2026" — the label every budget caption and dialog is dated with. */
+function monthLabelOf(period: string): string {
+  return formatJakartaDate(`${period}-01T00:00:00+07:00`, { month: "short", year: "numeric" });
+}
+
+/**
+ * budgetCaption states the rule behind the row: whether it recurs, since
+ * when, until when, and — on the month a change took effect — what
+ * nominal it replaced.
+ */
+export function budgetCaption(row: BudgetRow, period: string): string {
+  const parts: string[] = [];
+  if (row.to_period === null) {
+    parts.push(`Berulang · sejak ${monthLabelOf(row.since_period)}`);
+  } else if (
+    row.from_period === row.to_period &&
+    row.to_period === period &&
+    row.since_period === row.from_period
+  ) {
+    parts.push(`Hanya ${monthLabelOf(period)}`);
+  } else {
+    parts.push(
+      `Berulang · sejak ${monthLabelOf(row.since_period)} · sampai ${monthLabelOf(row.to_period)}`,
+    );
+  }
+  if (row.previous_amount_minor !== null && row.from_period === period) {
+    parts.push(`sebelumnya ${formatIDR(row.previous_amount_minor)}`);
+  }
+  return parts.join(" · ");
+}
+
+/**
+ * budgetTotals sums the strip. Nested rows are skipped: their spend is
+ * already inside a budgeted ancestor's, so counting both would double
+ * the month.
+ */
+export function budgetTotals(rows: BudgetRow[]): { amount: number; spent: number } {
+  return rows
+    .filter((row) => !row.nested)
+    .reduce(
+      (acc, row) => ({
+        amount: acc.amount + row.amount_minor,
+        spent: acc.spent + row.spent_minor,
+      }),
+      { amount: 0, spent: 0 },
+    );
+}
 
 export default function BudgetsPage() {
-  const [period, setPeriod] = useState(() => new Date().toISOString().slice(0, 7));
+  const [period, setPeriod] = useState(() => todayJakartaKey().slice(0, 7));
   const isPhone = useIsPhone();
   const budgets = useBudgets(period);
   const categories = useCategories();
   const remove = useDeleteBudget();
+  const stop = useStopBudget();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<BudgetRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<BudgetRow | null>(null);
+  const [stopTarget, setStopTarget] = useState<BudgetRow | null>(null);
 
   const rows = budgets.data?.budgets ?? [];
-  const totals = rows.reduce(
-    (acc, row) => ({
-      amount: acc.amount + row.amount_minor,
-      spent: acc.spent + row.spent_minor,
-    }),
-    { amount: 0, spent: 0 },
-  );
+  const totals = budgetTotals(rows);
   const remaining = totals.amount - totals.spent;
   const monthLabel = formatJakartaDate(`${period}-01T00:00:00+07:00`, {
     month: "long",
@@ -118,7 +166,7 @@ export default function BudgetsPage() {
           <EmptyState
             icon={PiggyBank}
             heading="Belum ada anggaran"
-            caption="Pasang batas per kategori untuk bulan ini."
+            caption="Pasang batas per kategori; berulang tiap bulan sampai kamu hentikan."
             action={
               <Button variant="secondary" onClick={() => openForm(null)}>
                 Buat anggaran
@@ -171,13 +219,35 @@ export default function BudgetsPage() {
               <BudgetProgressRow
                 key={row.id}
                 row={row}
+                caption={budgetCaption(row, period)}
                 actions={
                   <RowMenu
                     label={`Aksi ${row.category_name}`}
-                    actions={[
-                      { label: "Ubah", onClick: () => openForm(row) },
-                      { label: "Hapus", tone: "danger", onClick: () => setDeleteTarget(row) },
-                    ]}
+                    actions={
+                      // A rule that only ever covered this month has nothing
+                      // to stop: deleting it is the same act.
+                      row.since_period === period && row.to_period === period
+                        ? [
+                            { label: "Ubah", onClick: () => openForm(row) },
+                            {
+                              label: "Hapus",
+                              tone: "danger" as const,
+                              onClick: () => setDeleteTarget(row),
+                            },
+                          ]
+                        : [
+                            { label: "Ubah", onClick: () => openForm(row) },
+                            {
+                              label: "Hentikan mulai bulan ini",
+                              onClick: () => setStopTarget(row),
+                            },
+                            {
+                              label: "Hapus seluruhnya",
+                              tone: "danger" as const,
+                              onClick: () => setDeleteTarget(row),
+                            },
+                          ]
+                    }
                   />
                 }
               />
@@ -187,10 +257,36 @@ export default function BudgetsPage() {
       </div>
 
       <ConfirmDialog
+        open={stopTarget !== null}
+        onOpenChange={(open) => !open && setStopTarget(null)}
+        title={`Hentikan anggaran ${stopTarget?.category_name ?? ""}?`}
+        description={`Berlaku mulai ${monthLabelOf(period)}; bulan-bulan sebelumnya tetap tersimpan.`}
+        confirmLabel="Hentikan"
+        pending={stop.isPending}
+        onConfirm={() => {
+          if (stopTarget === null) {
+            return;
+          }
+          stop.mutate(
+            { id: stopTarget.id, period },
+            {
+              onSuccess: () => {
+                toast.success("Anggaran dihentikan");
+                setStopTarget(null);
+              },
+              onError: (error) => toastError(error.message),
+            },
+          );
+        }}
+      />
+
+      <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title={`Hapus anggaran ${deleteTarget?.category_name ?? ""}?`}
-        description="Riwayat pengeluaran tetap ada; hanya batas anggaran yang dihapus."
+        title={`Hapus anggaran ${deleteTarget?.category_name ?? ""} seluruhnya?`}
+        description={`Termasuk riwayat sejak ${monthLabelOf(
+          deleteTarget?.since_period ?? period,
+        )}. Riwayat pengeluaran tetap ada; hanya batas anggaran yang dihapus.`}
         confirmLabel="Hapus"
         tone="danger"
         pending={remove.isPending}
@@ -240,6 +336,8 @@ function BudgetFormSheet({
   const [categoryId, setCategoryId] = useState("");
   const [amountMinor, setAmountMinor] = useState<number | null>(null);
   const [editPeriod, setEditPeriod] = useState(period);
+  const [recurring, setRecurring] = useState(true);
+  const [scope, setScope] = useState<"from_month" | "only_month">("from_month");
   const [initializedFor, setInitializedFor] = useState<string | null>(null);
 
   const sessionKey = `${open ? "open" : "closed"}-${editing?.id ?? "new"}`;
@@ -248,6 +346,8 @@ function BudgetFormSheet({
     setCategoryId(editing?.category_id ?? "");
     setAmountMinor(editing?.amount_minor ?? null);
     setEditPeriod(period);
+    setRecurring(true);
+    setScope("from_month");
   }
 
   const available = useMemo(
@@ -260,6 +360,10 @@ function BudgetFormSheet({
     [categories, existing, editing],
   );
 
+  // A segment that already covers exactly one month cannot be split, so
+  // the scope question has only one honest answer.
+  const scopeApplies = editing !== null && editing.from_period !== editing.to_period;
+
   function submit() {
     const minor = amountMinor ?? 0;
     if (minor <= 0) {
@@ -268,7 +372,12 @@ function BudgetFormSheet({
     }
     if (editing !== null) {
       update.mutate(
-        { id: editing.id, amount_minor: minor },
+        {
+          id: editing.id,
+          amount_minor: minor,
+          period,
+          scope: scopeApplies ? scope : "from_month",
+        },
         {
           onSuccess: () => {
             toast.success("Anggaran diubah");
@@ -284,7 +393,7 @@ function BudgetFormSheet({
       return;
     }
     create.mutate(
-      { category_id: categoryId, period: editPeriod, amount_minor: minor },
+      { category_id: categoryId, period: editPeriod, amount_minor: minor, recurring },
       {
         onSuccess: () => {
           toast.success("Anggaran dibuat");
@@ -300,7 +409,7 @@ function BudgetFormSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={editing === null ? "Tambah anggaran" : "Ubah anggaran"}
-      description="Batas belanja per kategori per bulan."
+      description="Batas belanja per kategori; berulang tiap bulan sampai dihentikan."
       footer={
         <>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
@@ -342,6 +451,30 @@ function BudgetFormSheet({
       <FormField label="Nominal" htmlFor="budget-amount">
         <AmountInput id="budget-amount" valueMinor={amountMinor} onChangeMinor={setAmountMinor} />
       </FormField>
+
+      {editing === null ? (
+        <SwitchRow
+          id="budget-recurring"
+          label="Ulangi tiap bulan"
+          caption="Berlaku mulai periode di atas sampai kamu hentikan."
+          checked={recurring}
+          onCheckedChange={setRecurring}
+        />
+      ) : null}
+
+      {scopeApplies ? (
+        <SegmentedControl
+          aria-label="Cakupan perubahan"
+          value={scope}
+          onValueChange={(value) => setScope(value as "from_month" | "only_month")}
+          options={[
+            { value: "from_month", label: "Mulai bulan ini" },
+            { value: "only_month", label: "Hanya bulan ini" },
+          ]}
+          stretch
+          className="w-full"
+        />
+      ) : null}
     </ResponsiveSheet>
   );
 }

@@ -625,7 +625,7 @@ export interface paths {
         /** Budget rows with computed spend for a period */
         get: operations["listBudgets"];
         put?: never;
-        /** Create a budget */
+        /** Start a budget rule */
         post: operations["createBudget"];
         delete?: never;
         options?: never;
@@ -643,12 +643,29 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a budget */
+        /** Delete a budget rule and its whole history */
         delete: operations["deleteBudget"];
         options?: never;
         head?: never;
-        /** Update a budget amount */
+        /** Change a budget nominal from a month on, or for that month only */
         patch: operations["updateBudget"];
+        trace?: never;
+    };
+    "/api/v1/budgets/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop a budget rule from a month on */
+        post: operations["stopBudget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/overview": {
@@ -1436,8 +1453,24 @@ export interface components {
             essential: boolean;
             /** Format: int64 */
             amount_minor: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description spend of the category's whole subtree in the period
+             */
             spent_minor: number;
+            /** @description first month this segment covers */
+            from_period: string;
+            /** @description last month covered; null while the rule recurs */
+            to_period: string | null;
+            /** @description first month the category was ever budgeted */
+            since_period: string;
+            /**
+             * Format: int64
+             * @description nominal this segment replaced, set only on the month the change took effect
+             */
+            previous_amount_minor: number | null;
+            /** @description an ancestor category is budgeted in the same period; excluded from totals */
+            nested: boolean;
         };
         BudgetsEnvelope: {
             data: {
@@ -2875,7 +2908,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Archived */
+            /** @description Archived; every budget in the subtree is stopped from the current month */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2886,8 +2919,6 @@ export interface operations {
             };
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];
-            /** @description Used by a budget in the current period (the category or any sub-category) */
-            409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
     };
@@ -3160,6 +3191,11 @@ export interface operations {
                     period: string;
                     /** Format: int64 */
                     amount_minor: number;
+                    /**
+                     * @description runs from period until stopped; false records a single month
+                     * @default true
+                     */
+                    recurring?: boolean;
                 };
             };
         };
@@ -3176,7 +3212,7 @@ export interface operations {
             /** @description VALIDATION_FAILED with FieldError[] on rule violations, including category_id rule "archived" when the category is archived */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
-            /** @description Budget already exists for (category, period) */
+            /** @description Budget already covers this month for the category */
             409: components["responses"]["ErrorResponse"];
             500: components["responses"]["ErrorResponse"];
         };
@@ -3219,7 +3255,14 @@ export interface operations {
             content: {
                 "application/json": {
                     /** Format: int64 */
-                    amount_minor?: number;
+                    amount_minor: number;
+                    /** @description the month being edited; the segment must cover it */
+                    period: string;
+                    /**
+                     * @description from_month closes the old run and starts a new one; only_month carves a one-month exception
+                     * @enum {string}
+                     */
+                    scope: "from_month" | "only_month";
                 };
             };
         };
@@ -3233,6 +3276,41 @@ export interface operations {
                     "application/json": components["schemas"]["BudgetEnvelope"];
                 };
             };
+            /** @description VALIDATION_FAILED with FieldError[], including period rule "covered" when the segment does not cover the month */
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["UnauthorizedError"];
+            404: components["responses"]["NotFoundError"];
+            500: components["responses"]["ErrorResponse"];
+        };
+    };
+    stopBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description first month no longer budgeted; earlier months stay as history */
+                    period: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Stopped */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedEnvelope"];
+                };
+            };
+            /** @description VALIDATION_FAILED with FieldError[], including period rule "covered" when the segment does not cover the month */
             400: components["responses"]["ValidationError"];
             401: components["responses"]["UnauthorizedError"];
             404: components["responses"]["NotFoundError"];

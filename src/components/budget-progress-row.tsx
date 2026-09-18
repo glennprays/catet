@@ -16,12 +16,16 @@ const FILL = {
  * One budget as a single 36px line (DESIGN.md §4): name, 4px bar,
  * spent-of-limit, percentage. Shared by the Budgets screen and the
  * Overview card so the same ratio can never earn two different tones.
+ * A caption (the rule state) stacks under the name and lets the row
+ * grow; Overview passes none and keeps the strict 36px rhythm.
  */
 export function BudgetProgressRow({
   row,
+  caption,
   actions,
 }: {
   row: Pick<BudgetRow, "category_id" | "category_name" | "spent_minor" | "amount_minor">;
+  caption?: string;
   actions?: ReactNode;
 }) {
   const format = useFormatIDR();
@@ -30,11 +34,14 @@ export function BudgetProgressRow({
   const pct = Math.round(ratio * 100);
 
   return (
-    <div className="flex h-9 items-center gap-3 border-b border-border px-4 last:border-b-0">
+    <div className="flex min-h-9 items-center gap-3 border-b border-border px-4 py-1 last:border-b-0">
       <CategoryTile category={{ id: row.category_id, name: row.category_name }} />
 
-      <span className="w-24 shrink-0 truncate text-body font-medium text-ink @md:w-32">
-        {row.category_name}
+      <span className="w-24 shrink-0 @md:w-32">
+        <span className="block truncate text-body font-medium text-ink">{row.category_name}</span>
+        {caption === undefined ? null : (
+          <span className="block truncate text-label text-ash">{caption}</span>
+        )}
       </span>
 
       <span
