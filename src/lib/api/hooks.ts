@@ -105,11 +105,40 @@ export function useUpdateSource() {
   });
 }
 
+/**
+ * The archive response is only `{ archived: true }`, so confirmed success
+ * moves the row between the two cached memberships instead of waiting on
+ * the refetch: the include-archived list marks the source, the active-only
+ * list drops it. Totals stay put — the backend refuses to archive a
+ * source with a balance — and the timestamp is a transient membership
+ * marker the refetch replaces with server truth.
+ */
+function archiveCachedSource(qc: QueryClient, id: string, archivedAt: string): void {
+  qc.setQueryData<SourcesData>(["sources", true], (current) =>
+    current === undefined
+      ? current
+      : {
+          ...current,
+          sources: current.sources.map((source) =>
+            source.id === id ? { ...source, archived_at: archivedAt } : source,
+          ),
+        },
+  );
+  qc.setQueryData<SourcesData>(["sources", false], (current) =>
+    current === undefined
+      ? current
+      : { ...current, sources: current.sources.filter((source) => source.id !== id) },
+  );
+}
+
 export function useArchiveSource() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiSend<{ archived: boolean }>(`/sources/${id}`, "DELETE"),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sources"] }),
+    onSuccess: (_data, id) => {
+      archiveCachedSource(qc, id, new Date().toISOString());
+      qc.invalidateQueries({ queryKey: ["sources"] });
+    },
   });
 }
 
@@ -435,16 +464,33 @@ export function useReactivateBill() {
 }
 
 /**
+ * The payment response carries the authoritative Bill — cadence,
+ * completion and next due date are already applied server-side — so the
+ * cached list is patched instead of waiting a round trip. Only the
+ * matching id is replaced, and a cache that was never populated stays
+ * that way.
+ */
+function replaceCachedBill(qc: QueryClient, next: Bill): void {
+  qc.setQueryData<{ bills: Bill[] }>(["bills"], (current) =>
+    current === undefined
+      ? current
+      : { bills: current.bills.map((bill) => (bill.id === next.id ? next : bill)) },
+  );
+}
+
+/**
  * Paying a bill writes a real expense, so it invalidates the money
  * surfaces as well as the bill list: Safe-to-Spend, balances and the
- * ledger all moved.
+ * ledger all moved. The returned Bill moves the row between the
+ * `Aktif`/`Selesai` groups before the list refetch lands.
  */
 export function usePayBill() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }: { id: string } & Record<string, unknown>) =>
       apiSend<BillPaymentResult>(`/bills/${id}/payments`, "POST", body),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      replaceCachedBill(qc, result.bill);
       invalidateLedger(qc, "money");
       qc.invalidateQueries({ queryKey: ["bills"] });
       qc.invalidateQueries({ queryKey: ["bill-payments"] });
