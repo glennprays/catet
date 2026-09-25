@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Plus, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 
+import { CategoryPicker } from "@/components/category-picker";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DatePicker } from "@/components/date-picker";
 import { FormField } from "@/components/form-field";
@@ -402,27 +403,14 @@ function ReceiptHoldForm({
                   <MoneyText minor={line.amount_minor} size="md" tone="neutral" />
                   {isTransfer ? null : (
                     <div className="col-span-2">
-                      <Select
+                      <CategoryPicker
                         value={lineCategories[line.n] ?? ""}
-                        onValueChange={(value) =>
-                          setLineCategories((prev) => ({ ...prev, [line.n]: value }))
-                        }
-                      >
-                        <SelectTrigger
-                          id={`receipt-cat-${line.n}`}
-                          className="w-full"
-                          aria-label={`Kategori baris ${line.n}`}
-                        >
-                          <SelectValue placeholder="Pilih kategori" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {activeCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={(id) => setLineCategories((prev) => ({ ...prev, [line.n]: id }))}
+                        categories={activeCategories}
+                        id={`receipt-cat-${line.n}`}
+                        ariaLabel={`Kategori baris ${line.n}`}
+                        className="w-full"
+                      />
                     </div>
                   )}
                 </div>
@@ -435,18 +423,14 @@ function ReceiptHoldForm({
                 <MoneyText minor={draft.totalMinor} size="md" tone="neutral" />
                 {isTransfer ? null : (
                   <div className="col-span-2">
-                    <Select value={singleCategory} onValueChange={setSingleCategory}>
-                      <SelectTrigger id="receipt-cat-all" className="w-full" aria-label="Kategori">
-                        <SelectValue placeholder="Pilih kategori" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activeCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <CategoryPicker
+                      value={singleCategory}
+                      onChange={setSingleCategory}
+                      categories={activeCategories}
+                      id="receipt-cat-all"
+                      ariaLabel="Kategori"
+                      className="w-full"
+                    />
                   </div>
                 )}
               </div>

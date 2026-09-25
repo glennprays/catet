@@ -7,8 +7,11 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 
 import { CHART_COLORS, chartBase, jutaLabel, tokenPx } from "@/components/charts/echart";
+import { CategoryTile } from "@/components/category-tile";
 import { ChartFrame } from "@/components/chart-frame";
 import { FilterBar } from "@/components/filter-bar";
+import { ListRow } from "@/components/list-row";
+import { MoneyText } from "@/components/money-text";
 import { PageHeader } from "@/components/page-header";
 import { PeriodPicker } from "@/components/period-picker";
 import { Button } from "@/components/ui/button";
@@ -93,6 +96,11 @@ function AnalyticsView() {
         if (period.to !== undefined) params.set("to", period.to);
       }
       params.set(key, id);
+      // A category click means that category's whole subtree, so the
+      // ledger's rows add up to the amount the user just clicked.
+      if (key === "category_id") {
+        params.set("include_descendants", "true");
+      }
       return `/transactions?${params.toString()}`;
     },
     [period],
@@ -151,7 +159,11 @@ function AnalyticsView() {
       <div className="grid gap-2.5 py-2.5 md:grid-cols-2 xl:grid-cols-3">
         <ChartFrame
           title="Kategori"
-          caption={drilled === null ? "klik irisan untuk detail" : undefined}
+          caption={
+            drilled === null
+              ? "klik irisan untuk detail"
+              : `dalam ${drilledNode(breakdown.data, drilled)?.name ?? "kategori"}`
+          }
           action={
             drilled === null ? undefined : (
               <Button variant="ghost" size="sm" onClick={() => setDrilled(null)}>
@@ -167,12 +179,26 @@ function AnalyticsView() {
             }`
           }
           option={donutOption}
-          onSelect={(name) => setDrilled((current) => (current === null ? name : null))}
+          onSelect={(_name, item) => {
+            // Only a node with children has a deeper view to show; a leaf
+            // keeps the current one and is opened through its list link.
+            if (typeof item !== "object" || item === null || !("id" in item)) {
+              return;
+            }
+            if (typeof item.id !== "string") {
+              return;
+            }
+            const target = item.id;
+            setDrilled((current) => (current === target ? null : target));
+          }}
         >
           {(data) => (
-            <CategoryLegend
+            <CategoryRankedList
               data={data}
               drilled={drilled}
+              onDrill={(categoryId) =>
+                setDrilled((current) => (current === categoryId ? null : categoryId))
+              }
               href={(categoryId) => transactionsHref("category_id", categoryId)}
             />
           )}
@@ -247,14 +273,47 @@ function AnalyticsView() {
 
 const SLICE_COLORS = [INK, MUTED, "#9b968e", "#c3bdb4", SAFE, WARN];
 
+/** One node of the breakdown tree, as the API sends it. */
+type BreakdownNode = CategoryBreakdownData["categories"][number];
+
+/**
+ * The drilled-into node, matched by id: the backend enforces no unique
+ * category name, so a name would be ambiguous. `data` is optional so the
+ * caption can call this while the query is still pending.
+ */
+function drilledNode(data: CategoryBreakdownData | undefined, drilled: string | null) {
+  if (drilled === null || data === undefined) {
+    return undefined;
+  }
+  return data.categories.find((node) => node.category_id === drilled);
+}
+
 function drilledView(data: CategoryBreakdownData, drilled: string | null) {
-  if (drilled !== null) {
-    const parent = data.categories.find((node) => node.name === drilled);
-    if (parent !== undefined && (parent.children?.length ?? 0) > 0) {
-      return parent.children ?? [];
-    }
+  const parent = drilledNode(data, drilled);
+  if (parent !== undefined && (parent.children?.length ?? 0) > 0) {
+    return parent.children ?? [];
   }
   return data.categories;
+}
+
+/**
+ * The ranked list's rows: the whole subtree in pre-order, each row keeping
+ * its true depth so a child reads as a child. Undrilled that is every
+ * category, which is the point of the panel — the readable numbers, not
+ * just the top-level slices. Drilled it is that node's descendants.
+ * Siblings arrive biggest-first: the server sorts every level by amount.
+ */
+function rankedRows(data: CategoryBreakdownData, drilled: string | null) {
+  const rows: { node: BreakdownNode; depth: number }[] = [];
+  const walk = (nodes: BreakdownNode[], depth: number) => {
+    for (const node of nodes) {
+      rows.push({ node, depth });
+      walk(node.children ?? [], depth + 1);
+    }
+  };
+  const parent = drilledNode(data, drilled);
+  walk(parent === undefined ? data.categories : (parent.children ?? []), 0);
+  return rows;
 }
 
 function categoryDonutOption(
@@ -279,6 +338,8 @@ function categoryDonutOption(
         label: { show: inlineLabels, color: MUTED, fontSize: tokenPx("--text-label", 11) },
         labelLine: { show: inlineLabels, lineStyle: { color: BORDER } },
         data: items.map((node, index) => ({
+          // The id rides on the datum so a click needs no name lookup.
+          id: node.category_id,
           name: node.name,
           value: node.amount_minor,
           itemStyle: { color: SLICE_COLORS[index % SLICE_COLORS.length] },
@@ -289,37 +350,51 @@ function categoryDonutOption(
 }
 
 /**
- * The chart's text alternative, and the only place a category leads
- * somewhere: the slice itself is spoken for by the drill-down, so the
- * legend row is what opens that category's transactions.
+ * The chart's readable numbers: the categories ranked biggest first (the
+ * server sorts every level by amount descending), each with its share of
+ * the total and a way into its transactions. Shown at every width — the
+ * old legend was `lg:hidden`, which left desktop with no way to open a
+ * category at all. A row with children drills; a leaf has no drill
+ * button and is opened through its link instead.
  */
-function CategoryLegend({
+function CategoryRankedList({
   data,
   drilled,
+  onDrill,
   href,
 }: {
   data: CategoryBreakdownData;
   drilled: string | null;
+  onDrill: (categoryId: string) => void;
   href: (categoryId: string) => string;
 }) {
-  const items = drilledView(data, drilled);
   return (
-    <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 lg:hidden" aria-label="Kategori">
-      {items.map((node, index) => (
-        <li key={node.category_id} className="min-w-0">
-          <Link
-            href={href(node.category_id)}
-            aria-label={`Lihat transaksi ${node.name}`}
-            className="flex min-w-0 items-center gap-1 text-meta text-muted-foreground hover:text-ink"
-          >
-            <span
-              className="size-2 shrink-0 rounded-md"
-              style={{ backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length] }}
-              aria-hidden="true"
-            />
-            <span className="truncate">{node.name}</span>
-            <ArrowUpRight className="size-3 shrink-0 text-ash" aria-hidden="true" />
-          </Link>
+    <ul className="mt-2" aria-label="Peringkat kategori">
+      {rankedRows(data, drilled).map(({ node, depth }) => (
+        <li key={node.category_id}>
+          <ListRow
+            leading={<CategoryTile category={{ id: node.category_id, name: node.name }} size="sm" />}
+            title={node.name}
+            caption={`${Math.round(node.share * 100)}% dari total`}
+            // Drilled rows sit one step in, so the children read as the
+            // children of the node named in the caption.
+            indent={drilled === null ? depth : depth + 1}
+            onClick={
+              (node.children?.length ?? 0) > 0 ? () => onDrill(node.category_id) : undefined
+            }
+            trailing={
+              <span className="flex items-center gap-2">
+                <MoneyText minor={node.amount_minor} size="sm" tone="neutral" />
+                <Link
+                  href={href(node.category_id)}
+                  aria-label={`Lihat transaksi ${node.name}`}
+                  className="text-ash hover:text-ink"
+                >
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                </Link>
+              </span>
+            }
+          />
         </li>
       ))}
     </ul>

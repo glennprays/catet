@@ -2536,6 +2536,8 @@ export interface operations {
             query?: {
                 source_id?: string;
                 category_id?: string;
+                /** @description With `category_id`, also match every descendant of that category. The dashboard sets this so a parent filter agrees with the subtree totals the Analytics donut and the budgets screen show. */
+                include_descendants?: boolean;
                 /** @description `needs_review` also hides originals that have a live reversal. */
                 review_status?: "clean" | "needs_review";
                 /** @description Soft-deleted rows; `exclude` (default) hides them, `only` is the Di-void bin. */

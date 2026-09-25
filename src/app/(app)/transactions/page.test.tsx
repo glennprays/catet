@@ -66,7 +66,20 @@ describe("Transactions filters live in the URL", () => {
     expect(query.get("limit")).toBe("50");
     expect(query.get("voided")).toBeNull();
     expect(query.get("review_status")).toBeNull();
+    // Nothing was asked for, so the subtree flag is not sent either: a
+    // bare visit must stay a plain list.
+    expect(query.get("include_descendants")).toBeNull();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  test("a category deep link asks for that category's whole subtree", async () => {
+    const id = "22222222-2222-4222-8222-222222222222";
+    const query = await listQuery(`category_id=${id}`);
+
+    // The Analytics link promises the subtree amount it just showed, so
+    // the ledger must count the same rows.
+    expect(query.get("category_id")).toBe(id);
+    expect(query.get("include_descendants")).toBe("true");
   });
 
   test("?period=last_month narrows to last month", async () => {

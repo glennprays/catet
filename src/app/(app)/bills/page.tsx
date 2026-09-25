@@ -5,6 +5,7 @@ import { CalendarPlus, CalendarX } from "lucide-react";
 import { toast } from "sonner";
 
 import { AmountInput } from "@/components/amount-input";
+import { CategoryPicker } from "@/components/category-picker";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DatePicker } from "@/components/date-picker";
 import { EmptyState } from "@/components/empty-state";
@@ -42,6 +43,7 @@ import {
   useSources,
   useUpdateBill,
   type Bill,
+  type Category,
 } from "@/lib/api/hooks";
 import { occurrencesInRange } from "@/lib/bill-occurrences";
 import { formatIDR } from "@/lib/money";
@@ -397,7 +399,7 @@ function BillFormSheet({
   onOpenChange: (open: boolean) => void;
   editing: Bill | null;
   sources: { id: string; name: string }[];
-  categories: { id: string; name: string }[];
+  categories: Category[];
 }) {
   const create = useCreateBill();
   const update = useUpdateBill();
@@ -587,22 +589,14 @@ function BillFormSheet({
       </FormField>
 
       <FormField label="Kategori" htmlFor="bill-category" hint="opsional">
-        <Select
+        <CategoryPicker
           value={categoryId}
-          onValueChange={(value) => setCategoryId(value === "none" ? "" : value)}
-        >
-          <SelectTrigger id="bill-category" className="w-full">
-            <SelectValue placeholder="Tidak ada" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Tidak ada</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={setCategoryId}
+          categories={categories}
+          id="bill-category"
+          clearLabel="Tidak ada"
+          className="w-full"
+        />
       </FormField>
     </ResponsiveSheet>
   );

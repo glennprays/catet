@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 
+import { CategoryPicker } from "@/components/category-picker";
 import { Chip } from "@/components/chip";
 import { FilterBar } from "@/components/filter-bar";
 import { FormField } from "@/components/form-field";
@@ -85,9 +86,10 @@ export function TransactionFilterBar({
 
   /* The phone bar shows one Filter button instead of the selects, so the
      chips below it are the only place that says what is applied. On
-     desktop the controls speak for themselves — except merchant and
-     category, which only ever arrive by deep link, so their chips are the
-     sole way to see and drop them. */
+     desktop the controls speak for themselves — except merchant, which
+     only ever arrives by deep link, so its chip is the sole way to see
+     and drop it. Category keeps a chip at both widths: a subtree filter
+     is worth confirming in words. */
   const chips: {
     key: string;
     label: string;
@@ -241,6 +243,17 @@ export function TransactionFilterBar({
       </SelectContent>
     </Select>
   );
+  const categorySelect = (
+    <CategoryPicker
+      id="tx-filter-category"
+      value={categoryId}
+      onChange={(id) => set({ category_id: id === "" ? null : id })}
+      categories={categories.data?.categories ?? []}
+      clearLabel="Semua kategori"
+      ariaLabel={isPhone ? undefined : "Filter kategori"}
+      className={selectClass}
+    />
+  );
 
   return (
     <>
@@ -279,6 +292,7 @@ export function TransactionFilterBar({
             {directionSelect}
             {sourceSelect}
             {statusSelect}
+            {categorySelect}
           </>
         )}
         {visibleChips.length > 0 ? (
@@ -322,6 +336,9 @@ export function TransactionFilterBar({
           </FormField>
           <FormField label="Status" htmlFor="tx-filter-status">
             {statusSelect}
+          </FormField>
+          <FormField label="Kategori" htmlFor="tx-filter-category">
+            {categorySelect}
           </FormField>
         </ResponsiveSheet>
       ) : null}

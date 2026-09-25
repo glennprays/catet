@@ -8,6 +8,7 @@ import { toastError } from "@/lib/toast";
 
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 import { AmountInput } from "@/components/amount-input";
+import { CategoryPicker } from "@/components/category-picker";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FilterBar } from "@/components/filter-bar";
 import { FormField } from "@/components/form-field";
@@ -21,13 +22,6 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   useBudgets,
   useCategories,
   useCreateBudget,
@@ -35,6 +29,7 @@ import {
   useStopBudget,
   useUpdateBudget,
   type BudgetRow,
+  type Category,
 } from "@/lib/api/hooks";
 import { formatIDR } from "@/lib/money";
 import { formatJakartaDate, todayJakartaKey } from "@/lib/time";
@@ -328,7 +323,7 @@ function BudgetFormSheet({
   onOpenChange: (open: boolean) => void;
   editing: BudgetRow | null;
   period: string;
-  categories: { id: string; name: string }[];
+  categories: Category[];
   existing: BudgetRow[];
 }) {
   const create = useCreateBudget();
@@ -424,18 +419,14 @@ function BudgetFormSheet({
       {editing === null ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Kategori" htmlFor="budget-category">
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger id="budget-category" className="w-full">
-                <SelectValue placeholder="Pilih" />
-              </SelectTrigger>
-              <SelectContent>
-                {available.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategoryPicker
+              value={categoryId}
+              onChange={setCategoryId}
+              categories={available}
+              id="budget-category"
+              placeholder="Pilih"
+              className="w-full"
+            />
           </FormField>
           <FormField label="Periode" htmlFor="budget-period">
             <Input
