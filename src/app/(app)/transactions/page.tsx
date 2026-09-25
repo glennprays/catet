@@ -98,6 +98,9 @@ function TransactionsScreen() {
       direction: direction === "" ? undefined : direction,
       source_id: sourceId === "" ? undefined : sourceId,
       category_id: categoryId === "" ? undefined : categoryId,
+      // Filtering by a category means its whole subtree: that is what the
+      // Analytics link, the chip and the budgets screen all assume.
+      include_descendants: categoryId === "" ? undefined : true,
       merchant_id: merchantId === "" ? undefined : merchantId,
       // The bin and the review states are exclusive: "Di-void" asks for
       // the soft-deleted rows, every other status narrows the live ones.

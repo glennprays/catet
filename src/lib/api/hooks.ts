@@ -190,6 +190,8 @@ export function useAdjustSource() {
 export type TransactionFilters = {
   source_id?: string;
   category_id?: string;
+  /** With `category_id`, match the whole subtree — what the dashboard sends. */
+  include_descendants?: boolean;
   merchant_id?: string;
   review_status?: string;
   /** Soft-deleted rows: "exclude" (default), "include", or the "only" bin. */

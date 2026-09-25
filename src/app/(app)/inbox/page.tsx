@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { CategoryPicker } from "@/components/category-picker";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { GroupLabel } from "@/components/group-label";
 import { LedgerRow, LedgerRowSkeleton } from "@/components/ledger-row";
@@ -14,13 +15,6 @@ import { Panel } from "@/components/panel";
 import { StatusBadge } from "@/components/status-badge";
 import { useCaptureSheet } from "@/components/capture-sheet-provider";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   useBadges,
   useCategories,
@@ -375,21 +369,15 @@ function ReviewRow({
               Tebakan: {guess}
             </span>
           )}
-          <Select value={item.category_id ?? ""} disabled={update.isPending} onValueChange={save}>
-            <SelectTrigger
-              className="w-full sm:w-40"
-              aria-label={`Ganti kategori ${item.merchant ?? item.type}`}
-            >
-              <SelectValue placeholder="Pilih kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <CategoryPicker
+            value={item.category_id ?? ""}
+            onChange={save}
+            categories={categories}
+            size="sm"
+            disabled={update.isPending}
+            ariaLabel={`Ganti kategori ${item.merchant ?? item.type}`}
+            className="w-full sm:w-40"
+          />
           <Button
             size="sm"
             variant="secondary"

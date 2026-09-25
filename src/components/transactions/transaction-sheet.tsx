@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AmountInput } from "@/components/amount-input";
+import { CategoryPicker } from "@/components/category-picker";
 import { DatePicker } from "@/components/date-picker";
 import { FormField } from "@/components/form-field";
 import { ResponsiveSheet } from "@/components/responsive-sheet";
@@ -251,9 +252,8 @@ export function TransactionSheet({
       return activeCategories;
     }
     const archived = categories.find((category) => category.id === current);
-    return archived === undefined
-      ? activeCategories
-      : [...activeCategories, { ...archived, name: `${archived.name} (arsip)` }];
+    // The picker marks the archived row itself, so the name stays real.
+    return archived === undefined ? activeCategories : [...activeCategories, archived];
   }, [activeCategories, categories, editing]);
   const activeSources = useMemo(
     () => sources.filter((source) => source.archived_at === null),
@@ -585,28 +585,17 @@ export function TransactionSheet({
               error={fieldErrors.category_id}
               hint={missingHint("category")}
             >
-              <Select
+              <CategoryPicker
                 value={categoryId}
-                onValueChange={(value) => {
-                  setCategoryId(value);
+                onChange={(id) => {
+                  setCategoryId(id);
                   clearError("category_id");
                 }}
-              >
-                <SelectTrigger
-                  id="tx-category"
-                  className="w-full"
-                  aria-invalid={fieldErrors.category_id !== undefined}
-                >
-                  <SelectValue placeholder="Pilih kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pickableCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                categories={pickableCategories}
+                id="tx-category"
+                invalid={fieldErrors.category_id !== undefined}
+                className="w-full"
+              />
             </FormField>
           ) : null}
         </div>

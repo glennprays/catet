@@ -5,6 +5,8 @@ import { Tags } from "lucide-react";
 import { toast } from "sonner";
 
 import { toastError } from "@/lib/toast";
+import { buildTree, descendantIds, type CategoryNode } from "@/lib/category-tree";
+import { CategoryPicker } from "@/components/category-picker";
 import { CategoryTile } from "@/components/category-tile";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FormField } from "@/components/form-field";
@@ -16,13 +18,6 @@ import { SwitchRow } from "@/components/switch-row";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { EmptyState, QueryErrorState } from "@/components/empty-state";
 
@@ -36,71 +31,6 @@ import {
   type Category,
 } from "@/lib/api/hooks";
 import { todayJakartaKey } from "@/lib/time";
-
-type CategoryNode = {
-  category: Category;
-  children: CategoryNode[];
-};
-
-export function buildTree(categories: Category[]): CategoryNode[] {
-  const nodes = new Map<string, CategoryNode>();
-  const roots: CategoryNode[] = [];
-
-  for (const category of categories) {
-    nodes.set(category.id, { category, children: [] });
-  }
-  for (const category of categories) {
-    const node = nodes.get(category.id);
-    if (node === undefined) {
-      continue;
-    }
-    if (category.parent_id === null || category.parent_id === undefined) {
-      roots.push(node);
-      continue;
-    }
-    const parent = nodes.get(category.parent_id);
-    if (parent === undefined) {
-      // The parent is not in this list (archived, or filtered out): keep
-      // the row visible as a root instead of dropping it silently — the
-      // counter above the list counts every row the server sent.
-      roots.push(node);
-      continue;
-    }
-    parent.children.push(node);
-  }
-  return roots;
-}
-
-/** Ids of every category below `id` in `categories` (not `id` itself). */
-export function descendantIds(categories: Category[], id: string): Set<string> {
-  const childrenOf = new Map<string, string[]>();
-  for (const category of categories) {
-    const parentId = category.parent_id;
-    if (parentId === null || parentId === undefined) {
-      continue;
-    }
-    const siblings = childrenOf.get(parentId);
-    if (siblings === undefined) {
-      childrenOf.set(parentId, [category.id]);
-    } else {
-      siblings.push(category.id);
-    }
-  }
-
-  const out = new Set<string>();
-  const queue = [id];
-  while (queue.length > 0) {
-    const current = queue.pop() as string;
-    for (const child of childrenOf.get(current) ?? []) {
-      if (out.has(child)) {
-        continue;
-      }
-      out.add(child);
-      queue.push(child);
-    }
-  }
-  return out;
-}
 
 export default function CategoriesPage() {
   const categories = useCategories();
@@ -421,21 +351,14 @@ function CategoryFormSheet({
       </FormField>
 
       <FormField label="Induk" htmlFor="category-parent">
-        <Select value={parentId} onValueChange={(value) => setParentId(value === "root" ? "" : value)}>
-          <SelectTrigger id="category-parent" className="w-full">
-            <SelectValue placeholder="Tanpa induk" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="root">Tanpa induk</SelectItem>
-            {categories
-              .filter((category) => !blocked.has(category.id))
-              .map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+        <CategoryPicker
+          value={parentId}
+          onChange={setParentId}
+          categories={categories.filter((category) => !blocked.has(category.id))}
+          id="category-parent"
+          clearLabel="Tanpa induk"
+          className="w-full"
+        />
       </FormField>
 
       <SwitchRow

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { buildTree, descendantIds } from "./page";
+import { buildTree, descendantIds } from "@/lib/category-tree";
 import type { Category } from "@/lib/api/hooks";
 
 function category(id: string, parent_id?: string | null): Category {
