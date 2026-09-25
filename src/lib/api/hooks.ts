@@ -105,11 +105,40 @@ export function useUpdateSource() {
   });
 }
 
+/**
+ * The archive response is only `{ archived: true }`, so confirmed success
+ * moves the row between the two cached memberships instead of waiting on
+ * the refetch: the include-archived list marks the source, the active-only
+ * list drops it. Totals stay put — the backend refuses to archive a
+ * source with a balance — and the timestamp is a transient membership
+ * marker the refetch replaces with server truth.
+ */
+function archiveCachedSource(qc: QueryClient, id: string, archivedAt: string): void {
+  qc.setQueryData<SourcesData>(["sources", true], (current) =>
+    current === undefined
+      ? current
+      : {
+          ...current,
+          sources: current.sources.map((source) =>
+            source.id === id ? { ...source, archived_at: archivedAt } : source,
+          ),
+        },
+  );
+  qc.setQueryData<SourcesData>(["sources", false], (current) =>
+    current === undefined
+      ? current
+      : { ...current, sources: current.sources.filter((source) => source.id !== id) },
+  );
+}
+
 export function useArchiveSource() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiSend<{ archived: boolean }>(`/sources/${id}`, "DELETE"),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sources"] }),
+    onSuccess: (_data, id) => {
+      archiveCachedSource(qc, id, new Date().toISOString());
+      qc.invalidateQueries({ queryKey: ["sources"] });
+    },
   });
 }
 
