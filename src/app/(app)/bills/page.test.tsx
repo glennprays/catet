@@ -42,6 +42,19 @@ const activeBill: Bill = {
   reminder_offsets: [],
 };
 
+// The `Aktif` label renders only while the group is non-empty, so the
+// paid bill must not be the last one leaving it: a second bill keeps the
+// group on screen and proves the move rather than the group's exit.
+const stayingBill: Bill = {
+  ...activeBill,
+  id: "55555555-5555-4555-8555-555555555555",
+  name: "Listrik",
+  cadence: "monthly",
+  next_due_date: "2026-09-28",
+  amount_min_minor: 80_000,
+  amount_max_minor: 90_000,
+};
+
 const completedBill: Bill = {
   ...activeBill,
   active: false,
@@ -59,8 +72,19 @@ const transaction: Transaction = {
   occurred_at: "2026-09-25T10:00:00Z",
   origin: "dashboard_manual",
   type: "expense",
+  merchant: null,
+  merchant_id: null,
+  note: "Bill payment",
   amount_minor: 125_000,
+  category_id: null,
+  category_name: null,
+  category_source: null,
+  category_confidence: null,
   review_status: "clean",
+  external_id: null,
+  reverses_transaction_id: null,
+  reverses_merchant: null,
+  voided_at: null,
   edit_history: [],
   voided: false,
   legs: [],
@@ -71,6 +95,24 @@ const transaction: Transaction = {
 afterEach(() => {
   vi.unstubAllGlobals();
 });
+
+/**
+ * The list has no per-group wrapper: `GroupLabel` renders a `<p>` and its
+ * rows are the following siblings. Collect those siblings up to the next
+ * label so every assertion sees exactly one group's rows.
+ */
+function groupText(labelText: string): string {
+  const label = screen.getByText(labelText, { selector: "p" });
+  const parts: string[] = [];
+  for (let node = label.nextElementSibling; node !== null; node = node.nextElementSibling) {
+    if (node.tagName === "P") {
+      break;
+    }
+    parts.push(node.textContent ?? "");
+  }
+  return parts.join(" ");
+}
+
 describe("BillsPage payment transition", () => {
   test("moves a completed bill to Selesai before list revalidation resolves", async () => {
     let billsGetCount = 0;
@@ -80,10 +122,11 @@ describe("BillsPage payment transition", () => {
       if (path === "/api/bills" && (init?.method === undefined || init?.method === "GET")) {
         billsGetCount += 1;
         if (billsGetCount === 1) {
-          return response({ bills: [activeBill] });
+          return response({ bills: [activeBill, stayingBill] });
         }
         return new Promise<Response>((resolve) => {
-          releaseRevalidation = () => resolve(response({ bills: [completedBill] }));
+          releaseRevalidation = () =>
+            resolve(response({ bills: [completedBill, stayingBill] }));
         });
       }
       if (path === `/api/bills/${billId}/payments` && init?.method === "POST") {
@@ -124,10 +167,17 @@ describe("BillsPage payment transition", () => {
       fireEvent.click(await screen.findByRole("button", { name: "Tandai lunas" }));
 
       await waitFor(() => expect(billsGetCount).toBe(2));
-      const activeGroup = screen.getByText("Aktif", { selector: "p" });
-      const completedGroup = screen.getByText("Selesai", { selector: "p" });
-      expect(activeGroup.nextElementSibling?.textContent).not.toContain(activeBill.name);
-      expect(completedGroup.nextElementSibling?.textContent).toContain(completedBill.name);
+
+      // Both partitions are asserted while the revalidation GET is still
+      // held, so only the confirmed write-through can satisfy them: the
+      // paid bill left `Aktif`, the untouched bill stayed, and the
+      // completed bill is the one row under `Selesai`.
+      await waitFor(() => {
+        expect(groupText("Aktif")).not.toContain(activeBill.name);
+        expect(groupText("Aktif")).toContain(stayingBill.name);
+        expect(groupText("Selesai")).toContain(activeBill.name);
+        expect(groupText("Selesai")).not.toContain(stayingBill.name);
+      });
     } finally {
       releaseRevalidation?.();
     }
